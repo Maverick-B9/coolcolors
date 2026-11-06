@@ -1,0 +1,53 @@
+{% layout none %}
+{%- liquid
+  assign drawer = false
+  assign modal = false
+  assign page_only = false
+  assign no_js_cart = false
+
+   if settings.cart_type == 'drawer'
+     assign drawer = true
+   elsif settings.cart_type == 'modal_cart'
+     assign modal = true
+   elsif settings.cart_type == 'page_only'
+     assign page_only = true
+   else
+     assign no_js_cart = false
+   endif
+
+  if cart.item_count < 1
+    assign isEmpty = ''
+    assign formEmpty = 'hide'
+  else
+    assign isEmpty = 'hide'
+    assign formEmpty = ''
+  endif
+
+-%}
+<template data-options>
+  {
+    "item_count": {{ cart.item_count }}
+  }
+</template>
+<template data-html="content">
+  <div class="ajax-cart__empty-cart a-center js-cart-empty {{ isEmpty }}">
+    <p>{{ 'cart.general.empty' | t }}</p>
+    {% if settings.cart_collection != blank %}
+      <div class="grid__wrapper cart--featured__collection">
+        <h3 class="h4 span-12 auto">{{ 'cart.general.featured_products' | t }}</h3>
+        {% assign collection = collections[settings.cart_collection] %}
+        {% for product in collection.products limit: 4 %}
+          <div id="product-listing-{{ product.id }}" class="collection__page-product product-index span-6 auto js-product-listing" data-alpha="{{ product.title }}" data-price="{{ product.price }}"  data-product-id="{{ product.id }}">
+            {% render 'product-listing', product: product, collection: collection %}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+  {% render 'cart-form',
+     drawer: drawer,
+     modal: modal,
+     page_only: page_only,
+     no_js_cart: no_js_cart,
+     formEmpty: formEmpty %}
+</template>

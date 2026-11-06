@@ -1,0 +1,245 @@
+{%- liquid
+
+  case settings.collection_image_size
+    when 'natural'
+      assign aspect_ratio = 'natural'
+    when 'square'
+      assign aspect_ratio = 'square'
+    when 'landscape'
+      assign aspect_ratio = 'landscape'
+    when 'portrait'
+      assign aspect_ratio = 'portrait'
+  endcase
+
+  if settings.title_position == 'floating'
+    assign is_floating = true
+  endif
+
+  assign section_space = section.settings.section_space
+  assign section_space_class = ''
+
+  if section_space == 'top'
+    assign section_space_class = ' pb0'
+  elsif section_space == 'bottom'
+    assign section_space_class = ' mt0'
+  elsif section_space == 'none'
+    assign section_space_class = ' mt0 pb0'
+  endif
+
+  case section.settings.grid
+    when 2
+      assign prod_grid = 'span-6'
+    when 3
+      assign prod_grid = 'span-4'
+    when 4
+      assign prod_grid = 'span-3'
+    when 5
+      assign prod_grid = 'span-one-fifth'
+    when 6
+      assign prod_grid = 'span-2'
+  endcase
+
+  assign mobile_1pr = false
+  if section.settings.mobile_1pr
+    assign mobile_1pr = true
+  endif
+
+  assign show_slider = false
+  if section.settings.show_slider
+    assign show_slider = true
+  endif
+
+  assign bold_collection_title = false
+  if settings.bold_collection_title
+    assign bold_collection_title = true
+  endif
+
+
+-%}
+
+<section class="global__section collection__list-section{{ section_space_class }} {{ section.settings.custom_css }} " data-section-id="{{ section.id }}" >
+  <div class="collection__list-container" id="collection_list--{{ section.id }}">
+
+    {% if section.settings.title != blank %}
+      <div class="row grid__wrapper rg0">
+        <div class="section-title {% if settings.section_titles == 'lines' %}lines {% elsif settings.section_titles == 'btm_border' %}btm_border {% endif %} span-12 auto">
+          <h2>{{ section.settings.title | escape }}</h2>
+          <p>{{ section.settings.paragraph }}</p>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="collection__list-loop row grid__wrapper{% if section.settings.grid == 5 %} five--columns{% endif %} {% if show_slider %}swiper{% endif %}">
+{% if show_slider %}
+      <div class="swiper-wrapper">
+        {% endif %}
+
+      {% for block in section.blocks limit: section.blocks.size %}
+        {% assign collection = collections[block.settings.collection] %}
+        <div class="swiper-slide collection__list-item{% if is_floating %} floating__title{% endif %} {{ prod_grid }}{% if mobile_1pr %} sm-span-12{% else %} sm-span-6{% endif %} auto" data-alpha="{{ collection.title }}" {{ block.shopify_attributes }}>
+
+          
+            <div class="collection__item-image ss  collection--image_{{ aspect_ratio }}">
+              <a href="{{ collection.url }}" title="{{ collection_title }}">
+              {% if block.settings.image != blank %}
+    <div class="gallery__item-image{% if block.settings.overlay %} overlay{% endif %}">
+        <img src="{{ block.settings.image | img_url: '2048x' }}" alt="{{ block.settings.image.alt }}" width="600" height="400">
+    </div>
+{% else %}
+    <div class="onboard">
+        <img src="{{ 'image' | placeholder_svg_url: 'placeholder-svg' }}" width="600" height="400" alt="Placeholder">
+    </div>
+{% endif %}
+
+
+              </a>
+            </div>
+            
+            <div class="collection__item-details">
+              <a href="{{ collection.url }}" >
+                <p class="collection--title{% if bold_collection_title %} bold--title{% endif %}">{{ block.settings.img_text }}</p>
+                {% if settings.show_product_count %}
+                <p class="collection--count">{{ 'collections.general.items_count' | t: count: collection.products_count }}</p>
+                {% endif %}
+              </a>
+            </div>
+
+
+        </div>
+      {% endfor %}
+{% if show_slider %}
+      </div>
+
+
+  <div class="swiper-button-next"></div>
+  <div class="swiper-button-prev"></div>
+  <div class="swiper-pagination"></div>
+  
+  {% endif %}
+
+
+                
+
+    </div>
+    {% if section.blocks.size == 0 %}
+      {% render 'no-blocks' %}
+    {% endif %}
+  </div>
+</section>
+<div class="clear"></div>
+
+{% schema %}
+{
+  "name": "Collection list",
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Collection list"
+    },
+    {
+      "type": "text",
+      "id": "paragraph",
+      "label": "Content",
+      "default": "Add paragraph text here"
+    },
+    {
+      "type": "range",
+      "id": "grid",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "label": "Collections per row",
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_1pr",
+      "label": "1 per row on mobile",
+      "default":false
+    },
+    {
+      "type": "select",
+      "id": "section_space",
+      "label": "Section spacing",
+      "default": "top_and_bottom",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "top_and_bottom",
+          "label": "Top and bottom"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_slider",
+      "label": "Show Slider",
+      "default":false
+    },
+    {
+      "type": "text",
+      "id": "custom_css",
+      "label": "Add Custom CSS Here"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "featured_collection",
+      "name": "Collection",
+      "settings": [
+        {
+          "label": "Collection",
+          "id": "collection",
+          "type": "collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "richtext",
+          "id": "img_text",
+          "label": "Text"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection list",
+      "settings": {
+        "grid": 3
+      },
+      "blocks": [
+        {
+          "type": "featured_collection"
+        },
+        {
+          "type": "featured_collection"
+        },
+        {
+          "type": "featured_collection"
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}

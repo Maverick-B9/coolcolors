@@ -1,0 +1,224 @@
+{%- liquid
+  assign gallery_blocks = section.blocks | where: 'type', 'gallery_image'
+  assign feature_blocks = section.blocks | where: 'type', 'feature'
+-%}
+
+<section class="ccd" data-section-id="{{ section.id }}" data-section-type="product-description-gallery">
+  {%- if section.settings.eyebrow != blank -%}<p class="ccd__eb">{{ section.settings.eyebrow }}</p>{%- endif -%}
+  {%- if section.settings.heading != blank -%}<h2 class="ccd__h2">{{ section.settings.heading }}</h2>{%- endif -%}
+
+  {%- if gallery_blocks.size > 0 -%}
+    <div class="ccd__ph">
+      {%- for block in gallery_blocks -%}
+        {%- liquid
+          assign img = block.settings.image
+          if img == blank
+            assign media_position = block.settings.media_index | minus: 1
+            assign img = product.media[media_position]
+            if img == blank
+              assign img = product.featured_media
+            endif
+          endif
+        -%}
+        {%- if img != blank -%}
+          <img src="{{ img | image_url: width: 1000 }}" srcset="{{ img | image_url: width: 600 }} 600w, {{ img | image_url: width: 1000 }} 1000w, {{ img | image_url: width: 1400 }} 1400w" sizes="(min-width: 901px) 48vw, 76vw" alt="{{ product.title | escape }}" loading="lazy" {{ block.shopify_attributes }}>
+        {%- else -%}
+          <div {{ block.shopify_attributes }}>{{ 'product-1' | placeholder_svg_tag }}</div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+
+  {%- if feature_blocks.size > 0 -%}
+    {%- if section.settings.features_label != blank -%}<h4 class="ccd__fl">{{ section.settings.features_label }}</h4>{%- endif -%}
+    <div class="ccd__kd">
+      {%- for block in feature_blocks -%}
+        {%- case block.settings.icon -%}
+          {%- when 'leaf' -%}{%- assign emoji = '🌿' -%}
+          {%- when 'ruler' -%}{%- assign emoji = '✂' -%}
+          {%- when 'washing_machine' -%}{%- assign emoji = '🧺' -%}
+          {%- when 'map_pin' -%}{%- assign emoji = '📍' -%}
+          {%- when 'shield' -%}{%- assign emoji = '🛡' -%}
+          {%- else -%}{%- assign emoji = '✔' -%}
+        {%- endcase -%}
+        <div class="ccd__k" {{ block.shopify_attributes }}><i>{{ emoji }}</i>{{ block.settings.text }}</div>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+
+  <div class="ccd__two">
+    <div>
+      {%- if section.settings.copy_title != blank -%}<h3>{{ section.settings.copy_title }}</h3>{%- endif -%}
+      {{ section.settings.copy_text | remove: '<p>' | remove: '</p>' }}
+    </div>
+    <div>
+      {%- if section.settings.styling_label != blank -%}<h4>{{ section.settings.styling_label }}</h4>{%- endif -%}
+      {{ section.settings.styling_text | remove: '<p>' | remove: '</p>' }}
+    </div>
+  </div>
+</section>
+
+<style>
+  .ccd { max-width:1440px; margin:0 auto; padding:46px 24px 0; font-family:'Inter',system-ui,sans-serif; color:#0D1117; background:transparent; }
+  .ccd *, .ccd *::before, .ccd *::after { box-sizing:border-box; font-family:'Inter',system-ui,sans-serif; }
+  .ccd__eb { font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:#5C6874; margin:0 0 10px; }
+  .ccd__h2 { font-size:clamp(24px,3vw,34px); font-weight:700; letter-spacing:-.02em; margin:0 0 22px; text-transform:none; color:#0D1117; line-height:normal; }
+  .ccd__ph { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+  .ccd__ph img { width:100%; aspect-ratio:4/5; object-fit:cover; border-radius:20px; display:block; }
+  .ccd__fl { margin:30px 0 12px; font-size:14px; font-weight:700; color:#0D1117; text-transform:none; letter-spacing:0; }
+  .ccd__kd { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:26px 0; }
+  .ccd__k { background:#fff; border:1px solid #E3E7EB; border-radius:16px; padding:14px 16px; display:flex; align-items:center; gap:12px; font-size:13px; font-weight:600; }
+  .ccd__k i { width:34px; height:34px; border-radius:50%; background:#EEF0F3; display:grid; place-items:center; font-style:normal; flex:none; }
+  .ccd__two { display:grid; grid-template-columns:1fr 1fr; gap:40px; font-size:14px; line-height:1.7; color:#5C6874; }
+  .ccd__two h3 { margin:0 0 8px; color:#0D1117; font-size:26px; letter-spacing:-.01em; text-transform:none; font-weight:700; line-height:inherit; }
+  .ccd__two h4 { margin:0 0 8px; color:#0D1117; font-size:14px; font-weight:700; text-transform:none; letter-spacing:0; line-height:inherit; }
+  @media (max-width:900px){
+    .ccd { padding:30px 0 0; }
+    .ccd__eb, .ccd__h2, .ccd__fl, .ccd__two { padding-left:16px; padding-right:16px; }
+    .ccd__h2 { margin:0 0 16px; font-size:22px; }
+    .ccd__ph { display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; scroll-padding-left:16px; padding:0 16px; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+    .ccd__ph::-webkit-scrollbar { display:none; }
+    .ccd__ph > img, .ccd__ph > div { flex:0 0 76%; width:auto; align-self:flex-start; aspect-ratio:4/5; border-radius:18px; overflow:hidden; scroll-snap-align:start; }
+    .ccd__ph > div svg { width:100%; height:100%; }
+    .ccd__fl { margin:24px 0 0; }
+    .ccd__kd { grid-template-columns:1fr 1fr; gap:10px; margin:0; padding:18px 16px 0; }
+    .ccd__fl + .ccd__kd { padding-top:12px; }
+    .ccd__k { display:block; padding:13px 14px; border-radius:14px; font-size:12.5px; }
+    .ccd__k i { display:none; }
+    .ccd__two { grid-template-columns:1fr; gap:22px; margin-top:24px; }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Product Desc Gallery",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "A full-width product-page section with real product photos, quick-scan feature icons, and description/styling copy."
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow text",
+      "default": "Product Description"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "features_label",
+      "label": "Feature icons label",
+      "default": "Key details"
+    },
+    {
+      "type": "text",
+      "id": "copy_title",
+      "label": "Description title",
+      "default": "Crisp Comfort, Made for Everyday"
+    },
+    {
+      "type": "richtext",
+      "id": "copy_text",
+      "label": "Description text",
+      "default": "<p>A refined, breathable fabric designed for everyday comfort.</p>"
+    },
+    {
+      "type": "text",
+      "id": "styling_label",
+      "label": "Styling label",
+      "default": "Styling"
+    },
+    {
+      "type": "richtext",
+      "id": "styling_text",
+      "label": "Styling text",
+      "default": "<p>Wear it with tailored trousers and leather loafers for a polished look, or dress it down with relaxed chinos and clean sneakers.</p>"
+    },
+    {
+      "type": "color",
+      "id": "color",
+      "label": "Text and icon color"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background color",
+      "default": "#ffffff"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "gallery_image",
+      "name": "Gallery photo",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Leave the image blank to automatically pull a real photo from this product's own images (by position below)."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Custom image (optional)"
+        },
+        {
+          "type": "range",
+          "id": "media_index",
+          "label": "Product image number to use",
+          "info": "Used only when no custom image is set above. 1 = this product's first image, 2 = second, etc.",
+          "min": 1,
+          "max": 10,
+          "step": 1,
+          "default": 2
+        }
+      ]
+    },
+    {
+      "type": "feature",
+      "name": "Feature icon",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            { "value": "leaf", "label": "Leaf" },
+            { "value": "ruler", "label": "Ruler" },
+            { "value": "washing_machine", "label": "Washing machine" },
+            { "value": "map_pin", "label": "Map pin" },
+            { "value": "check", "label": "Check" },
+            { "value": "shield", "label": "Shield" }
+          ],
+          "default": "check"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Label",
+          "default": "Feature"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 8,
+  "presets": [
+    {
+      "name": "Product Desc Gallery",
+      "blocks": [
+        { "type": "gallery_image", "settings": { "media_index": 2 } },
+        { "type": "gallery_image", "settings": { "media_index": 3 } },
+        { "type": "feature", "settings": { "icon": "leaf", "text": "100% Cotton" } },
+        { "type": "feature", "settings": { "icon": "ruler", "text": "Slim Fit" } },
+        { "type": "feature", "settings": { "icon": "washing_machine", "text": "Machine Washable" } },
+        { "type": "feature", "settings": { "icon": "map_pin", "text": "Made in India" } }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "templates": ["product"]
+  }
+}
+{% endschema %}

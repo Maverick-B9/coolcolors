@@ -1,0 +1,42 @@
+{% if collection.empty? %}
+  {% comment %}add default state for collection block in storefront editor{% endcomment %}
+  {% capture collection_title %}{{ 'homepage.onboarding.collection_title' | t }}{% endcapture %}
+  {% capture collection_image_url %}{% endcapture %}
+{% else %}
+  {% capture collection_title %}{{ collection.title }}{% endcapture %}
+{% endif %}
+
+<div class="collection__item-image collection--image_{{ aspect_ratio }}">
+  <a href="{{ collection.url }}" title="{{ collection_title }}">
+    {% if collection.image %}
+      {%
+        render 'basic-responsive-image',
+        type: collection.image,
+        width: 1200,
+        loading: loading,
+        fetchpriority: fetchpriority
+      %}
+    {% elsif collection.products.first and collection.products.first.media != empty %}
+      {%
+        render 'basic-responsive-image',
+        type: collection.products.first.featured_media.preview_image,
+        width: 1200,
+        loading: loading,
+        fetchpriority: fetchpriority
+      %}
+    {% else %}
+      <div class="onboard">
+        {{ 'collection-1' | placeholder_svg_tag }}
+      </div>
+    {% endif %}
+  </a>
+</div>
+
+<div class="collection__item-details">
+  <a href="{{ collection.url }}" title="{{ collection.title }}">
+    <p class="collection--title{% if bold_collection_title %} bold--title{% endif %}">{{ collection.title }}</p>
+    {% if settings.show_product_count %}
+    <p class="collection--count">{{ 'collections.general.items_count' | t: count: collection.products_count }}</p>
+    {% endif %}
+  </a>
+</div>

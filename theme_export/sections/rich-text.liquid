@@ -1,0 +1,148 @@
+<section class="global__section rich__text-section rich__text-section--{{ section.id }} mt0" data-section-id="{{ section.id }}">
+  <div class="row">
+    <div class="rich__text-container desktop-12 tablet-6 mobile-3 padded">
+      <div class="rich__text-content grid__wrapper">
+        {% for block in section.blocks %}
+          {% assign page = pages[block.settings.page] %}
+          {%- liquid
+
+            case block.settings.block_width
+              when '33'
+                assign span = 'span-4'
+                assign push = 'push-4'
+              when '50'
+                assign span = 'span-6'
+                assign push = 'push-3'
+              when '66'
+                assign span = 'span-8'
+                assign push = 'push-2'
+              when '100'
+                assign span = 'span-12'
+            endcase
+
+          -%}
+          <div class="rich__text-column{% if block.settings.center %} center{% endif %} block-{{ block.id }} {% if section.blocks.size == 1 %} {{ push }}{% endif %} {{ span }} sm-span-12 auto">
+            {% if block.settings.title != blank %}
+              <h3>{{ block.settings.title | escape }}</h3>
+              <div class="clear"></div>
+            {% endif %}
+            {% if page != blank %}
+              {{ page.content }}
+            {% else %}
+            <div class="rte">
+              {{ block.settings.text }}
+            </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <style>
+    .rich__text-section--{{ section.id }} {
+        --padding: {{ section.settings.padding  }}px 0;
+        --background-color: {{ section.settings.background_color }};
+        --text-color: {{ section.settings.text_color }};
+    }
+  </style>
+</section>
+
+
+{% schema %}
+{
+  "name": "Rich text",
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "range",
+      "id": "padding",
+      "min": 30,
+      "max": 100,
+      "step": 10,
+      "unit": "px",
+      "label": "Section padding",
+      "default": 60
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text_block",
+      "name": "Column",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Welcome"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Add some text blocks to your page with editable widths for a single or multi-column display</p>"
+        },
+        {
+          "type": "page",
+          "id": "page",
+          "label": "Show content from a page",
+          "info": "Overrides any text entered"
+        },
+        {
+          "type": "checkbox",
+          "id": "center",
+          "label": "Center align"
+        },
+        {
+          "type": "select",
+          "id": "block_width",
+          "label": "Block width",
+          "options": [
+            {
+              "value": "33",
+              "label": "33%"
+            },
+            {
+              "value": "50",
+              "label": "50%"
+            },
+            {
+              "value": "66",
+              "label": "66%"
+            },
+            {
+              "value": "100",
+              "label": "100%"
+            }
+          ],
+          "default": "50"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Rich text",
+      "blocks": [
+        {
+          "type": "text_block"
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header"]
+  }
+}
+{% endschema %}

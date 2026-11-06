@@ -1,0 +1,155 @@
+{%- liquid
+
+  assign section_space = section.settings.section_space
+  assign section_space_class = ''
+
+  if section_space == 'top'
+    assign section_space_class = ' pb0'
+  elsif section_space == 'bottom'
+    assign section_space_class = ' mt0'
+  elsif section_space == 'none'
+    assign section_space_class = ' mt0 pb0'
+  endif
+
+  assign grid = section.settings.grid
+  assign blog = blogs[section.settings.blog]
+  assign post_limit = section.settings.post_limit
+-%}
+
+<section class="global__section{{ section_space_class }}" data-section-id="{{ section.id }}" >
+  <div class="row">
+    {% if section.settings.title != blank %}
+      <div class="section-title {% if settings.section_titles == 'lines' %}lines {% elsif settings.section_titles == 'btm_border' %}btm_border {% endif %} desktop-12 tablet-6 mobile-3">
+        <h1>{{ section.settings.title | escape }}</h1>
+      </div>
+      <div class="clear"></div>
+    {% endif %}
+
+    <div class="blog__wrapper">
+      <div class="blog__article-container blog__article-container--{{ section.id }} {% if grid == 1 %}list-layout{% endif %}">
+        {% if blog.articles.size == 0 or blog == '' %}
+          {% render 'onboard-blog' %}
+        {% else %}
+          {% for article in blog.articles limit: post_limit %}
+            {% liquid
+              assign loading = 'lazy'
+              assign fetch_priority = 'auto'
+              if section.index == 1 and forloop.index <= section.settings.grid
+                assign loading = 'eager'
+                assign fetch_priority = 'high'
+              endif
+             %}
+            {% capture current %}
+              {% cycle ' first', '', ' last' %}
+            {% endcapture %}
+            {% render 'article-loop', article: article, blog: blog, current: current, loading: loading, fetchpriority: fetch_priority %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <style>
+  .blog__article-container.blog__article-container--{{ section.id }} {
+    grid-template-columns: repeat({{ grid }}, 1fr);
+  }
+  </style>
+</section>
+<div class="clear"></div>
+
+
+{% schema %}
+{
+  "name": "Blog posts",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Blog posts"
+    },
+    {
+      "id": "blog",
+      "type": "blog",
+      "label": "Blog"
+    },
+    {
+      "type": "range",
+      "id": "grid",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "label": "Posts per row",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "post_limit",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "label": "Posts shown",
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Show published date",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Show author",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tags",
+      "label": "Show tags",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "section_space",
+      "label": "Section spacing",
+      "default": "top_and_bottom",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "top_and_bottom",
+          "label": "Top and bottom"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Blog posts",
+      "settings": {
+        "blog": "News",
+        "post_limit": 3
+      }
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}

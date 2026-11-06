@@ -1,0 +1,7 @@
+{% comment %}
+snippets/product-quantity.liqudi
+{% endcomment %}
+<label for="{% if product == blank %}qty-onboard__product{% else %}qty-{{ product.id }}{% endif %}" class="h5">{{ 'products.product.quantity' | t }}</label>
+<button class="down quantity-control-down" type="button">-</button>
+  <input id="{% if product == blank %}qty-onboard__product{% else %}qty-{{ product.id }}{% endif %}" min="1" type="text" name="quantity" class="js-qty-input test quantity" value="1" />
+<button class="up quantity-control-up" type="button">+</button>

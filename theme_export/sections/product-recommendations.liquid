@@ -1,0 +1,190 @@
+{%- liquid
+  assign rec_list = blank
+  assign rec_shown = 0
+  assign rec_limit = section.settings.limit
+  assign rec_wait = false
+
+  if section.settings.source == 'shopify'
+    if recommendations.performed
+      assign rec_list = recommendations.products
+    else
+      assign rec_wait = true
+    endif
+  else
+    if section.settings.products.size > 0
+      assign rec_list = section.settings.products
+    elsif section.settings.collection != blank
+      assign rec_list = section.settings.collection.products
+    elsif product != blank
+      assign skip_handles = 'all,frontpage,new-arrivals,most-trending,best-sellers' | split: ','
+      assign rec_cat = blank
+      for c in product.collections
+        unless skip_handles contains c.handle
+          if rec_cat == blank
+            assign rec_cat = c
+          endif
+        endunless
+      endfor
+      if rec_cat == blank
+        assign rec_cat = product.collections.first
+      endif
+      if rec_cat != blank
+        assign rec_list = rec_cat.products
+      endif
+    endif
+  endif
+-%}
+
+{%- if rec_wait -%}
+  <div class="js-product-rec-wrapper"
+    data-base-url="{{ routes.product_recommendations_url }}"
+    data-product-id="{{ product.id }}"
+    data-section-id="{{ section.id }}"
+    data-section-type="product-recommendations"
+    data-intent="related">
+  </div>
+{%- elsif rec_list != blank and rec_list.size > 0 -%}
+  <section class="ccr" data-product-id="{{ product.id }}">
+    <p class="ccr__eb">Relevant products</p>
+    <h2 class="ccr__h2">{{ section.settings.product_recommendations_heading }}</h2>
+    <div class="ccr__grid">
+      {%- for item in rec_list limit: 30 -%}
+        {%- if item.id != product.id and rec_shown < rec_limit -%}
+          {%- assign rec_shown = rec_shown | plus: 1 -%}
+          {%- liquid
+            assign color_label = ''
+            for option in item.options_with_values
+              assign oname = option.name | downcase
+              if oname contains 'colo'
+                assign color_label = option.values | first
+              endif
+            endfor
+            if color_label == blank
+              assign color_label = item.type
+            endif
+          -%}
+          <article class="ccr__card">
+            <a class="ccr__img" href="{{ item.url }}" aria-label="{{ item.title | escape }}">
+              {%- if item.featured_media -%}
+                <img src="{{ item.featured_media | image_url: width: 600 }}" srcset="{{ item.featured_media | image_url: width: 400 }} 400w, {{ item.featured_media | image_url: width: 600 }} 600w, {{ item.featured_media | image_url: width: 900 }} 900w" sizes="(min-width: 901px) 24vw, 46vw" width="{{ item.featured_media.width }}" height="{{ item.featured_media.height }}" alt="{{ item.title | escape }}" loading="lazy">
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag }}
+              {%- endif -%}
+            </a>
+            <h3><a href="{{ item.url }}">{{ item.title }}</a></h3>
+            <p>{{ item.price | money }}</p>
+            <div class="ccr__foot">
+              <span>{{ color_label }}</span>
+              <button type="button" class="ccr__add" data-ccr-add data-url="{{ item.url }}"{% if item.variants.size == 1 and item.available %} data-variant="{{ item.selected_or_first_available_variant.id }}"{% endif %} aria-label="Add {{ item.title | escape }}">+</button>
+            </div>
+          </article>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </section>
+{%- elsif request.design_mode -%}
+  <section class="ccr">
+    <p class="ccr__eb">Relevant products</p>
+    <p style="font-size:14px;color:#5C6874;">No products found. Pick products or a collection in this section's settings, or add this product to a collection.</p>
+  </section>
+{%- endif -%}
+
+<style>
+  .ccr { max-width:1440px; margin:0 auto; padding:46px 24px 0; font-family:'Inter',system-ui,sans-serif; color:#0D1117; }
+  .ccr *, .ccr *::before, .ccr *::after { box-sizing:border-box; font-family:'Inter',system-ui,sans-serif; }
+  .ccr__eb { font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:#5C6874; margin:0 0 10px; }
+  .ccr__h2 { font-size:clamp(24px,3vw,34px); font-weight:700; letter-spacing:-.02em; margin:0 0 22px; text-transform:none; color:#0D1117; line-height:normal; }
+  .ccr__grid { display:grid; grid-template-columns:repeat({{ section.settings.per_row }},minmax(0,1fr)); gap:16px; }
+  .ccr__card { background:#fff; border:1px solid #E3E7EB; border-radius:22px; padding:8px 8px 14px; }
+  :where(.ccr) button { width:auto; height:auto; min-width:0; min-height:0; margin:0; padding:0; border:0; border-radius:0; background:none; box-shadow:none; text-transform:none; letter-spacing:normal; font-size:13.3333px; font-weight:400; line-height:normal; color:#000; text-align:center; display:inline-block; }
+  .ccr__img { display:block; }
+  .ccr__img img, .ccr__img svg { width:100%; height:auto; aspect-ratio:4/4.4; object-fit:cover; border-radius:16px; display:block; }
+  .ccr__card h3 { margin:14px 10px 2px; font-size:15px; font-weight:700; text-transform:none; letter-spacing:0; line-height:normal; }
+  .ccr__card h3 a { color:inherit; text-decoration:none; }
+  .ccr__card p { margin:0 10px; font-size:13px; font-weight:600; }
+  .ccr__foot { display:flex; justify-content:space-between; align-items:center; margin:12px 10px 0; font-size:11px; color:#5C6874; }
+  .ccr__add { width:34px; height:34px; border-radius:50%; border:0; background:#0D1117; color:#fff; font-size:18px; cursor:pointer; padding:1px 6px; line-height:normal; margin:0; }
+  .ccr__toast { position:fixed; left:50%; bottom:90px; transform:translate(-50%,20px); background:#0D1117; color:#fff; padding:12px 20px; border-radius:100px; font-size:13px; font-weight:600; opacity:0; transition:.3s; z-index:60; pointer-events:none; font-family:'Inter',system-ui,sans-serif; }
+  .ccr__toast.on { opacity:1; transform:translate(-50%,0); }
+  @media (max-width:900px){
+    .ccr { padding:34px 16px 0; }
+    .ccr__grid { grid-template-columns:1fr 1fr; }
+    .ccr__toast { bottom:calc(166px + env(safe-area-inset-bottom,0px)); }
+  }
+</style>
+
+<script>
+  (function(){
+    if (window.__ccrAdd) return; window.__ccrAdd = true;
+    function toast(m){
+      var t = document.querySelector('.ccr__toast');
+      if(!t){ t = document.createElement('div'); t.className = 'ccr__toast'; document.body.appendChild(t); }
+      t.textContent = m; t.classList.add('on'); setTimeout(function(){ t.classList.remove('on'); }, 1600);
+    }
+    document.addEventListener('click', function(e){
+      var b = e.target.closest('[data-ccr-add]'); if(!b) return;
+      if(!b.dataset.variant){ window.location.href = b.dataset.url; return; }
+      b.disabled = true;
+      fetch('/cart/add.js', { method:'POST', headers:{ 'Content-Type':'application/json', 'Accept':'application/json' }, body: JSON.stringify({ items:[{ id:+b.dataset.variant, quantity:1 }] }) })
+        .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+        .then(function(){ toast('Added to cart ✓'); document.dispatchEvent(new CustomEvent('cc:cart:added')); })
+        .catch(function(){ window.location.href = b.dataset.url; })
+        .then(function(){ b.disabled = false; });
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Relevant products",
+  "settings": [
+    {
+      "type": "select",
+      "id": "source",
+      "label": "Where products come from",
+      "default": "category",
+      "options": [
+        { "value": "category", "label": "My picks, collection or product category" },
+        { "value": "shopify", "label": "Shopify automatic recommendations" }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "product_recommendations_heading",
+      "label": "Heading",
+      "default": "You may also like"
+    },
+    {
+      "type": "product_list",
+      "id": "products",
+      "label": "Pick products manually (optional)",
+      "info": "If you add products here, only these are shown.",
+      "limit": 12
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Or pull from this collection (optional)",
+      "info": "Leave blank to use the current product's own category."
+    },
+    {
+      "type": "range",
+      "id": "per_row",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "label": "Products per row",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "label": "Products shown",
+      "default": 4
+    }
+  ]
+}
+{% endschema %}

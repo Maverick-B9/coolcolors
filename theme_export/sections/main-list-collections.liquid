@@ -1,0 +1,48 @@
+{%- liquid
+
+  assign grid = section.settings.grid
+    case section.settings.grid
+      when 2
+    assign prod_grid = 50
+      when 3
+    assign prod_grid = 33.333
+      when 4
+    assign prod_grid = 25
+  endcase
+
+-%}
+
+<section class="collection__list-section main__section">
+
+  <div class="collection__list-container row grid__wrapper rg0">
+    <div class="collection__list-description{% if section.settings.center_align %} center{% endif %} collection-description span-12 auto">
+      <h1 class="page-title">{{ 'collections.general.all_collections' | t }}</h1>
+      {% if section.settings.text != blank %}
+        <div class="rte">
+          {{ section.settings.text }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</section>
+
+{% schema %}
+{
+  "name": "Collection list header",
+  "settings": [
+    {
+      "id": "text",
+      "type": "richtext",
+      "label": "Text",
+      "default": "<p>Add some descriptive text to your all collections page.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "center_align",
+      "label": "Center description",
+      "default": true
+    }
+  ]
+}
+{% endschema %}

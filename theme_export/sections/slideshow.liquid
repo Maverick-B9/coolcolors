@@ -1,0 +1,395 @@
+{%- liquid
+
+  assign section_space = section.settings.section_space
+  assign section_space_class = ''
+
+  if section_space == 'top'
+    assign section_space_class = ' pb0'
+  elsif section_space == 'bottom'
+    assign section_space_class = ' mt0'
+  elsif section_space == 'none'
+    assign section_space_class = ' mt0 pb0'
+  endif
+
+  if section.settings.no_autoplay
+    assign slider_speed = false
+  else
+    assign slider_speed = section.settings.slider_speed | times: 1000
+  endif
+
+  assign fixed_height = false
+
+  if section.settings.slideshow_size == 'fixed_height'
+    assign fixed_height = true
+  endif
+
+  assign desktop_height = section.settings.desktop_height
+  assign mobile_height = section.settings.mobile_height
+
+
+
+-%}
+<section class="global__section slideshow-section{{ section_space_class }} {{ section.settings.custom_css }}" data-section-id="{{ section.id }}" data-section-type="slideshow-section">
+
+  {% unless section.settings.display_wide %}<div class="row"><div class="desktop-12 tablet-6 mobile-3">{% endunless %}
+
+    {% capture slideshow_config %}{
+      "wrapAround":true,
+      "dragThreshold":"15",
+      "pauseAutoPlayOnHover":false,
+      "autoPlay": {{ slider_speed }},
+      "adaptiveHeight": true,
+      "fade": true,
+      "pageDots":{% if section.settings.pager == 'arrows' %}false{% else %}true{% endif %},
+      "prevNextButtons":true
+   }{% endcapture %}
+
+    {% if section.blocks.size > 0 %}
+    <div class="slideshow flickity__section js-slideshow {% if fixed_height %}is-fixed_height{% endif %}" id="slideshow--{{ section.id }}" data-flickity='{{ slideshow_config }}'>
+      {% render 'slide' for section.blocks as block %}
+    </div>
+    {% elsif section.blocks.size == 0 %}
+    {% render 'no-blocks' %}
+    {% endif %}
+
+  {% unless section.settings.display_wide %}</div></div>{% endunless %}
+
+  <style>
+    #slideshow--{{ section.id }} {
+      {% if fixed_height %}
+        --desktop-section-height: {{ desktop_height }}px;
+        --mobile-section-height: {{ mobile_height }}px;
+      {% endif %}
+    }
+    #slideshow--{{ section.id }} .slideshow__caption h2.slideshow__title {
+      font-size: {{ section.settings.slide_heading_size }}px;
+    }
+    #slideshow--{{ section.id }} .slideshow__caption p {
+      font-size: {{ section.settings.subheading_size }}px;
+    }
+    #slideshow--{{ section.id }} .slideshow__btn-wrapper a {
+      font-size: {{ section.settings.cta_size }}px;
+    }
+    @media screen and (max-width: 740px) {
+      #slideshow--{{ section.id }} .slideshow__caption h2.slideshow__title {
+        font-size: calc({{ section.settings.slide_heading_size }}px - ({{ section.settings.slide_heading_size }}px * 0.15))
+      }
+      #slideshow--{{ section.id }} .slideshow__caption p {
+        font-size: calc({{ section.settings.subheading_size }}px - ({{ section.settings.subheading_size }}px * 0.15))
+      }
+      #slideshow--{{ section.id }} .slideshow__btn-wrapper a {
+        font-size: calc({{ section.settings.cta_size }}px - ({{ section.settings.cta_size }}px * 0.15))
+      }
+    }
+  </style>
+
+</section>
+<div class="clear"></div>
+
+{% schema %}
+{
+  "name": "Slideshow",
+  "max_blocks": 5,
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Image slide",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Desktop settings"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Desktop image",
+          "info": "1800px x 800px recommended"
+        },
+        {
+          "type": "checkbox",
+          "id": "overlay",
+          "label": "Add image overlay",
+          "info": "This can help with text contrast"
+        },
+        {
+          "type": "text_alignment",
+          "id": "text_align",
+          "label": "Caption alignment",
+          "default": "left"
+        },
+        {
+          "type": "range",
+          "id": "caption_horizontal",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Caption horizontal position",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "caption_vertical",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Caption vertical position",
+          "default": 50
+        },
+        {
+          "type": "header",
+          "content": "Mobile settings"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile image",
+          "info": "800px x 1200px recommended"
+        },
+        {
+          "type": "checkbox",
+          "id": "hide_caption_background",
+          "label": "Hide caption background on mobile"
+        },
+        {
+          "type": "checkbox",
+          "id": "caption_below",
+          "label": "Position caption below image",
+          "info": "Text color changes to follow main theme text color"
+        },
+        {
+          "type": "header",
+          "content": "Caption content"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Slide image title"
+        },
+        {
+          "type": "richtext",
+          "id": "subheading",
+          "label": "Subheading",
+          "default": "<p>Slide image subheading</p>"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text",
+          "default": "Button",
+          "info": "Visible only if a link is chosen"
+        },
+        {
+          "type": "url",
+          "id": "second_link",
+          "label": "Button 2 link"
+        },
+        {
+          "type": "text",
+          "id": "second_button_text",
+          "label": "Button 2 text",
+          "default": "Button 2",
+          "info": "Visible only if a second link is chosen"
+        },
+        {
+          "type": "header",
+          "content": "Caption styles"
+        },
+        {
+          "type": "color",
+          "id": "slide_text_color",
+          "label": "Heading and subheading",
+          "default": "#000000"
+        },
+        {
+          "type": "color",
+          "id": "cta_color",
+          "label": "Button text",
+          "default": "#ffffff"
+        },
+        {
+          "type": "color",
+          "id": "cta_background",
+          "label": "Button background",
+          "default": "#000000"
+        },
+        {
+          "type": "color",
+          "id": "caption_background",
+          "label": "Caption background",
+          "default": "transparent"
+        },
+        {
+          "type": "range",
+          "id": "caption_background_opacity",
+          "min": 10,
+          "max": 100,
+          "step": 10,
+          "unit": "%",
+          "label": "Caption background opacity",
+          "default": 20
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "display_wide",
+      "label": "Full width"
+    },
+    {
+      "type": "checkbox",
+      "id": "no_autoplay",
+      "label": "Disable autoplay"
+    },
+    {
+      "type": "range",
+      "id": "slider_speed",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "label": "Slideshow speed (seconds)",
+      "default": 5,
+      "info": "If disable autoplay unchecked"
+    },
+    {
+      "type": "select",
+      "id": "pager",
+      "label": "Navigation style",
+      "default": "dots",
+      "options": [
+        {
+          "value": "dots",
+          "label": "Dots"
+        },
+        {
+          "value": "arrows",
+          "label": "Arrows"
+        }
+      ]
+    },
+    {
+      "type": "radio",
+      "id": "slideshow_size",
+      "label": "Slide height",
+      "options": [
+        {
+          "value": "natural",
+          "label": "Natural"
+        },
+        {
+          "value": "fixed_height",
+          "label": "Fixed height"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "desktop_height",
+      "min": 200,
+      "max": 1000,
+      "step": 100,
+      "unit": "px",
+      "label": "Desktop fixed height",
+      "default": 900
+    },
+    {
+      "type": "range",
+      "id": "mobile_height",
+      "min": 200,
+      "max": 1000,
+      "step": 100,
+      "unit": "px",
+      "label": "Mobile fixed height",
+      "default": 600
+    },
+    {
+      "type": "header",
+      "content": "Slideshow caption text"
+    },
+    {
+      "type": "range",
+      "id": "slide_heading_size",
+      "min": 12,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "min": 12,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "label": "Subheading size",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "cta_size",
+      "min": 12,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "label": "Button text size",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "section_space",
+      "label": "Section spacing",
+      "default": "bottom",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "top_and_bottom",
+          "label": "Top and bottom"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "custom_css",
+      "label": "Add Custom CSS Here"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slideshow",
+      "blocks": [
+        {
+          "type": "image"
+        },
+        {
+          "type": "image"
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}

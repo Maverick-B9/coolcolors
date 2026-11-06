@@ -1,0 +1,242 @@
+{%- liquid
+
+  assign section_space = section.settings.section_space
+  assign section_space_class = ''
+
+  if section_space == 'top'
+    assign section_space_class = ' pb0'
+  elsif section_space == 'bottom'
+    assign section_space_class = ' mt0'
+  elsif section_space == 'none'
+    assign section_space_class = ' mt0 pb0'
+  endif
+
+  case section.blocks.size
+    when 1
+      assign image_size = '900x'
+      assign column_width = 'span-8 push-2 sm-span-12 auto'
+      assign md_render = '100vw'
+      assign lg_render = '100vw'
+    when 2
+      assign image_size = '800x'
+      assign column_width = 'span-6 sm-span-12 auto'
+      assign md_render = 'calc(100vw / 2)'
+      assign lg_render = 'calc(1600px / 2)'
+    when 3
+      assign image_size = '500x'
+      assign column_width = 'span-4 sm-span-12 auto'
+      assign md_render = 'calc(100vw / 3)'
+      assign lg_render = 'calc(1600px / 3)'
+  endcase
+
+  assign is_fixed = false
+  if section.settings.image_height == 'fixed'
+    assign is_fixed = true
+  endif
+
+  assign desktop_fixed_height = section.settings.desktop_fixed_height
+  assign mobile_fixed_height = section.settings.mobile_fixed_height
+
+-%}
+{% style %}
+  .imageText__column-section.section-{{ section.id }} {
+    --desktop-section-height: {{ desktop_fixed_height }}px;
+    --mobile-section-height: {{ mobile_fixed_height }}px;
+  }
+{% endstyle %}
+<section class="imageText__column-section section-{{ section.id }} global__section{{ section_space_class }} {% if is_fixed %}{% endif %}" data-section-id="{{ section.id }}">
+
+  <div class="row grid__wrapper">
+    {% if section.settings.title != blank %}
+    <div class="section-title {% if settings.section_titles == 'lines' %}lines {% elsif settings.section_titles == 'btm_border' %}btm_border {% endif %} span-12 auto"><h2>{{ section.settings.title | escape }}</h2></div>
+    {% endif %}
+
+    {% for block in section.blocks %}
+      <div class="imageText__column-container{% if section.settings.center_align %} center{% endif %} {{ column_width }} mobile-3 text-promo-{{ block.id }}" {{ block.shopify_attributes }}>
+        {% if block.settings.image != blank %}
+          {% if block.settings.link != blank %}<a href="{{ block.settings.link }}">{% endif %}
+            <div class="imageText__column-image {% if is_fixed %}is-fixed_height{% endif %}">
+              {% liquid
+                if section.index == 1
+                  assign loading = 'eager'
+                  assign fetch_priority = 'high'
+                endif
+               %}
+              {%
+                render 'basic-responsive-image',
+                type: block.settings.image,
+                width: 1200,
+                lg_render: lg_render,
+                md_render: md_render,
+                loading: loading,
+                fetchpriority: fetch_priority
+              %}
+            </div>
+          {% if block.settings.link != blank %}</a>{% endif %}
+        {% endif %}
+        <div class="imageText__column-caption">
+          {% if block.settings.title_text != blank %}
+            <h3>{{ block.settings.title_text | escape }}</h3>
+          {% endif %}
+          {% if block.settings.text != blank %}
+            <div class="rte">
+              {{ block.settings.text }}
+            </div>
+          {% endif %}
+          {% if block.settings.link != blank and block.settings.button_text != blank %}
+            <div class="imageText__column-btn-wrapper">
+              <a href="{{ block.settings.link }}">{{ block.settings.button_text | escape }}</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if section.blocks.size == 0 %}
+    {% render 'no-blocks' %}
+  {% endif %}
+
+</section>
+
+<div class="clear"></div>
+
+
+{% schema %}
+{
+  "name": "Editorial columns",
+  "max_blocks": 3,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Editorial column"
+    },
+    {
+      "type": "checkbox",
+      "id": "center_align",
+      "label": "Center align text",
+      "default": false
+    },
+    {
+      "type": "radio",
+      "id": "image_height",
+      "label": "Image height",
+      "default": "none",
+      "options":
+      [
+        {
+          "value": "none",
+          "label": "Natural"
+        },
+        {
+          "value": "fixed",
+          "label": "Fixed"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "desktop_fixed_height",
+      "min": 200,
+      "max": 1000,
+      "step": 50,
+      "unit": "px",
+      "label": "Desktop fixed height",
+      "default": 500
+    },
+    {
+      "type": "range",
+      "id": "mobile_fixed_height",
+      "min": 200,
+      "max": 1000,
+      "step": 50,
+      "unit": "px",
+      "label": "Mobile fixed height",
+      "default": 250
+    },
+    {
+      "type": "select",
+      "id": "section_space",
+      "label": "Section spacing",
+      "default": "top_and_bottom",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "top_and_bottom",
+          "label": "Top and bottom"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text_block",
+      "name": "Column",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image",
+          "info": "800px x 800px recommended"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link",
+          "info": "Optional"
+        },
+        {
+          "type": "text",
+          "id": "title_text",
+          "label": "Heading",
+          "default": "Our collections"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Add text with images to give and content and editorial feel. Drive traffic to key areas of your store</p>"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button",
+          "default": "Button"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Editorial columns",
+      "blocks": [
+        {
+          "type": "text_block"
+        },
+        {
+          "type": "text_block"
+        },
+        {
+          "type": "text_block"
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}

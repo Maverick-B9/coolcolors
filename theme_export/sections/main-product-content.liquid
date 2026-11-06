@@ -1,0 +1,462 @@
+{%- liquid
+
+  assign accordion_active = false
+  for block in section.blocks
+    if block.type == 'accordion_content' or block.type == 'reviews'
+      assign accordion_active = true
+      break
+    endif
+  endfor
+
+  assign description_active = false
+  for block in section.blocks
+    if block.type == 'product_description'
+      assign description_active = true
+    endif
+  endfor
+
+  assign content_grid_size = 'span-8 push-2'
+  for block in section.blocks
+    if block.type == 'featured_products'
+      assign content_grid_size = 'span-8'
+      assign alt_grid_size = 'span-4'
+    endif
+  endfor
+
+-%}
+
+<section id="product__content-{{ product.id }}"
+  class="mt0 main__section product__content-section"
+  data-product-id="{{ product.id }}"
+  data-section-id="{{ section.id }}"
+  data-url="{{ product.url }}"
+  data-section-type="product__content-section">
+
+<div class="product__content-section row grid__wrapper">
+
+  {% for block in section.blocks %}
+    {% case block.type %}
+      {% when 'product_description' %}
+        <div class="product__section--desc product__decription-container {{ content_grid_size }} sm-span-12 auto rte {% if accordion_active %}hide{% endif %}" {{ block.shopify_attributes }}>
+          <h4>{{ 'products.product.details' | t }}</h4>
+          {{ product.description }}
+        </div>
+    {% endcase %}
+  {% endfor %}
+
+    {%- if accordion_active -%}
+      {% capture accordion %}
+        <div class="rte">
+           {% assign unique_id = section.id %}
+           <div class="js-accordion c-accordion c-accordion--product c-accordion--{{ unique_id }}" id="c-accordion--{{ unique_id }}" {% if section.settings.allow_multiple %}data-accordion-allow-multiple{% endif %}>
+             {% for block in section.blocks %}
+               {% if block.type == 'product_description' and description_active %}
+               {% assign defaultOpen = block.settings.default_open_accordion %}
+                 <button class="js-accordion-header c-accordion__header {% if defaultOpen %}js-accordion-is-open{% endif %}"
+                         {% if defaultOpen %}
+                           aria-expanded="true"
+                         {% else %}
+                           aria-expanded="false"
+                         {% endif %}
+                         aria-controls="c-accordion__panel--template--{{ section.id }}__main-0" data-toggle="accordion"
+                         {{ block.shopify_attributes }} >
+                   {{ 'products.product.details' | t }}
+                     <span class="dropdown-arrow">
+                       {% render 'snip-icons',
+                          wrapper: '.product__section-details .c-accordion__header',
+                          type: 'apollo',
+                          icon: 'down-carrot',
+                          classes: 'c-accordion__header--icon vib-center',
+                          size: '6px',
+                          fill: 'var(--text-color)',
+                          hover: 'var(--text-color)' %}
+                     </span>
+                 </button>
+                <div class="c-accordion__panel {% if defaultOpen %}is-active{% endif %} c-accordion__panel--template--{{ section.id }}__main-0 rte" id="c-accordion__panel--template--{{ section.id }}__main-0" data-parent="#c-accordion--{{ unique_id }}">
+                 <div class="c-accordion__inner">
+                  {{ product.description }}
+                 </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+            {% for block in section.blocks %}
+
+              {%- liquid
+
+                assign accordion_content_class = 'c-accordion__panel--'
+                assign accordion_content_id = accordion_content_class | append: unique_id | append: '-' | append: forloop.index
+                assign accordion_heading = 'foo'
+                assign accordion_content = 'bar'
+                assign page = blank
+                assign defaultOpen = block.settings.default_open_accordion
+
+                assign accordion_heading = block.settings.title
+                if block.settings.page != blank
+                  assign accordion_content = block.settings.page.content
+                else
+                  assign accordion_content = block.settings.text
+                endif
+
+              -%}
+
+              {% if block.type == 'accordion_content' %}
+                <button class="js-accordion-header c-accordion__header {% if defaultOpen %}js-accordion-is-open{% endif %}"
+                    {% if defaultOpen %}
+                      aria-expanded="true"
+                    {% else %}
+                      aria -expanded="false"
+                    {% endif %}
+                    aria-controls="{{ accordion_content_id }}" data-toggle="accordion"
+                    {{ block.shopify_attributes }} >
+                    {{ accordion_heading }}
+                    <span class="dropdown-arrow">
+                      {% render 'snip-icons',
+                         wrapper: '.product__section-details .c-accordion__header',
+                         type: 'apollo',
+                         icon: 'down-carrot',
+                         classes: 'c-accordion__header--icon vib-center',
+                         size: '6px',
+                         fill: 'var(--text-color)',
+                         hover: 'var(--text-color)' %}
+                    </span>
+                </button>
+                <div class="c-accordion__panel {% if defaultOpen %}is-active{% endif %} {{ accordion_content_id }} rte" id="{{ accordion_content_id }}" data-parent="#c-accordion--{{ unique_id }}">
+                  <div class="c-accordion__inner">
+                   {{ accordion_content }}
+                  </div>
+                </div>
+              {% endif %}
+              {% if block.type == 'reviews' %}
+                <button class="js-accordion-header c-accordion__header {% if defaultOpen %}js-accordion-is-open{% endif %}"
+                    {% if defaultOpen %}
+                      aria-expanded="true"
+                    {% else %}
+                      aria -expanded="false"
+                    {% endif %}
+                    aria-controls="{{ accordion_content_id }}" data-toggle="accordion"
+                    {{ block.shopify_attributes }} >
+                    {{ accordion_heading }}
+                    <span class="dropdown-arrow">
+                      {% render 'snip-icons',
+                         wrapper: '.product__section-details .c-accordion__header',
+                         type: 'apollo',
+                         icon: 'down-carrot',
+                         classes: 'c-accordion__header--icon vib-center',
+                         size: '6px',
+                         fill: 'var(--text-color)',
+                         hover: 'var(--text-color)' %}
+                    </span>
+                </button>
+                <div class="c-accordion__panel {% if defaultOpen %}is-active{% endif %} {{ accordion_content_id }} rte" id="{{ accordion_content_id }}" data-parent="#c-accordion--{{ unique_id }}">
+                  <div class="c-accordion__inner">
+                   <div id="shopify-product-reviews" data-id="{{product.id}}">{{ product.metafields.spr.reviews }}</div>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+           </div>
+        </div>
+      {% endcapture %}
+      <div class="product__section--desc product__decription-container {{ content_grid_size }} sm-span-12 auto rte" {{ block.shopify_attributes }}>
+        {{ accordion }}
+      </div>
+    {%- endif -%}
+
+  {% for block in section.blocks %}
+    {% case block.type %}
+      {% when 'featured_products' %}
+
+      {%- liquid
+
+        if block.settings.show_product_1 == true and block.settings.show_product_2 == true
+          assign grid = 'span-6'
+        elsif block.settings.show_product_1 == true and block.settings.show_product_2 == false
+          assign grid = 'span-12'
+        elsif block.settings.show_product_1 == false and block.settings.show_product_2 == true
+          assign grid = 'span-12'
+        endif
+
+        case settings.product_image_size
+          when 'natural'
+            assign aspect_ratio = 'natural'
+          when 'square'
+            assign aspect_ratio = 'square'
+          when 'landscape'
+            assign aspect_ratio = 'landscape'
+          when 'portrait'
+            assign aspect_ratio = 'portrait'
+        endcase
+      -%}
+
+      <div class="{{ alt_grid_size }} sm-span-12 auto product__content-featured" {{ block.shopify_attributes }}>
+        <div class="grid__wrapper product__featured-container">
+          <div class="span-12 auto">
+            <h4 class="mb0">{{ block.settings.title | escape }}</h4>
+          </div>
+
+          {% for n in (1..2) %}
+
+            {% assign show_product = "show_product_" | append: n %}
+            {% assign show_product = block.settings[show_product] | default: false %}
+            {% assign product = "featured_product_" | append: n %}
+            {% assign product = block.settings[product] | default: false %}
+
+            {% if show_product %}
+              {% if product != blank %}
+
+                <div
+                class="{{ grid }} auto product-index js-product-listing"
+                id="product-listing-{{ product.id }}"
+                data-product-id="{{ product.id }}"
+                data-alpha="{{ product.title }}"
+                data-price="{{ product.price }}"
+                >
+
+                  <div class="js-product-image animated prod-image image_{{ aspect_ratio }}">
+                    <a href="{{ product.url }}" title="{{ product.title | escape }}">
+                      <div class="reveal">
+                        {%- if product.media.size < 1 -%}
+                          <div class="box-ratio" style="padding-bottom: 100%;">
+                            {% capture current %}{% cycle 1, 2, 3, 4, 5, 6 %}{% endcapture %}
+                            {{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg' }}
+                          </div>
+                        {% else %}
+                          {%
+                            render 'basic-responsive-image',
+                            type: product.featured_media.preview_image,
+                            width: 1200
+                          %}
+                        {%- endif -%}
+                      </div>
+                    </a>
+                  </div>
+
+                  <div class="product-info">
+                    <div class="product-info-inner">
+                      <a href="{{ product.url }}">
+                        <span class="prod-title">{{ product.title }}</span>
+                      </a>
+                      {% render 'product-price-listing', product: product %}
+                    </div>
+
+                    {% if product.variants.size == 1 and product.available %}
+                    {%- assign product_form_id = 'product-form-buttons-' | append: section.id -%}
+                    {% form 'product', product,
+                       id: product_form_id,
+                       class: "product__form-buttons js-prod-form-submit relative",
+                       data-product-id: product.id %}
+
+                      {%- liquid
+
+                        if product.template_suffix == 'pre-order'
+                          assign call_to_action = 'products.product.pre_order' | t
+                          assign is_preorder = 'data-preorder'
+                        else
+                          assign call_to_action = 'products.product.add_to_cart' | t
+                          assign is_preorder = ''
+                        endif
+                        assign product_form_id = 'product-form-' | append: section.id
+
+                      -%}
+
+                      <input class="formVariantId" name="id" type="hidden" value="{{ product.selected_or_first_available_variant.id }}">
+                      <input class="formQty" type="hidden" name="quantity" value="1" />
+                      <div class="note note-success js-added-msg" style="display: none">
+                        <b>{{ 'products.product.added' | t }}</b>&nbsp;&nbsp;&nbsp;<a class="underline" href="{{ routes.cart_url }}">{{ 'products.product.view_cart' | t }}</a> {{ 'products.product.or' | t }} <a class="underline" href="{{ routes.all_products_collection_url }}">{{ 'products.product.continue' | t }}</a>.
+                      </div>
+                      <div class="note note-error js-error-msg" style="display: none">
+                        <b>{{ 'cart.general.cart_error' | t }}</b>&nbsp;&nbsp;&nbsp;{{ 'cart.general.update_qty_error' | t }}
+                      </div>
+
+                      <input id="addToCart" type="submit" name="button" class="button-as-link add clearfix AddtoCart js-ajax-submit " {{ is_preorder }} value="{{ call_to_action }}" />
+                    {% endform %}
+
+                    {% elsif settings.quickview_type != 'none' and product.variants.size > 1 %}
+
+                      {%- liquid
+
+                        if settings.quickview_type == 'modal'
+                          assign quickview_classes = 'js-modal-open'
+                          assign quickview_settings = 'data-wau-modal-target="quickview"'
+                        else
+                          assign quickview_classes = 'js-slideout-open'
+                          assign quickview_settings = 'data-wau-slideout-target="quickview" data-slideout-direction="right"'
+                        endif
+
+                      -%}
+
+                      <button class="button-as-link quick-view-{{ product.id }} {{ quickview_classes }} js-quickview-trigger"
+                      type="button" name="button"
+                      {{ quickview_settings }}
+                      data-product-url="{{ product.url }}?view=quick">{{ 'products.general.quick_view' | t }}</button>
+                    {% endif %}
+
+                  </div>
+                </div>
+              {% else %}
+                <div class="{{ grid }} auto product-index">
+                  <div class="onboard prod-image image_square">
+                    {{ 'product-1' | placeholder_svg_tag }}
+                  </div>
+                  <div class="product-info">
+                    Product {{ n }} title<br/>
+                    $9.99
+                  </div>
+                </div>
+              {% endif %}
+            {% endif %}
+
+          {% endfor %}
+        </div>
+      </div>
+
+      {%- when '@app' -%}
+        <div class="product__content-section--app span-12 auto ">
+          {% render block %}
+        </div>
+
+    {% endcase %}
+  {% endfor %}
+  <div class="clear"></div>
+</div>
+<style>
+  .product__content-section {
+    background-color: {{ section.settings.background }};
+    padding: 40px 0;
+  }
+</style>
+
+</section>
+
+
+{% schema %}
+{
+  "name": "Product content",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Add an alternate content structure to product pages with description content and featured items."
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background color",
+      "default": "#f9f9f9"
+    },
+    {
+      "type": "checkbox",
+      "id": "allow_multiple",
+      "label": "Allow multiple accordions open at one time",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product_description",
+      "name": "Description",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "default_open_accordion",
+          "label": "Open by default",
+          "info": "Open by default is displayed within an accordion",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "reviews",
+      "name": "Reviews",
+      "limit": 1,
+      "settings": [
+        {
+          "type":"paragraph",
+          "content":"Include Shopify product reviews in an accordion pane."
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Reviews"
+        }
+      ]
+    },
+    {
+      "type": "accordion_content",
+      "name": "Accordion content",
+      "limit": 5,
+      "settings": [
+        {
+          "type": "page",
+          "id": "page",
+          "label": "Page content",
+          "info": "Select content from an existing page which will override any other accordion content entered."
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Accordion title"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Content",
+          "default": "<p>Add content shared across all products or assign a metafield for unique product content</p>",
+          "info": "Add content shared across all products or assign a metafield for unique product content."
+        },
+        {
+          "type": "checkbox",
+          "id": "default_open_accordion",
+          "label": "Open by default",
+          "info": "Accordion item is open by default when the page loads",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "featured_products",
+      "name": "Featured products",
+      "limit": 1,
+      "settings": [
+        {
+          "type":"paragraph",
+          "content":"Upsell selected products alongside your product description, accordion or review content"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Featured products"
+        },
+        {
+          "type": "product",
+          "id": "featured_product_1",
+          "label": "Product"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_product_1",
+          "label": "Show product",
+          "default": true
+        },
+        {
+          "type": "product",
+          "id": "featured_product_2",
+          "label": "Product"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_product_2",
+          "label": "Show product",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "@app"
+    }
+  ]
+}
+{% endschema %}

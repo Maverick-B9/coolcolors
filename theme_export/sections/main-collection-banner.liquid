@@ -1,0 +1,62 @@
+{%- liquid
+
+  assign featured_image = blank
+  assign full_width = false
+
+  if collection.image
+    assign featured_image = collection.image
+  endif
+  if section.settings.image
+    assign featured_image = section.settings.image
+  endif
+
+  if section.settings.display_wide
+   assign full_width = true
+  endif
+
+  if section.index == 1
+    assign loading = 'eager'
+    assign fetch_priority = 'high'
+  endif
+
+-%}
+
+{%- if featured_image != blank -%}
+  <section class="collection__section--banner collection__banner-{{ section.id }} {% unless full_width %}row{% endunless %}"
+  data-aos="fade"
+  data-section-id="{{ section.id }}" >
+      <div class="collection__banner-image {% unless full_width %}desktop-12 tablet-6 mobile-3{% endunless %}">
+        {%
+          render 'basic-responsive-image',
+          type: featured_image,
+          width: 2000,
+          loading: loading,
+          fetchpriority: fetch_priority
+        %}
+    </div>
+  </section>
+  <div class="clear"></div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Collection banner",
+  "settings": [{
+      "type": "paragraph",
+      "content": "Shows the collection featured image as a banner above products. Override this by selecting a specific banner image for all collections or select a collection image metafield for a unique collection image."
+    },
+    {
+      "type": "checkbox",
+      "id": "display_wide",
+      "label": "Enable full width",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Background image",
+      "info": "1920px x 600px recommended"
+    }
+  ]
+}
+{% endschema %}

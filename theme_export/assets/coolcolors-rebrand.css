@@ -1,0 +1,971 @@
+/* ==========================================================================
+   Cool Colors Rebrand v2 — assets/coolcolors-rebrand.css
+   All visual overrides for the 2026 palette + layout revamp.
+   Loaded AFTER stylesheet.css and gh-style.css in layout/theme.liquid.
+   Never edit stylesheet.css or gh-style.css directly.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. DESIGN TOKENS (CSS Custom Properties)
+   -------------------------------------------------------------------------- */
+:root {
+  /* Palette */
+  --cc-ink:        #0D1117;
+  --cc-ink2:       #161D26;
+  --cc-chalk:      #EDEFF2;
+  --cc-chalk-deep: #E2E6EA;
+  --cc-paper:      #FFFFFF;
+  --cc-steel:      #5C6874;
+  --cc-steel2:     #8B96A1;
+  --cc-signal:     #D92231;
+  --cc-line:       #CCD3DA;
+  --cc-line-soft:  #DDE2E7;
+
+  /* Map to existing theme vars (supplement, not replace, the inline CSS-variable snippet) */
+  --background:              var(--cc-paper);
+  --text-color:              var(--cc-ink);
+  --link-color:              var(--cc-signal);
+  --sale-color:              var(--cc-signal);
+  --error-color:             var(--cc-signal);
+  --keyboard-focus:          var(--cc-signal);
+  --button-color:            var(--cc-signal);
+  --button-text:             var(--cc-paper);
+  --button-hover:            var(--cc-ink2);
+  --secondary-button:        var(--cc-chalk);
+  --secondary-button-text:   var(--cc-ink);
+  --secondary-button-hover:  var(--cc-chalk-deep);
+  --nav-background-color:    var(--cc-paper);
+  --nav-color:               var(--cc-ink);
+  --nav-hover-color:         var(--cc-chalk);
+  --nav-hover-link-color:    var(--cc-signal);
+  --nav-border-color:        var(--cc-line);
+  --header-wrapper-background: var(--cc-paper);
+  --header-link-color:       var(--cc-ink);
+  --header-icons:            var(--cc-ink);
+  --header-icons-hover:      var(--cc-signal);
+  --dropdown-background:     var(--cc-paper);
+  --dropdown-link-color:     var(--cc-ink);
+  --dropdown-hover-background: var(--cc-chalk);
+  --dropdown-link-hover-color: var(--cc-signal);
+  --dotted-color:            var(--cc-line);
+  --footer-background:       var(--cc-ink);
+  --footer-text:             var(--cc-chalk);
+  --footer-icons:            var(--cc-paper);
+  --footer-input-background: var(--cc-ink2);
+  --footer-input-text:       var(--cc-paper);
+  --footer-button:           var(--cc-signal);
+  --footer-button-text:      var(--cc-paper);
+  --free-shipping-bg:        var(--cc-signal);
+  --free-shipping-text:      var(--cc-paper);
+  --accordion-header-bg:     var(--cc-chalk);
+  --accordion-header-text:   var(--cc-ink);
+  --accordion-content-text:  var(--cc-ink);
+}
+
+/* --------------------------------------------------------------------------
+   2. BASE RESET & TYPOGRAPHY
+   -------------------------------------------------------------------------- */
+body {
+  background-color: var(--cc-paper);
+  color: var(--cc-ink);
+}
+
+a {
+  color: var(--cc-ink);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--cc-signal);
+}
+
+/* --------------------------------------------------------------------------
+   3. ANNOUNCEMENT BAR  (#0D1117 bg, chalk-soft text)
+   -------------------------------------------------------------------------- */
+.announcement-bar,
+#shopify-section-announcement-bar .announcement-bar {
+  background-color: var(--cc-ink) !important;
+  color: var(--cc-line) !important;
+}
+
+.announcement-bar a,
+.announcement-bar p,
+.announcement-bar h6,
+#shopify-section-announcement-bar a,
+#shopify-section-announcement-bar p,
+#shopify-section-announcement-bar h6 {
+  color: var(--cc-line) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. HEADER / NAVIGATION
+   -------------------------------------------------------------------------- */
+/* White header bar */
+.navigation,
+.header-wrapper,
+.js-header-wrapper {
+  background-color: var(--cc-paper) !important;
+}
+
+/* Nav link colours */
+.navigation__menulink,
+.navigation__menuitem > a {
+  color: var(--cc-ink) !important;
+  position: relative;
+  text-decoration: none;
+}
+
+/* Animated underline on hover */
+.navigation__menulink::after,
+.navigation__menuitem > a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 2px;
+  background: var(--cc-signal);
+  transition: width 0.25s ease;
+}
+
+.navigation__menulink:hover::after,
+.navigation__menuitem:hover > a::after {
+  width: 100%;
+}
+
+.navigation__menulink:hover,
+.navigation__menuitem > a:hover {
+  color: var(--cc-signal) !important;
+}
+
+/* Dropdown */
+.dropdown__menu,
+.dropdown__wrapper,
+.navigation .dropdown {
+  background-color: var(--cc-paper) !important;
+  border: 1px solid var(--cc-line-soft) !important;
+}
+
+.dropdown__menu a,
+.navigation .dropdown a {
+  color: var(--cc-ink) !important;
+}
+
+.dropdown__menu a:hover,
+.navigation .dropdown a:hover {
+  color: var(--cc-signal) !important;
+  background-color: var(--cc-chalk) !important;
+}
+
+/* Navigation top/bottom border */
+.navigation {
+  border-color: var(--cc-line) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4a. STICKY NAV — glassmorphism
+   -------------------------------------------------------------------------- */
+.navigation--sticky,
+nav.navigation--sticky {
+  background-color: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+  border-bottom: 1px solid var(--cc-line-soft) !important;
+}
+
+/* --------------------------------------------------------------------------
+   4b. HEADER LAYOUT — Logo LEFT, Nav CENTER, Icons RIGHT
+       nav_style = inline-center, grid: 3fr 6fr 3fr (set in header.liquid)
+       DOM order: mobile_trigger | logo | #main-nav | shopping__cart-links
+   -------------------------------------------------------------------------- */
+
+/* Logo in col 1 — left-aligned */
+.nav__option-inline .nav-container .shop__logo.a-left {
+  text-align: left !important;
+}
+
+/* Nav ul in col 2 — centered */
+.nav__option-inline .nav-container ul#main-nav,
+.nav__option-inline .navigation__menu {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Icons in col 3 — right-aligned */
+.nav__option-inline .nav-container ul.shopping__cart-links {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Wishlist icon sizing */
+.shopping__cart-links .my-smart-wishlist.for-desktop .svg-wishlist-icon {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+
+/* Header icons */
+.shopping__cart-links svg,
+.shopping__cart-links svg g,
+.shopping__cart-links svg path,
+.slideout__trigger-search svg,
+.slideout__trigger-search svg g {
+  fill: var(--cc-ink) !important;
+  stroke: var(--cc-ink);
+}
+
+.shopping__cart-links a:hover svg,
+.shopping__cart-links button:hover svg,
+.shopping__cart-links a:hover svg g,
+.shopping__cart-links button:hover svg g {
+  fill: var(--cc-signal) !important;
+}
+
+/* Wishlist icon */
+.svg-wishlist-icon {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+/* Cart count badge */
+.js-cart-count {
+  background-color: var(--cc-signal) !important;
+  color: var(--cc-paper) !important;
+}
+
+/* 4c. (legacy overlay-header rules removed — header now lives in sections/header.liquid) */
+
+/* --------------------------------------------------------------------------
+   5. BUTTONS
+   -------------------------------------------------------------------------- */
+.button,
+button.button,
+input[type="submit"],
+.btn,
+.cc-btn {
+  background-color: var(--cc-signal) !important;
+  color: var(--cc-paper) !important;
+  border-color: var(--cc-signal) !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.button:hover,
+button.button:hover,
+input[type="submit"]:hover,
+.btn:hover {
+  background-color: var(--cc-ink2) !important;
+  border-color: var(--cc-ink2) !important;
+  color: var(--cc-paper) !important;
+}
+
+/* Secondary / ghost button */
+.button--secondary,
+.btn--secondary,
+.button-secondary {
+  background-color: var(--cc-chalk) !important;
+  color: var(--cc-ink) !important;
+  border-color: var(--cc-chalk) !important;
+}
+
+.button--secondary:hover,
+.btn--secondary:hover {
+  background-color: var(--cc-chalk-deep) !important;
+  border-color: var(--cc-chalk-deep) !important;
+}
+
+/* --------------------------------------------------------------------------
+   6. PRODUCT CARDS  (grid items)
+   -------------------------------------------------------------------------- */
+.product-listing,
+.product-card,
+.grid-item {
+  background: var(--cc-paper);
+}
+
+.product-listing__title,
+.product-card__title,
+.product-listing h3,
+.product-listing h4 {
+  color: var(--cc-ink) !important;
+}
+
+.product-listing__price,
+.product-price,
+.product-card__price {
+  color: var(--cc-ink) !important;
+  font-weight: 700;
+}
+
+.product-listing__vendor,
+.product-card__vendor,
+.product-listing__type {
+  color: var(--cc-steel) !important;
+}
+
+/* Sale badge */
+.product-listing__sale-badge,
+.sale-badge,
+.badge--sale {
+  background-color: var(--cc-signal) !important;
+  color: var(--cc-paper) !important;
+}
+
+/* --------------------------------------------------------------------------
+   7. COLLECTION PAGE
+   -------------------------------------------------------------------------- */
+/* Breadcrumb */
+.breadcrumb,
+.breadcrumbs {
+  color: var(--cc-steel2) !important;
+}
+
+.breadcrumb a,
+.breadcrumbs a {
+  color: var(--cc-steel2) !important;
+}
+
+.breadcrumb span:last-child,
+.breadcrumbs .current {
+  color: var(--cc-ink) !important;
+  font-weight: 600;
+}
+
+/* Collection banner title */
+.collection-hero__title,
+.main-collection-banner h1,
+.collection-title h1 {
+  color: var(--cc-ink) !important;
+  font-size: 52px;
+  font-weight: 700;
+}
+
+.collection-hero__description,
+.collection-description {
+  color: var(--cc-steel) !important;
+  font-size: 16px;
+}
+
+/* Items count + sort */
+.collection-toolbar,
+.search-filters__toolbar,
+.collection-controls {
+  color: var(--cc-steel2) !important;
+}
+
+.collection-controls .items-count strong,
+.toolbar__result-count strong {
+  color: var(--cc-ink) !important;
+  font-weight: 600;
+}
+
+/* Sort select */
+select,
+.select,
+.sort-select {
+  color: var(--cc-ink) !important;
+  border-color: var(--cc-line) !important;
+  background-color: var(--cc-paper) !important;
+}
+
+/* --------------------------------------------------------------------------
+   8. FILTER PANEL  (style only — no logic touched)
+   -------------------------------------------------------------------------- */
+.search-filters,
+.filter-sidebar,
+.collection-sidebar {
+  background: var(--cc-paper) !important;
+  border-right: 1px solid var(--cc-line-soft) !important;
+}
+
+.search-filters__title,
+.filter-group__title,
+.filter-heading {
+  color: var(--cc-ink) !important;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.filter-group__clear,
+.filter-clear-all {
+  color: var(--cc-signal) !important;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Filter chip buttons */
+.filter-chip,
+.search-filters__option label,
+.filter-option {
+  border: 1px solid var(--cc-line) !important;
+  color: var(--cc-ink) !important;
+  border-radius: 2px !important;
+  background: var(--cc-paper) !important;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+
+.filter-chip.is-active,
+.filter-chip--active,
+.search-filters__option input:checked + label {
+  background: var(--cc-ink) !important;
+  color: var(--cc-paper) !important;
+  border-color: var(--cc-ink) !important;
+}
+
+/* Price range */
+.price-range__track {
+  background: var(--cc-line) !important;
+}
+
+.price-range__fill {
+  background: var(--cc-ink) !important;
+}
+
+.price-range__handle {
+  background: var(--cc-ink) !important;
+  border-color: var(--cc-paper) !important;
+}
+
+/* Mobile Filters button */
+.filters-trigger,
+.mobile-filters-button {
+  background: var(--cc-ink) !important;
+  color: var(--cc-paper) !important;
+  border: none !important;
+  border-radius: 2px !important;
+  font-weight: 600;
+}
+
+/* Filter "View results" / "Apply" */
+.filter-actions__apply,
+.search-filters__submit {
+  background-color: var(--cc-ink) !important;
+  color: var(--cc-paper) !important;
+  border-radius: 2px !important;
+  font-weight: 600;
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   9. ACCORDIONS
+   -------------------------------------------------------------------------- */
+.accordion__title,
+.accordion-item__title,
+details summary {
+  background-color: var(--cc-chalk) !important;
+  color: var(--cc-ink) !important;
+}
+
+.accordion__content,
+.accordion-item__content,
+details .accordion-content {
+  color: var(--cc-ink) !important;
+  background-color: var(--cc-paper);
+}
+
+/* --------------------------------------------------------------------------
+   10. FOOTER
+   -------------------------------------------------------------------------- */
+.footer,
+#shopify-section-footer .site-footer,
+.site-footer {
+  background-color: var(--cc-ink) !important;
+  color: var(--cc-chalk) !important;
+  border-top: none !important;
+}
+
+.footer a,
+.site-footer a {
+  color: var(--cc-chalk) !important;
+}
+
+.footer a:hover,
+.site-footer a:hover {
+  color: var(--cc-paper) !important;
+}
+
+.footer__heading,
+.site-footer .footer__heading,
+.footer-title {
+  color: var(--cc-paper) !important;
+  font-weight: 700;
+}
+
+.footer__copyright,
+.site-footer__copyright {
+  color: var(--cc-steel2) !important;
+  border-top: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+/* Footer newsletter input */
+.footer .input-group input,
+.site-footer input[type="email"],
+.footer__email-input {
+  background-color: var(--cc-ink2) !important;
+  color: var(--cc-paper) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+.footer .input-group input::placeholder,
+.site-footer input[type="email"]::placeholder {
+  color: var(--cc-steel2) !important;
+}
+
+.footer .input-group .button,
+.site-footer .footer-signup-form .button,
+.footer-newsletter__submit {
+  background-color: var(--cc-signal) !important;
+  color: var(--cc-paper) !important;
+  border-color: var(--cc-signal) !important;
+}
+
+/* Footer social icons */
+.footer .social-icon svg,
+.site-footer .social-icon svg,
+.footer-social svg {
+  fill: var(--cc-paper) !important;
+}
+
+/* --------------------------------------------------------------------------
+   11. FREE SHIPPING BAR
+   -------------------------------------------------------------------------- */
+.free-shipping,
+.free-shipping-bar,
+.cart-free-shipping {
+  background-color: var(--cc-signal) !important;
+  color: var(--cc-paper) !important;
+}
+
+.free-shipping-bar__message {
+  color: var(--cc-paper) !important;
+}
+
+/* Free shipping progress bar fill */
+.free-shipping__progress,
+.free-shipping-bar__progress {
+  background-color: rgba(255,255,255,0.3) !important;
+}
+
+/* --------------------------------------------------------------------------
+   12. MOBILE NAVIGATION DRAWER
+   -------------------------------------------------------------------------- */
+.slideout__drawer-left,
+#slideout-mobile-navigation {
+  background-color: var(--cc-paper) !important;
+}
+
+.mobile-nav__link,
+.mobile-navigation__link {
+  color: var(--cc-ink) !important;
+  border-bottom: 1px solid var(--cc-line-soft) !important;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 0;
+}
+
+.mobile-nav__link:hover,
+.mobile-navigation__link:hover {
+  color: var(--cc-signal) !important;
+}
+
+.mobile-nav__sublink,
+.mobile-navigation__sublink {
+  color: var(--cc-steel) !important;
+  font-size: 13px;
+}
+
+.mobile-nav__sublink:hover {
+  color: var(--cc-signal) !important;
+}
+
+/* Section labels in drawer */
+.mobile-nav__section-label {
+  color: var(--cc-steel2) !important;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 12px 0 4px;
+}
+
+/* --------------------------------------------------------------------------
+   13. SEARCH SIDEBAR
+   -------------------------------------------------------------------------- */
+.search-sidebar {
+  background-color: var(--cc-paper) !important;
+}
+
+.searchbox__input {
+  border-bottom: 2px solid var(--cc-line) !important;
+  color: var(--cc-ink) !important;
+}
+
+.searchbox__input:focus {
+  border-bottom-color: var(--cc-signal) !important;
+}
+
+/* --------------------------------------------------------------------------
+   14. CART DRAWER
+   -------------------------------------------------------------------------- */
+.mini-cart {
+  background-color: var(--cc-paper) !important;
+}
+
+.mini-cart__header {
+  color: var(--cc-ink) !important;
+  border-bottom: 1px solid var(--cc-line-soft) !important;
+}
+
+.mini-cart__product-name {
+  color: var(--cc-ink) !important;
+}
+
+.mini-cart__price {
+  color: var(--cc-ink) !important;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   15. HOME — SHOP BY CATEGORY (two-tile gallery)
+   -------------------------------------------------------------------------- */
+.home-two-tile-collection .gallery__wrapper,
+section.home-two-tile-collection {
+  background-color: var(--cc-chalk) !important;
+  border-radius: 0 !important;
+}
+
+.home-two-tile-collection .gallery__item {
+  border-radius: 0 !important;
+}
+
+.home-two-tile-collection .gallery__item img {
+  border-radius: 0 !important;
+}
+
+/* --------------------------------------------------------------------------
+   16. GLOBAL FORM ELEMENTS
+   -------------------------------------------------------------------------- */
+input,
+textarea,
+select {
+  color: var(--cc-ink);
+  border-color: var(--cc-line);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline-color: var(--cc-signal);
+  border-color: var(--cc-signal);
+}
+
+label {
+  color: var(--cc-ink);
+}
+
+/* --------------------------------------------------------------------------
+   17. PRODUCT PAGE
+   -------------------------------------------------------------------------- */
+.product-title,
+.main-product__title,
+.product__title {
+  color: var(--cc-ink) !important;
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.product-price,
+.product__price {
+  color: var(--cc-ink) !important;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.product__rating,
+.product-rating {
+  color: var(--cc-ink) !important;
+}
+
+.product-form__label,
+.product-form .label {
+  color: var(--cc-steel) !important;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Size selector buttons */
+.swatch--size .swatch__btn,
+.product-form__option--size .option-btn {
+  border: 1px solid var(--cc-line) !important;
+  color: var(--cc-ink) !important;
+  border-radius: 2px !important;
+}
+
+.swatch--size .swatch__btn.is-active,
+.swatch--size .swatch__btn.active,
+.product-form__option--size .option-btn.selected {
+  background: var(--cc-ink) !important;
+  color: var(--cc-paper) !important;
+  border-color: var(--cc-ink) !important;
+}
+
+/* --------------------------------------------------------------------------
+   18. PAGINATION
+   -------------------------------------------------------------------------- */
+.pagination__item,
+.pagination a {
+  color: var(--cc-ink) !important;
+  border: 1px solid var(--cc-line) !important;
+}
+
+.pagination__item--active,
+.pagination .current {
+  background: var(--cc-ink) !important;
+  color: var(--cc-paper) !important;
+  border-color: var(--cc-ink) !important;
+}
+
+/* --------------------------------------------------------------------------
+   19. SECTION SPACING HELPERS
+   -------------------------------------------------------------------------- */
+.section-padding {
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+@media screen and (max-width: 768px) {
+  .section-padding {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   20. FEATURED PRODUCTS (restyled to palette)
+   -------------------------------------------------------------------------- */
+.popular-products,
+.featured-products {
+  background-color: var(--cc-paper);
+}
+
+.popular-products .section-header h2,
+.popular-products .section-title,
+.featured-products .section-title {
+  color: var(--cc-ink) !important;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.popular-products .section-header a,
+.popular-products .view-all-link {
+  color: var(--cc-signal) !important;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* --------------------------------------------------------------------------
+   21. NEWSLETTER SECTION (restyled)
+   -------------------------------------------------------------------------- */
+.newsletter .section-title,
+.newsletter-section h2 {
+  color: var(--cc-ink) !important;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.newsletter .section-description,
+.newsletter-section p {
+  color: var(--cc-steel) !important;
+  font-size: 16px;
+}
+
+.newsletter input[type="email"] {
+  border: 1px solid var(--cc-line) !important;
+  border-radius: 2px !important;
+  color: var(--cc-ink) !important;
+  padding: 12px 16px;
+}
+
+.newsletter input[type="email"]::placeholder {
+  color: var(--cc-steel2) !important;
+}
+
+.newsletter .button,
+.newsletter button[type="submit"] {
+  background-color: var(--cc-signal) !important;
+  color: var(--cc-paper) !important;
+  border-radius: 2px !important;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   22. MOBILE-SPECIFIC OVERRIDES
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 980px) {
+  /* Mobile header */
+  .mobile-menu__trigger .slideout__trigger-mobile-menu svg g {
+    fill: var(--cc-ink) !important;
+  }
+
+  /* Mobile header icons */
+  .shopping__cart-links {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   23. SCROLLING MARQUEE
+   -------------------------------------------------------------------------- */
+.scrolling-marquee {
+  background-color: var(--cc-ink) !important;
+  color: var(--cc-chalk) !important;
+}
+
+.scrolling-marquee__item {
+  color: var(--cc-chalk) !important;
+}
+
+/* --------------------------------------------------------------------------
+   24. MAILING POPUP
+   -------------------------------------------------------------------------- */
+.mailing-popup,
+.popup-overlay .popup-inner {
+  background-color: var(--cc-paper) !important;
+  color: var(--cc-ink) !important;
+}
+
+.mailing-popup__title {
+  color: var(--cc-ink) !important;
+}
+
+.mailing-popup .button {
+  background-color: var(--cc-signal) !important;
+  color: var(--cc-paper) !important;
+}
+
+/* --------------------------------------------------------------------------
+   25. MISC
+   -------------------------------------------------------------------------- */
+/* Section dividers */
+hr {
+  border-color: var(--cc-line-soft) !important;
+}
+
+/* Scroll to top button */
+.scrollup {
+  background-color: var(--cc-ink) !important;
+}
+
+.scrollup svg g {
+  fill: var(--cc-paper) !important;
+}
+
+/* GoKwik — DO NOT touch colours here (managed by settings priClr/secClr etc.) */
+/* Interakt / WhatsApp widget — DO NOT add or touch */
+/* --------------------------------------------------------------------------
+   26. FOOTER OVERRIDES
+   -------------------------------------------------------------------------- */
+.footer-section,
+footer {
+  background-color: var(--cc-ink) !important;
+  color: var(--cc-chalk) !important;
+  border-top: none !important;
+}
+
+.footer-section h2,
+.footer-section h4,
+footer h2,
+footer h4 {
+  color: var(--cc-paper) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+}
+
+.footer-section a,
+footer a {
+  color: var(--cc-chalk) !important;
+  transition: color 0.2s ease;
+}
+
+.footer-section a:hover,
+footer a:hover {
+  color: var(--cc-signal) !important;
+}
+
+.footer-usps {
+  background-color: var(--cc-ink2) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+.footer-usp p {
+  color: var(--cc-chalk) !important;
+}
+
+/* Footer bottom / copyright */
+#bottom-footer {
+  border-top: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+#bottom-footer p,
+#bottom-footer .footer-text {
+  color: var(--cc-steel) !important;
+}
+
+/* --------------------------------------------------------------------------
+   27. COLLECTION FILTERS (Task 4 Figma Match)
+   -------------------------------------------------------------------------- */
+/* Force clean modern layout without touching functionality */
+.collection-filters,
+.sidebar-filters {
+  background-color: var(--cc-paper);
+}
+
+.filter-title,
+.filter-group-summary {
+  font-weight: 700 !important;
+  color: var(--cc-ink) !important;
+}
+
+/* Filter checkboxes / items */
+.filter-item,
+.filter-item label,
+.facets__label {
+  color: var(--cc-steel2) !important;
+}
+
+.filter-item input[type="checkbox"]:checked + label {
+  color: var(--cc-ink) !important;
+  font-weight: 600 !important;
+}
+
+.filter-item input[type="checkbox"] {
+  accent-color: var(--cc-ink) !important;
+}
+
+/* Active filters badge */
+.active-facets__button,
+.filter-badge {
+  background-color: var(--cc-chalk) !important;
+  color: var(--cc-ink) !important;
+  border: 1px solid var(--cc-line) !important;
+  border-radius: 20px !important;
+  font-size: 12px !important;
+}
+
+.active-facets__button:hover,
+.filter-badge:hover {
+  background-color: var(--cc-line-soft) !important;
+}

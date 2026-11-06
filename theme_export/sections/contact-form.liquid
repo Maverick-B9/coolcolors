@@ -1,0 +1,204 @@
+<style>
+  @media screen and (min-width:741px) {
+    .contact__form--inner-wrapper {
+      max-width: {{ section.settings.content_width }}%;
+      margin: 0 auto;
+    }
+  }
+</style>
+
+<section class="global__section contact__form-section section-{{ section.id }}">
+
+  <div class="contact__form-wrapper grid__wrapper row">
+
+    {% if section.settings.title != blank %}
+    <div class="section-title {% if settings.section_titles == 'lines' %}lines {% elsif settings.section_titles == 'btm_border' %}btm_border {% endif %} span-12 auto">
+      <h1>Contact Us</h1>
+            {% comment %} <h2>{{ section.settings.title | escape }}</h2> {% endcomment %}
+    </div>
+    {% endif %}
+ <div class="contact-form_content">
+  <div class="contact-form">
+    {% form 'contact', class: 'span-12 auto'%}
+
+        <div class="contact__form--inner-wrapper">
+          
+       <h3>Get In Touch</h3>
+          <div class="contact__form--input">
+            <label for="contactFormName--{{ section.id }}">{{ 'sections.contact_form.name' | t }}</label>
+            <input type="text" id="contactFormName--{{ section.id }}" name="contact[name]" aria-label="{{ 'sections.contact_form.name' | t }}" placeholder="{{ 'sections.contact_form.name' | t }}" />
+          </div>
+
+          <div class="contact__form--input">
+            <label for="contactFormEmail--{{ section.id }}">{{ 'sections.contact_form.email' | t }}</label>
+            <input type="email" id="contactFormEmail--{{ section.id }}" name="contact[email]" aria-label="{{ 'sections.contact_form.email' | t }}" placeholder="{{ 'sections.contact_form.email' | t }}" />
+          </div>
+
+          <div class="contact__form--input">
+            <label for="contactFormTelephone--{{ section.id }}">{{ 'sections.contact_form.phone' | t }}</label>
+            <input type="text" id="contactFormTelephone--{{ section.id }}" name="contact[phone]" aria-label="{{ 'sections.contact_form.phone' | t }}" placeholder="{{ 'sections.contact_form.phone' | t }}" />
+          </div>
+
+          {% for block in section.blocks %}
+          <div class="contact__form--input">
+
+            {%-liquid
+
+               assign label = block.settings.label | escape
+               assign required = false
+               if block.settings.required
+                assign required = true
+               endif
+
+               -%}
+
+            {% case block.type %}
+              {% when 'text_input' %}
+                <label for="contactForm{{ label | handleize }}--{{ section.id }}">{{ label  }}</label>
+                <input type="text" id="contactForm{{ label | handleize }}--{{ section.id }}" name="contact[{{ label }}]" placeholder="{{ label  }}" aria-label="{{ label  }}"{% if required %} required{% endif %} />
+                {%- if block.settings.required -%}
+                  <small class="property--required">*&nbsp;{{ 'products.product.required' | t }}</small>
+                {%- endif -%}
+
+              {% when 'dropdown' %}
+                {% assign values = block.settings.values  | replace: ' ,', ',' | replace: ', ', ',' | split: ',' %}
+                <label for="contactForm{{ label | handleize }}--{{ section.id }}">{{ label }}</label>
+                <select id="contactForm{{ label | handleize }}--{{ section.id }}" name="contact[{{ label }}]">
+                    <option>{{ label }}</option>
+                  {% for value in values %}
+                    <option>{{ value }}</option>
+                  {% endfor %}
+                </select>
+                {% render 'snip-icons',
+                   wrapper: '.contact__form--input',
+                   type: 'apollo',
+                   icon: 'down-carrot',
+                   classes: 'contact__form--select-down-arrow',
+                   size: '6px',
+                   fill: 'var(--text-color)',
+                   hover: 'var(--text-color)' %}
+
+            {% endcase %}
+          </div>
+          {% endfor %}
+
+          <div class="contact__form--input">
+            <label for="contactFormMessage--{{ section.id }}">{{ 'sections.contact_form.message' | t }}</label>
+            <textarea rows="15" cols="90" id="contactFormMessage--{{ section.id }}" name="contact[body]" aria-label="{{ 'sections.contact_form.message' | t }}" placeholder="{{ 'sections.contact_form.message' | t }}"></textarea>
+          </div>
+
+          <div class="contact__form--input">
+            <input type="submit" id="contactFormSubmit--{{ section.id }}" class="secondary button" value="{{ 'sections.contact_form.send' | t }}" />
+          </div>
+
+          {% if form.posted_successfully? %}
+            <div class="successForm feedback note-success">
+              <p>{{ 'sections.contact_form.post_success' | t }}</p>
+            </div>
+          {% endif %}
+
+          {% if form.errors %}
+            <div class="notice note-error">
+              <p>{{ 'general.forms.post_error' | t }}</p>
+              <ul class="disc">
+                {% for field in form.errors %}
+                {% if field == 'form' %}
+                <li>
+                  {{ form.errors.messages[field] }}
+                </li>
+                {% else %}
+                <li>
+                  <strong>{{ field | replace: 'body', 'Message' }}</strong> {{ form.errors.messages[field] }}
+                </li>
+                {% endif %}
+
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+          
+        </div>
+      
+      {% endform %}
+  </div>
+<div class="contact_info">
+  <h3>CONTACT INFORMATION</h3>
+<p>We'd love to hear from you! If you have any query, feedback, wholesale or corporate request, distribution or order related query, please contact us. You can also reach out to us at:</p>
+<p><i class="las la-home fs__16"></i> Bafna Retail Private Ltd - No.7/1, 2nd Cross, Lalbagh Road, Bangalore - 560027 , Karnataka, India</p>
+<p><i class="las la-phone fs__16"></i> <a href="tel:+919742377001" aria-describedby="a11y-external-message">+91 9742377001</a></p>
+<p><i class="las la-envelope fs__16"></i> <a href="mailto:onlinesales@bafnaclothing.com" aria-describedby="a11y-external-message">Onlinesales@bafnaclothing.com</a></p>
+</div>
+
+   
+ </div>
+    </div>
+
+</section>
+
+{% schema %}
+{
+  "name": "Contact form",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Contact"
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "label": "Content width",
+      "unit":"%",
+      "min":50,
+      "max":100,
+      "step":10,
+      "default":100
+    }
+    ],
+    "blocks": [
+      {
+      "type": "text_input",
+      "name": "Text input",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Custom field"
+        },
+        {
+          "type": "checkbox",
+          "id": "required",
+          "label": "Is required",
+          "default": false
+        }
+      ]
+    },
+    {
+    "type": "dropdown",
+    "name": "Dropdown",
+    "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Custom field"
+        },
+        {
+          "type": "text",
+          "id": "values",
+          "label": "Values",
+          "default": "value 1, value 2, value 3",
+          "info":"Separate each value with a comma"
+        }
+      ]
+    }],
+    "presets": [{
+      "name": "Contact form"
+    }],
+    "disabled_on": {
+      "groups": ["header", "footer"]
+    }
+  }
+{% endschema %}

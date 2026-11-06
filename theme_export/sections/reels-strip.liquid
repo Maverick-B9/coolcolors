@@ -1,0 +1,236 @@
+<section class="reels-section" data-section-id="{{ section.id }}">
+  <div class="page-width">
+    <div class="reels-header">
+      <h2 class="reels-title">{{ section.settings.heading | default: 'Reels' }}</h2>
+      {%- if section.settings.view_all_link != blank -%}
+        <a href="{{ section.settings.view_all_link }}" class="reels-view-all">{{ section.settings.view_all_label | default: 'View all' }}</a>
+      {%- endif -%}
+    </div>
+
+    <div class="reels-track-container">
+      <div class="reels-track">
+        {%- for block in section.blocks -%}
+          <a class="reels-card" href="{{ block.settings.url | default: '#' }}" {{ block.shopify_attributes }}>
+            <div class="reels-card__media">
+              {%- if block.settings.image != blank -%}
+                {{ block.settings.image | image_url: width: 600 | image_tag: loading: 'lazy', class: 'reels-card__img' }}
+              {%- else -%}
+                {%- assign _n = forloop.index | at_most: 4 -%}<img class="reels-card__img" loading="lazy" alt="{{ block.settings.title | escape }}" src="{{ 'cc-reel-' | append: _n | append: '.jpg' | asset_url }}">
+              {%- endif -%}
+              <div class="reels-card__overlay"></div>
+              
+              <!-- Play Icon -->
+              <div class="reels-card__play">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+              </div>
+
+              <div class="reels-card__content">
+                {%- if block.settings.title != blank -%}
+                  <h3 class="reels-card__title">{{ block.settings.title }}</h3>
+                {%- endif -%}
+                {%- if block.settings.subtitle != blank -%}
+                  <p class="reels-card__subtitle">{{ block.settings.subtitle }}</p>
+                {%- endif -%}
+              </div>
+            </div>
+          </a>
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .reels-section {
+    padding: 80px 0;
+    background-color: {{ section.settings.background | default: '#FFFFFF' }};
+  }
+  .reels-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 32px;
+  }
+  .reels-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0D1117;
+    margin: 0;
+  }
+  .reels-view-all {
+    font-size: 14px;
+    font-weight: 600;
+    color: #5C6874;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  
+  .reels-track-container {
+    margin: 0 -20px;
+    padding: 0 20px;
+  }
+  
+  .reels-track {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 24px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+  }
+  .reels-track::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+
+  .reels-card {
+    flex: 0 0 260px;
+    scroll-snap-align: start;
+    text-decoration: none;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    display: block;
+    aspect-ratio: 9/16;
+  }
+
+  @media(max-width: 767px) {
+    .reels-card {
+      flex: 0 0 200px;
+    }
+  }
+
+  .reels-card__media {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background-color: #F4F6F8;
+  }
+
+  .reels-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .reels-card:hover .reels-card__img {
+    transform: scale(1.05);
+  }
+
+  .reels-card__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(13,17,23,0.8) 0%, rgba(13,17,23,0) 50%);
+  }
+
+  .reels-card__play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 48px;
+    height: 48px;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(4px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFF;
+    border: 1px solid rgba(255,255,255,0.4);
+    transition: background 0.3s;
+  }
+
+  .reels-card:hover .reels-card__play {
+    background: rgba(255,255,255,0.4);
+  }
+
+  .reels-card__content {
+    position: absolute;
+    bottom: 24px;
+    left: 20px;
+    right: 20px;
+    z-index: 2;
+  }
+
+  .reels-card__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #FFF;
+    margin: 0 0 4px;
+    line-height: 1.3;
+  }
+
+  .reels-card__subtitle {
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+    margin: 0;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Reels Strip",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "The Daily Edit"
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "View All Label",
+      "default": "View all"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "View All Link"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background Color",
+      "default": "#FFFFFF"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "reel",
+      "name": "Reel",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Cover Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Shop the look"
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "label": "Subtitle",
+          "default": "Premium styling"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Reels Strip"
+    }
+  ]
+}
+{% endschema %}

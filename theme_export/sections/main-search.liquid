@@ -1,0 +1,545 @@
+
+<!-- BEGIN USF -->
+{% assign page_title  =  'sections.search.placeholder' | t %}
+<script>
+    document.title = '{{ page_title }} - {{ shop.name}}'; 
+</script>
+{%- liquid
+
+  assign grid = section.settings.grid
+
+    case grid
+    when 2
+      assign prod_grid = 'span-6'
+    when 3
+      assign prod_grid = 'span-4'
+    when 4
+      assign prod_grid = 'span-3'
+    when 5
+      assign prod_grid = 'span-one-fifth'
+    when 6
+      assign prod_grid = 'span-2'
+  endcase
+
+-%}
+   
+<section class="search__section main__section"
+  data-section-id="{{ section.id }}"
+  data-section-type="search-section">
+  <div class="row">
+      <div class="search_page_bar desktop-12 tablet-6 mobile-3">
+        <h1 class="page-title">{{ 'sections.search.title' | t }}</h1>
+        <div id="search-bar">
+          <form action="{{ routes.search_url }}" method="get">
+            <input type="text" name="q" id="q" placeholder="{{ 'sections.search.placeholder' | t }}"/>
+            {% if section.settings.limit_results %}
+              <input type="hidden" name="type" value="product">
+            {% endif %}
+          </form>
+        </div>
+      </div>
+
+    <!--begin usf settings-->
+    {% capture current %}{% cycle 1, 2, 3, 4, 5, 6 %}{% endcapture %}
+                {%- liquid
+
+      if settings.quickview_type == 'modal'
+        assign quickview_classes = 'js-modal-open'
+        assign quickview_settings = 'data-wau-modal-target="quickview"'
+      else
+        assign quickview_classes = 'js-slideout-open'
+        assign quickview_settings = 'data-wau-slideout-target="quickview" data-slideout-direction="right"'
+      endif
+
+    -%}
+          <script>
+            window._usf_quickview_classes = {{ quickview_classes | json }};
+            window._usf_quickview_settings = {{ quickview_settings | json }};
+            window._usfNoImage =  {{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg' | json }};
+            window._usfSaleText = {{ 'products.general.sale' | t | json }};
+            window._usfSoldOutText = {{ 'products.general.sold' | t | json }};
+            window._usfNewText = {{ 'products.general.new' | t | json }};
+            window._usfQuickViewText = {{ 'products.general.quick_view' | t | json }};
+            window._usfUnitPriceText = {{ 'products.product.unit_price_label' | t | json }};
+            window._usfRegulatPriceText = {{ 'products.general.regular_price' | t | json }};
+            window._usfFromPriceHtml = {{ 'products.product.from_lowest_price_html' | t | json }};
+            window._usfSalePriceText = {{ 'products.general.sale_price' | t | json }};
+            window._usfGlobalSettings = {
+              product_image_size: {{ settings.product_image_size | json }},
+              secondary_images_hover: {{ settings.secondary_images_hover | json }},
+              quickview: {{ settings.quickview | json }},
+              vendor: {{ settings.vendor | json }},
+              color_swatch_style: {{ settings.color_swatch_style | json }},
+              use_swatch_images: {{ settings.use_swatch_images | json }},
+              icon_style: {{ settings.icon_style | json }},
+              sale_items: {{ settings.sale_items | json }},
+              switch_image: {{ settings.switch_image | json }},
+              quickview_type: {{ settings.quickview_type | json }},
+              alternate_colors: {{ settings.alternate_colors | json }},
+            };
+              window._usfSectionSettings = {
+              products_per_row: {{ section.settings.grid | json }},
+              mobile_1pr: {{ section.settings.mobile_1pr | json }}
+            };
+            window._usf_prod_grid = {{ prod_grid | json }};
+            
+            window._usfCollectionById = {};
+            {% for collection in collections %}
+            window._usfCollectionById[{{ collection.id | json }}] = {{ collection.handle | json }};
+            {% endfor %}
+          </script>
+       <!--end usf settings-->
+          <div class="section-title {% if settings.section_titles == 'lines' %}lines {% elsif settings.section_titles == 'btm_border' %}btm_border {% endif %} desktop-12 tablet-6 mobile-3">
+            <h2>{{ 'sections.search.products' | t }}</h2>
+          </div>
+          <div class="clear"></div>
+    <style>
+#usf_container{
+    visibility:hidden;
+}
+</style>
+<div id="usf_container"></div>
+<div class="usf-skeleton-container">
+	<style>              
+	  @media (max-width: 749px){
+		.usf-mobile-hidden{
+		  display: none !important;
+		}
+		.usf-skeleton-container .usf-sr-config__mobile-filters-wrapper{
+		  display: flex;
+		  width: 100%;
+		  flex-wrap: wrap;
+		}
+		.usf-skeleton-container .usf-filters, 
+		.usf-skeleton-container .usf-sr-config__mobile-filters-wrapper .usf-c-select{
+		  height: 49px;
+		  border: 1px solid #ededed;
+		  width: 50%;
+		  border-left: none;
+		  display: flex !important;
+		  align-items: center;
+		}
+		.usf-skeleton-container .usf-filters{
+		  border-left: 1px solid #ededed;
+		}
+
+		.usf-skeleton-container .usf-results{
+		  height: 400px;
+		  margin-left: -20px;
+		  display: flex;
+		  flex-wrap: wrap;
+		}
+		.usf-skeleton-container .usf-sr-config{
+		  display: flex;
+		  align-items: center;
+		  justify-content: space-between;
+		  margin-top: 13px;
+		  flex-wrap: wrap;
+		}
+		
+		.usf-skeleton-container .usf-sr-summary:before{
+		  margin: 0 !important;
+		  width: 100px !important;
+		}
+		.usf-skeleton-container .usf-views:before{
+		  margin: 0 !important;
+		  width: 50px !important;
+		  margin-left: auto !important;
+		}
+		.usf-skeleton-container .usf-grid__item{
+		  width: 50%;
+		  padding-left: 20px;
+		}
+		.usf-skeleton-container .usf-sr-summary, 
+		.usf-skeleton-container .usf-views{
+		  margin: 30px 0 20px 0;
+		  display: block;
+		  width: 50%;
+		}
+		
+		.usf-skeleton-container .usf-filters:before,
+		.usf-skeleton-container .usf-c-select:before{
+		  margin: 30px;
+		}
+		
+		.usf-skeleton-container .usf-sr-container{
+		  width: 100%;
+		  padding: 0;
+		  float: none;
+		}
+	  }
+	  
+	  .usf-skeleton-container .usf-filters:before,
+	  .usf-skeleton-container .usf-c-select:before,
+	  .usf-skeleton-container .usf-sr-summary:before,
+	  .usf-skeleton-container .usf-views:before,
+	  .usf-skeleton-container .usf-facet .usf-title:before,
+	  .usf-skeleton-container .usf-facet .usf-body:before,
+	  .usf-skeleton-container .usf-facet .usf-body:after              
+	  {
+		content:'';
+		display: block;
+		background-color: #0000000b;
+		-webkit-animation: usf-skeleton-animation 2.3s infinite;
+		animation: usf-skeleton-animation 2.3s infinite;
+		height: 10px;
+		border-radius: 10px;
+		width: 100%;                
+	  }
+	  
+	  @keyframes usf-skeleton-animation {
+		0% {
+			opacity: 1
+		}
+
+		50% {
+			opacity: .5
+		}
+
+		100% {
+			opacity: 1
+		}
+	  }
+	  
+	  @media (min-width: 750px){
+		.usf-skeleton-container .usf-desktop-hidden{
+		  display: none !important;
+		}
+		.usf-skeleton-container .usf-facet .usf-title,
+		.usf-skeleton-container .usf-facet .usf-body,
+		.usf-skeleton-container .usf-c-select
+		{
+		  display: block !important;
+		}              
+	  
+		.usf-skeleton-container .usf-sr-config__mobile-filters-wrapper{
+		  display: none;
+		}
+		
+		.usf-skeleton-container .usf-facets{
+		  display: block;
+		  width: 23%;
+		  float: left;
+		  margin-top: 17px;
+		}
+		
+		.usf-skeleton-container .usf-sr-container {
+		  width: 77%;
+		  float: left;
+		  padding-left: 30px;
+		  margin-top: 17px;
+		}
+		
+		.usf-skeleton-container .usf-sr-config{
+		  display: flex;
+		}
+		
+		.usf-skeleton-container .usf-sr-config > .usf-c-select{
+		  width: 200px;
+		}
+		
+		.usf-skeleton-container .usf-sr-summary{
+		  width: 100%;
+		}
+		.usf-skeleton-container .usf-sr-summary:before{
+		  margin: auto;
+		  width: 200px;
+		}
+		.usf-skeleton-container .usf-views:before{
+		}
+		.usf-skeleton-container .usf-grid__item{
+		  width: 50%;
+		  padding-left: 20px;
+		}
+		.usf-skeleton-container .usf-views{
+		  display: block;
+		  width: 50px;
+		}
+		
+		.usf-skeleton-container .usf-sr-container{
+		  min-height: 700px;
+		}
+	  }  
+	  
+	  .usf-skeleton-container .usf-facet{
+		margin-bottom: 40px;
+	  }
+	  
+	  .usf-skeleton-container .usf-facet .usf-title:before{                
+		margin-bottom: 25px;
+		width: 70%;
+	  }
+	  
+	  .usf-skeleton-container .usf-facet .usf-body:before,
+	  .usf-skeleton-container .usf-facet .usf-body:after
+	  {
+		margin-bottom: 16px;
+	  }
+	</style>
+  
+	<div class="usf-facets usf-mobile-hidden">
+	  <div class="usf-facet">
+		<div class="usf-title"></div>
+		<div class="usf-body"></div>                
+	  </div>
+	  <div class="usf-facet">
+		<div class="usf-title"></div>
+		<div class="usf-body"></div>
+	  </div>
+	</div>
+	<div class="usf-sr-container">
+	  <div class="usf-sr-config">
+		<div class="usf-sr-config__mobile-filters-wrapper">
+		  <div class="usf-filters"></div>
+		  <div class="usf-c-select"></div>
+		</div>
+		<div class="usf-views usf-mobile-hidden"></div>
+		<span class="usf-sr-summary"></span>
+		<div class="usf-views usf-desktop-hidden"></div>
+		<div class="usf-c-select usf-mobile-hidden"></div>
+	  </div>
+	  <div class="usf-results usf-grid">
+		<div class="usf-grid__item"></div>
+		<div class="usf-grid__item"></div>
+		<div class="usf-grid__item"></div>
+		<div class="usf-grid__item"></div>
+	  </div>
+	</div>       
+</div>
+
+  </div>
+</section>
+<!-- END USF -->
+
+{% comment %}USF
+{%- liquid
+
+  assign show_filters = false
+  assign grid = section.settings.grid
+  assign product_limit = section.settings.grid | times: section.settings.rows
+
+  if section.settings.show_filters
+    assign show_filters = true
+  endif
+
+  assign filter_count = 0
+  for filter in search.filters
+    if filter.type == 'price_range'
+      if filter.min_value.value != nil or filter.max_value.value != nil
+        assign filter_count = 1
+      endif
+    endif
+
+    assign filter_count = filter_count | plus: filter.active_values.size
+  endfor
+
+-%}
+
+<section class="search__section main__section"
+  data-section-id="{{ section.id }}"
+  data-section-type="search-section">
+  <div class="row">
+    {% paginate search.results by product_limit %}
+      <div id="searchResultsWrapper">
+        <div class="desktop-12 tablet-6 mobile-3">
+          <h1 class="page-title">{{ 'sections.search.title' | t }}</h1>
+          <div id="search-bar">
+            <form action="{{ routes.search_url }}" method="get">
+              <label class="visually-hidden" for="q">{{ 'sections.search.placeholder' | t }}</label>
+              <input type="text" name="q" id="q" placeholder="{{ 'sections.search.placeholder' | t }}"/>
+              {% if settings.search_show_products_only %}
+                <input type="hidden" name="type" value="product">
+              {% endif %}
+            </form>
+          </div>
+        </div>
+        {% if search.performed %}
+          {%- if show_filters -%}
+           {% render 'search-filters', filter_count: filter_count, terms: search.terms, count: search.results_count %}
+          {%- endif -%}
+          {%- if search.results_count < 1 -%}
+            <div id="main-search-results"
+              class="search--empty desktop-12 tablet-6 mobile-3"
+              data-id="{{ section.id }}">
+              <span class="rte">{{ 'sections.search.use_fewer_filters_html' | t: link: routes.search_url, class: "underline" }}</span>
+            </div>
+          {%- else -%}
+            <div id="main-search-results"
+             class="desktop-12 tablet-6 mobile-3"
+             data-id="{{ section.id }}">
+             {%- liquid
+               assign has_products = false
+               assign has_articles = false
+               assign has_pages = false
+
+               for item in search.results
+                 if item.object_type == 'product'
+                  assign has_products = true
+                  continue
+                 endif
+                 if item.object_type == 'article'
+                  assign has_articles = true
+                  continue
+                 endif
+                 if item.object_type == 'page'
+                  assign has_pages = true
+                  continue
+                 endif
+               endfor
+             -%}
+             {%- if has_pages -%}
+               <div class="section-title {% if settings.section_titles == 'lines' %}lines {% elsif settings.section_titles == 'btm_border' %}btm_border {% endif %} desktop-12 tablet-6 mobile-3">
+                 <h2>{{ 'sections.search.pages' | t }}</h2>
+               </div>
+               <div class="clear"></div>
+               <div class="search_section-grid--wrapper">
+                 {% for item in search.results %}
+                   {% if item.object_type == 'page' %}
+                     <div>
+                       <!--'item' is a page. All page object properties can be accessed. -->
+                       <a class="search__page_results--link" href="{{ item.url }}" title="{{ item.title | escape }}">
+                         {% if item.content contains "img" %}
+                           {% assign has_pages_images = true %}
+                           {%- liquid
+                             assign feat_image = item.content | split: 'src="'
+                             assign feat_image = feat_image[1] | split: '"' | first | replace: '//cdn', 'http://cdn' | replace: 'http:http://', 'http://' | remove: 'https:'
+                           -%}
+                           <div class="search__page_results--img">
+                             <img src="{{ feat_image }}" alt="{{ item.title }}" loading="eager" fetchpriority="high">
+                           </div>
+                         {% endif %}
+                         <div class="search__page_results--text">
+                           {{ item.title }}
+                         </div>
+                       </a>
+                     </div>
+                   {% endif %}
+                 {% endfor %}
+               </div>
+             {%- endif -%}
+             {%- if has_articles -%}
+               <div class="section-title {% if settings.section_titles == 'lines' %}lines {% elsif settings.section_titles == 'btm_border' %}btm_border {% endif %} desktop-12 tablet-6 mobile-3">
+                 <h2>{{ 'sections.search.articles' | t }}</h2>
+               </div>
+               <div class="clear"></div>
+               <div class="search_section-grid--wrapper">
+                 {% for item in search.results %}
+                   {% if item.object_type == 'article' %}
+                     <div>
+                       <!--'item' is an article All article object properties can be accessed. -->
+                       <a class="search__page_results--link" href="{{ item.url }}" title="{{ item.title | escape }}">
+                         {% if item.image %}
+                         {% assign has_articles_images = true %}
+                           <div class="search__page_results--img">
+                            {% liquid
+                              assign loading = 'eager'
+                              assign fetch_priority = 'high'
+                              if has_pages_images
+                                assign loading = 'lazy'
+                                assign fetch_priority = 'auto'
+                              endif
+                             %}
+                            {%
+                              render 'basic-responsive-image',
+                              type: item.image,
+                              width: 1200,
+                              loading: loading,
+                              fetchpriority: fetch_priority
+                            %}
+                           </div>
+                         {% endif %}
+                         <div class="search__page_results--text">
+                           {{ item.title }}
+                         </div>
+                       </a>
+                     </div>
+                   {% endif %}
+                 {% endfor %}
+               </div>
+             {%- endif -%}
+             {%- if has_products -%}
+               <div class="section-title {% if settings.section_titles == 'lines' %}lines {% elsif settings.section_titles == 'btm_border' %}btm_border {% endif %} desktop-12 tablet-6 mobile-3">
+                 <h2>{{ 'sections.search.products' | t }}</h2>
+               </div>
+               <div class="clear"></div>
+               <div id="product-loop" class="search_section-grid--wrapper">
+                 {% for item in search.results %}
+                   {% if item.object_type == 'product' %}
+                     {% liquid
+                       assign loading = 'eager'
+                       assign fetch_priority = 'high'
+                       if has_pages_images or has_articles_images
+                         assign loading = 'lazy'
+                         assign fetch_priority = 'auto'
+                       endif
+                      %}
+                     <div id="product-listing-{{ item.id }}"
+                       class="product-index js-product-listing"
+                       data-alpha="{{ item.title }}"
+                       data-price="{{ item.price }}"
+                       data-product-id="{{ item.id }}">
+                       <!-- 'item' is a product. All product object properties can be accessed.-->
+                       {% render 'product-listing', product: item, collection: collection, loading: loading, fetchpriority: fetch_priority %}
+                     </div>
+                   {% endif %}
+                 {% endfor %}
+               </div>
+             {%- endif -%}
+
+             {% render 'pagination', paginate: paginate %}
+
+             <style>
+               .search_section-grid--wrapper {
+                 display: grid;
+                 grid-template-columns: repeat({{ grid }}, 1fr);
+                 grid-row-gap: 25px;
+                 grid-column-gap: 40px;
+               }
+               @media screen and (max-width: 740px){
+                 .search_section-grid--wrapper {
+                   grid-template-columns: 1fr 1fr!important;
+                   grid-column-gap: 10px;
+                 }
+               }
+             </style>
+           </div>
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endpaginate %}
+  </div>
+</section>
+
+
+USF{% endcomment %}
+{% schema %}
+{
+  "name": "Search",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_filters",
+      "label": "Show search filters",
+      "info": "Learn how to add storefront filters [here](https:\/\/help.shopify.com\/en\/manual\/online-store\/themes\/os20\/customize\/filters)"
+    },
+    {
+      "type": "range",
+      "id": "grid",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "Products per row",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "rows",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "label": "Rows",
+      "default": 4
+    }
+  ]
+}
+{% endschema %}

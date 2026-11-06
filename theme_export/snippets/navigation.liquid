@@ -1,0 +1,150 @@
+{%- liquid
+
+  assign meganav = false
+  assign is_upcase = false
+
+  if settings.uppercase_nav
+    assign is_upcase = true
+  endif
+
+-%}
+{% for block in section.blocks %}
+  {% if block.settings.menu_item == link.title %}
+    {% capture megalink %}
+
+    <li class="navigation__menuitem navigation__menuitem--dropdown js-aria-expand js-doubletap-to-go" aria-haspopup="true" aria-expanded="false">
+      <a class="navigation__menulink js-menu-link js-open-dropdown-on-key is_upcase-{{ is_upcase }}" {% comment %}href="{{ link.url }}"{% endcomment %}>
+        {{ link.title }}
+        {% render 'snip-icons',
+         wrapper: '.navigation__menulink',
+         type: 'apollo',
+         icon: 'down-carrot',
+         classes: 'navigation__menulink--icon vib-center',
+         size: '6px',
+         fill: 'var(--nav-color)',
+         hover: 'var(--nav-hover-link-color)' %}
+      </a>
+      <ul class="megamenu row grid__wrapper">
+        {% if block.settings.nav_image != blank %}
+        {%- assign image_size = '300x' -%}
+          <span class="span-3 auto tablet-hide mm-image">
+            <a href="{{ block.settings.link }}">
+              <div class="megamenu__imagecontainer">
+                {%
+                  render 'basic-responsive-image',
+                  type: block.settings.nav_image,
+                  width: 1200
+                %}
+              </div>
+            </a>
+          </span>
+        {% endif %}
+        <span class="{% if block.settings.nav_image != blank %}span-9{% else %}span-12{% endif %} auto megamenu__list-container">
+          <div class="megamenu__wrapper">
+
+            {% for sub_link in link.links %}
+              {% if sub_link.links != blank %}
+                <li class="megamenu__listcontainer span-3 auto">
+                  {% if block.settings.show_images %}
+                    {% if sub_link.type == 'collection_link' %}
+                      {% assign collection = sub_link.object %}
+                      {% if collection.image %}
+                        <a href="{{ collection.url }}">
+                          <div class="megamenu__collection-image">
+                            {%
+                              render 'basic-responsive-image',
+                              type: collection.image,
+                              width: 1200
+                            %}
+                          </div>
+                        </a>
+                      {% endif %}
+                    {% endif %}
+                  {% endif %}
+                  <h4 class="megamenu__header">
+                    <a class="megamenu__headerlink" href="{{ sub_link.url }}">{{ sub_link.title }}</a>
+                  </h4>
+                  <ul class="megamenu__list">
+                    {% for sub_sub_link in sub_link.links %}
+                      <li class="megamenu__listitem">
+                        <a class="megamenu__listlink" href="{{ sub_sub_link.url }}">{{ sub_sub_link.title }}</a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </li>
+              {% endif %}
+            {% endfor %}
+
+            <ul class="megamenu__ulcontainer span-3 auto">
+              {% for sub_link in link.links %}
+              {% if sub_link.links %}
+                <li class="megamenu__listitem">
+                  <a class="megamenu__listlink" href="{{ sub_link.url }}">{{ sub_link.title }}</a>
+                </li>
+              {% endif %}
+              {% endfor %}
+
+              {{ pages.mega-menu.content }}
+              
+            </ul>
+
+          </div>
+        </span>
+      </ul>
+    </li>
+
+    {% endcapture %}
+    {% assign meganav = true %}
+  {% endif %}
+{% endfor %}
+{% if meganav %}
+  {{ megalink }}
+{% elsif link.links != blank %}
+  <li class="navigation__menuitem navigation__menuitem--dropdown js-menuitem js-doubletap-to-go">
+    <a class="navigation__menulink js-menu-link js-aria-expand js-open-dropdown-on-key is_upcase-{{ is_upcase }}" aria-haspopup="true" aria-expanded="false" href="{{ link.url}}">
+      {{ link.title }}
+      {% render 'snip-icons',
+         wrapper: '.navigation__menulink',
+         type: 'apollo',
+         icon: 'down-carrot',
+         classes: 'navigation__menulink--icon vib-center',
+         size: '6px',
+         fill: 'var(--nav-color)',
+         hover: 'var(--nav-hover-link-color)' %}
+    </a>
+    <ul role="menu" aria-label="{{ link.title }}" class="dropdown js-dropdown">
+      {% for sub_link in link.links %}
+        {% if sub_link.links != blank %}
+        <li class="dropdown__menuitem dropdown__menuitem--nested js-menuitem-with-nested-dropdown" aria-haspopup="true" aria-expanded="false">
+          <a class="dropdown__menulink js-aria-expand js-menu-link" href="{{ sub_link.url }}">
+            {{ sub_link.title }}
+            {% render 'snip-icons',
+               wrapper: '.dropdown__menulink',
+               type: 'apollo',
+               icon: 'right-carrot',
+               classes: 'dropdown__menulink--icon vib-center',
+               size: '10px',
+               fill: 'var(--dropdown-link-color)',
+               hover: 'var(--dropdown-link-hover-color)' %}
+          </a>
+          <ul role="menu" class="dropdown dropdown--nested js-dropdown-nested">
+            {% for sub_sub_link in sub_link.links %}
+              <li class="dropdown__menuitem">
+                <a class="dropdown__menulink js-menu-link-inside-dropdown" href="{{ sub_sub_link.url }}">{{ sub_sub_link.title }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </li>
+        {% else %}
+          <li class="dropdown__menuitem">
+            <a class="dropdown__menulink js-menu-link" href="{{ sub_link.url }}">{{ sub_link.title }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </li>
+{% else %}
+  <li class="navigation__menuitem js-doubletap-to-go">
+    <a class="navigation__menulink js-menu-link is_upcase-{{ is_upcase }}" href="{{ link.url }}">{{ link.title }}</a>
+  </li>
+{% endif %}

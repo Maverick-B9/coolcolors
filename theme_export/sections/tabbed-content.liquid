@@ -1,0 +1,159 @@
+{%- liquid
+
+  assign tabs_active = false
+  assign product_description_active = false
+  for block in section.blocks
+
+    if block.type == 'tab_content'
+      assign tabs_active = true
+    endif
+
+    if block.type == 'product_description'
+      assign product_description_active = true
+    endif
+
+  endfor
+
+  assign description_rendered = false
+
+-%}
+
+{% style %}
+  #tabbed__content-{{ product.id }} {
+    --background: {{ section.settings.background }};
+    --text-color: {{ section.settings.text_color }};
+  }
+{% endstyle %}
+
+<section id="tabbed__content-{{ product.id }}"
+  class="mt0 main__section tabbed__content-section"
+  data-product-id="{{ product.id }}"
+  data-section-id="{{ section.id }}"
+  data-url="{{ product.url }}"
+  data-section-type="tabbed__content-section">
+
+  <div class="tabbed__content-container row grid__wrapper">
+
+    <div class="span-12 auto">
+
+      {% capture description %}
+        {%
+          render 'product-tabs',
+          tabs_active: tabs_active,
+          product: product
+        %}
+      {% endcapture %}
+
+      {% for block in section.blocks %}
+        {% case block.type %}
+
+          {%- when 'product_description' -%}
+            <div class="tabbed__section-content__block product__section-content__block--{{ block.type }}" {{ block.shopify_attributes }}>
+              {% assign product_description_rendered = true %}
+              <div class="tabbed__section--desc rte">
+                {{ description }}
+              </div>
+            </div>
+
+          {%- when 'tab_content' -%}
+            {% if product_description_active == true or description_rendered == true %}
+              {% continue %}
+            {% else %}
+            <div class="tabbed__section-content__block product__section-content__block--{{ block.type }}" {{ block.shopify_attributes }}>
+                {% assign description_rendered = true %}
+                {{ description }}
+            </div>
+            {% endif %}
+
+          {%- when '@app' -%}
+            <div class="tabbed__content-section--app span-12 auto" {{ block.shopify_attributes }}>
+              {% render block %}
+            </div>
+
+        {% endcase %}
+      {% endfor %}
+
+    </div>
+
+  </div>
+
+</section>
+
+
+{% schema %}
+{
+  "name": "Tabbed content",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Add a tabbed content area to product pages with description content and / or additional content."
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background color",
+      "default": "#f9f9f9"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#000000"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product_description",
+      "name": "Product description",
+      "limit": 1
+    },
+    {
+      "type":"tab_content",
+      "name":"Tab content",
+      "limit": 5,
+      "settings":[
+        {
+          "type":"paragraph",
+          "content":"Add tabbed content by entering text or with [metafields](https:\/\/www.weareunderground.com\/blogs\/theme-support\/using-metafields-for-additional-product-content)."
+        },
+        {
+          "type": "text",
+          "id": "tab_heading",
+          "label": "Tab Heading",
+          "default": "Tab Heading"
+        },
+        {
+          "type": "richtext",
+          "id": "tab_content",
+          "label": "Tab Content",
+          "default": "<p>Enter the content to use inside the tab selected.</p>"
+        }
+    	]
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Tabbed content",
+      "blocks": [
+        {
+          "type": "tab_content"
+        },
+        {
+          "type": "tab_content"
+        },
+        {
+          "type": "tab_content"
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "templates": [
+      "product"
+    ]
+  }
+}
+{% endschema %}

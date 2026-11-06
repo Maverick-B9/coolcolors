@@ -1,0 +1,40 @@
+<section
+  id="custom-liquid--{{ section.id }} "
+  class="{% unless section.settings.display_wide %}row{% endunless %} {{ section.settings.custom_css }} custom-liquid custom-liquid--{{ section.id }} homepage-section-{{ section.id }}"
+  data-section-id="{{ section.id }}"
+  data-section-type="custom-liquid">
+
+  {{ section.settings.liquid }}
+
+</section>
+{% schema %}
+{
+  "name": "Custom liquid",
+  "settings":
+  [
+    {
+      "type": "liquid",
+      "id": "liquid",
+      "label": "Custom liquid",
+      "info": "Add app snippets or other Liquid code to create advanced customizations."
+    },
+    {
+      "type": "checkbox",
+      "id": "display_wide",
+      "label": "Full width",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "custom_css",
+      "label": "Add Custom CSS Here"
+    }
+  ],
+  "presets":
+  [
+    {
+      "name": "Custom liquid"
+    }
+  ]
+}
+{% endschema %}

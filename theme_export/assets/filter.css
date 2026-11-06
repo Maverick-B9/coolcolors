@@ -1,0 +1,633 @@
+/* =====================================================================
+   Collection Filters - filter.css
+   Self-contained, namespaced with "pf-" (Product Filters) to avoid
+   clashing with theme styles. Pairs with collection-filters.liquid,
+   filter-product-card.liquid and filter.js.
+   ===================================================================== */
+
+.pf-root {
+  --pf-text: #111111;
+  --pf-muted: #767676;
+  --pf-border: #e5e5e5;
+  --pf-bg: #ffffff;
+  --pf-bg-soft: #f5f5f5;
+  --pf-accent: #111111;
+  --pf-danger: #d1361e;
+  --pf-radius: 8px;
+  --pf-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  --pf-columns: 4;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px 60px;
+  color: var(--pf-text);
+  font-family: inherit;
+  position: relative;
+}
+
+.pf-root *,
+.pf-root *::before,
+.pf-root *::after {
+  box-sizing: border-box;
+}
+
+html.pf-scroll-lock,
+html.pf-scroll-lock body {
+  overflow: hidden !important;
+}
+
+/* -------------------- Toolbar -------------------- */
+
+.pf-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--pf-border);
+}
+
+.pf-toolbar__trigger {
+  display: contents;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--pf-text);
+  cursor: pointer;
+}
+
+.pf-toolbar__count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pf-text);
+}
+
+.pf-toolbar__sort {
+  margin-left: auto;
+}
+
+.pf-select {
+  margin: 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--pf-text);
+  border: 1px solid var(--pf-border);
+  border-radius: 4px;
+  padding: 9px 32px 9px 14px;
+  background: var(--pf-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 12px center;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+/* -------------------- Mobile fixed bottom bar -------------------- */
+/* Below 900px the inline toolbar's Filters trigger/Sort select are hidden
+   (see media queries at the end of this file) in favor of this fixed
+   bottom bar, matching the reference UI's split Filters|Sort footer. Both
+   share the same data-pf-toggle/data-pf-sort attributes as the desktop
+   toolbar controls, so filter.js wires and keeps them in sync automatically. */
+
+.pf-mobile-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 55;
+  display: flex;
+  align-items: stretch;
+  background: var(--pf-bg);
+  border-top: 1px solid var(--pf-border);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.pf-mobile-bar__btn {
+  flex: 1 1 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pf-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.pf-mobile-bar__divider {
+  width: 1px;
+  margin: 10px 0;
+  background: var(--pf-border);
+}
+
+.pf-mobile-bar__select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  border: none;
+  cursor: pointer;
+}
+
+/* -------------------- Backdrop -------------------- */
+
+.pf-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 60;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.pf-backdrop--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* -------------------- Filter panel (full-height left drawer, all breakpoints) -------------------- */
+
+.pf-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(420px, 100vw);
+  background: var(--pf-bg);
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  box-shadow: var(--pf-shadow);
+}
+
+.pf-panel--open {
+  transform: translateX(0);
+}
+
+.pf-panel[hidden] {
+  display: none;
+}
+
+.pf-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--pf-border);
+  flex: 0 0 auto;
+}
+
+.pf-panel__heading {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.pf-panel__close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--pf-text);
+}
+
+.pf-panel__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 0 20px;
+}
+
+.pf-panel__actions {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--pf-border);
+  flex: 0 0 auto;
+}
+
+.pf-panel__actions .pf-btn {
+  flex: 1;
+}
+
+/* -------------------- Filter groups (accordion) -------------------- */
+
+.pf-group {
+  border-top: 1px solid var(--pf-border);
+  padding: 16px 0;
+}
+
+.pf-group:first-child {
+  border-top: none;
+}
+
+.pf-group__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.pf-group__title::-webkit-details-marker {
+  display: none;
+}
+
+.pf-group__title::after {
+  content: "";
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.pf-group[open]>.pf-group__title::after {
+  transform: rotate(-135deg);
+}
+
+.pf-group__options {
+  margin-top: 12px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+/* -------------------- Checkboxes -------------------- */
+
+.pf-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  padding: 6px 0;
+  cursor: pointer;
+  color: var(--pf-text);
+}
+
+.pf-checkbox input {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  accent-color: var(--pf-accent);
+  cursor: pointer;
+}
+
+.pf-checkbox__label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pf-checkbox__count {
+  color: var(--pf-muted);
+  font-size: 12px;
+}
+
+.pf-checkbox--disabled {
+  color: var(--pf-muted);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.pf-checkbox--disabled input {
+  cursor: not-allowed;
+}
+
+.pf-swatch {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+/* -------------------- Price inputs -------------------- */
+
+.pf-price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.pf-input {
+  font: inherit;
+  font-size: 13px;
+  border: 1px solid var(--pf-border);
+  border-radius: 4px;
+  padding: 9px 12px;
+  width: 100%;
+  color: var(--pf-text);
+  background: var(--pf-bg);
+}
+
+/* -------------------- Buttons -------------------- */
+
+.pf-btn {
+  font: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  padding: 11px 16px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.pf-btn--primary {
+  background: var(--pf-accent);
+  color: #fff;
+}
+
+.pf-btn--ghost {
+  background: transparent;
+  border-color: var(--pf-border);
+  color: var(--pf-text);
+}
+
+/* -------------------- Product grid -------------------- */
+
+.pf-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 12px;
+  margin-top: 24px;
+}
+
+@media (min-width: 640px) {
+  .pf-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px 20px;
+  }
+}
+
+@media (min-width: 1000px) {
+  .pf-grid {
+    grid-template-columns: repeat(var(--pf-columns, 4), 1fr);
+    gap: 32px 24px;
+  }
+}
+
+.pf-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-card__image-link {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: var(--pf-bg-soft);
+}
+
+.pf-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pf-card__image--placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--pf-bg-soft);
+}
+
+.pf-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--pf-bg);
+  color: var(--pf-text);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  z-index: 1;
+}
+
+.pf-card__wishlist {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pf-text);
+  cursor: pointer;
+  z-index: 1;
+}
+
+.pf-card__wishlist--active {
+  color: var(--pf-danger);
+}
+
+.pf-card__wishlist--active svg {
+  fill: currentColor;
+}
+
+.pf-card__body {
+  padding-top: 10px;
+}
+
+.pf-card__title {
+  display: block;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--pf-text);
+  text-decoration: none;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.pf-card__price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.pf-price {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pf-price--compare {
+  font-weight: 400;
+  color: var(--pf-muted);
+  text-decoration: line-through;
+  font-size: 0.9em;
+}
+
+.pf-card__swatches {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.pf-swatch--sm {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
+
+.pf-swatch-more {
+  font-size: 11px;
+  color: var(--pf-muted);
+}
+
+.pf-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--pf-muted);
+  padding: 80px 20px;
+}
+
+.pf-grid-sentinel {
+  height: 1px;
+}
+
+/* -------------------- Loading states -------------------- */
+
+.pf-loading-bar {
+  height: 2px;
+  overflow: hidden;
+  background: var(--pf-border);
+}
+
+.pf-loading-bar[hidden] {
+  display: none;
+}
+
+.pf-loading-bar--active::before {
+  content: "";
+  display: block;
+  width: 40%;
+  height: 100%;
+  background: var(--pf-accent);
+  animation: pf-loading-sweep 1.1s ease-in-out infinite;
+}
+
+@keyframes pf-loading-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+.pf-skeleton-card {
+  overflow: hidden;
+}
+
+.pf-skeleton-card__img,
+.pf-skeleton-card__line {
+  background: linear-gradient(90deg, var(--pf-bg-soft) 25%, var(--pf-border) 37%, var(--pf-bg-soft) 63%);
+  background-size: 400% 100%;
+  animation: pf-shimmer 1.4s ease infinite;
+}
+
+.pf-skeleton-card__img {
+  aspect-ratio: 3 / 4;
+}
+
+.pf-skeleton-card__line {
+  height: 12px;
+  margin-top: 10px;
+  border-radius: 4px;
+}
+
+.pf-skeleton-card__line--title {
+  width: 80%;
+}
+
+.pf-skeleton-card__line--price {
+  width: 40%;
+  margin-bottom: 4px;
+}
+
+@keyframes pf-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .pf-loading-bar--active::before,
+  .pf-skeleton-card__img,
+  .pf-skeleton-card__line {
+    animation: none;
+  }
+}
+
+/* -------------------- Toolbar / mobile bar handoff -------------------- */
+
+@media (max-width: 899px) {
+  .pf-toolbar__trigger,
+  .pf-toolbar__sort {
+    display: none;
+  }
+
+  .pf-root {
+    padding-bottom: 76px;
+  }
+}
+
+@media (min-width: 900px) {
+  .pf-mobile-bar {
+    display: none;
+  }
+}
+
+/* Save pill: small heart chip top-right (was stretching across the card) */
+.pf-card { position: relative; }
+.pf-card .pf-card__wishlist, .pf-card .pf-badge-save {
+  position:absolute !important; top:12px !important; right:12px !important; left:auto !important; bottom:auto !important;
+  width:auto !important; height:32px !important; min-width:0 !important; max-width:none !important; margin:0 !important;
+  padding:0 12px !important; gap:6px; border-radius:100px !important; border:0 !important; background:rgba(255,255,255,.95) !important;
+  color:#0D1117 !important; font:600 12px/1 'Inter',system-ui,sans-serif !important; display:inline-flex !important; align-items:center; justify-content:center;
+  box-shadow:0 1px 3px rgba(13,17,23,.12); z-index:3;
+}
+
+
+/* ---- Mobile: Filters | Sort floats just above the bottom nav pill ---- */
+@media (max-width: 899px) {
+  .pf-mobile-bar {
+    left: 16px; right: 16px; bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+    width: auto; padding-bottom: 0; z-index: 9000;
+    border: 1px solid rgba(13,17,23,.1); border-radius: 100px; overflow: hidden;
+    box-shadow: 0 12px 28px rgba(13,17,23,.2); background: #fff;
+  }
+  .pf-mobile-bar__btn { padding: 14px 12px; min-height: 48px; }
+  .pf-root { padding-bottom: 170px; }
+  .pf-backdrop { z-index: 10000 !important; }
+  .pf-panel { z-index: 10001 !important; }
+}

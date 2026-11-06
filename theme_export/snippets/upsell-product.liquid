@@ -1,0 +1,91 @@
+<div
+  class="product__upsell-item js-product-listing"
+  id="product-listing-{{ product_upsell.id }}"
+  data-product-id="{{ product_upsell.id }}"
+  data-alpha="{{ product_upsell.title }}"
+  data-price="{{ product_upsell.price }}"
+>
+
+  <h5>{{ block.settings.title }}</h5>
+  <div class="product__upsell-container">
+
+    <div class="js-product-image animated prod-image image_square">
+      <div class="reveal">
+        {%- if product_upsell.media.size < 1 -%}
+          <div class="box-ratio" style="padding-bottom: 100%;">
+            {% capture current %}{% cycle 1, 2, 3, 4, 5, 6 %}{% endcapture %}
+            {{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg' }}
+          </div>
+        {% else %}
+          {%
+            render 'basic-responsive-image',
+            type: product_upsell.featured_media.preview_image,
+            width: 1200
+          %}
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="product-info">
+      <div class="product-info-inner">
+        <a href="{{ product_upsell.url }}">
+          <span class="prod-title">{{ product_upsell.title }}</span>
+        </a>
+        {% render 'product-price-listing', product: product_upsell %}
+      </div>
+
+      {% if product_upsell.variants.size == 1 and product_upsell.available %}
+      {%- assign product_form_id = 'product-form-buttons-' | append: section.id -%}
+        {% form 'product', product_upsell,
+           id: product_form_id,
+           class: "product__form-buttons js-prod-form-submit relative",
+           data-product-id: product_upsell.id %}
+
+          {%- liquid
+
+            if product_upsell.template_suffix == 'pre-order'
+              assign call_to_action = 'products.product.pre_order' | t
+              assign is_preorder = 'data-preorder'
+            else
+              assign call_to_action = 'products.product.add_to_cart' | t
+              assign is_preorder = ''
+            endif
+            assign product_form_id = 'product-form-' | append: section.id
+
+          -%}
+
+          <input class="formVariantId" name="id" type="hidden" value="{{ product_upsell.selected_or_first_available_variant.id }}">
+          <input class="formQty" type="hidden" name="quantity" value="1" />
+          <div class="note note-success js-added-msg" style="display: none">
+            <b>{{ 'products.product.added' | t }}</b>&nbsp;&nbsp;&nbsp;<a class="underline" href="{{ routes.cart_url }}">{{ 'products.product.view_cart' | t }}</a> {{ 'products.product.or' | t }} <a class="underline" href="{{ routes.all_products_collection_url }}">{{ 'products.product.continue' | t }}</a>.
+          </div>
+          <div class="note note-error js-error-msg" style="display: none">
+            <b>{{ 'cart.general.cart_error' | t }}</b>&nbsp;&nbsp;&nbsp;{{ 'cart.general.update_qty_error' | t }}
+          </div>
+
+          <input id="addToCart" type="submit" name="button" class="button-as-link add clearfix AddtoCart js-ajax-submit " {{ is_preorder }} value="{{ call_to_action }}" />
+        {% endform %}
+
+      {% elsif settings.quickview_type != 'none' and product_upsell.variants.size > 1 %}
+
+          {%- liquid
+
+            if settings.quickview_type == 'modal'
+              assign quickview_classes = 'js-modal-open'
+              assign quickview_settings = 'data-wau-modal-target="quickview"'
+            else
+              assign quickview_classes = 'js-slideout-open'
+              assign quickview_settings = 'data-wau-slideout-target="quickview" data-slideout-direction="right"'
+            endif
+
+          -%}
+
+          <button class="button-as-link quick-view-{{ product_upsell.id }} {{ quickview_classes }} js-quickview-trigger"
+          type="button" name="button"
+          {{ quickview_settings }}
+          data-product-url="{{ product_upsell.url }}?view=quick">{{ 'products.general.quick_view' | t }}</button>
+      {% endif %}
+
+    </div>
+  </div>
+</div>

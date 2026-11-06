@@ -1,0 +1,258 @@
+{% comment %}
+  Featured Product editorial section — layered static image + looping video
+  beside a short pitch and CTA link. Not tied to a live Shopify product.
+{% endcomment %}
+
+<div class="featured-editorial" style="
+  padding-top: {{ section.settings.padding_top }}px;
+  padding-bottom: {{ section.settings.padding_bottom }}px;
+  background-color:#F3EEE8;
+">
+  <div class="featured-editorial__grid page-width">
+    <div class="featured-editorial__media">
+      <div class="featured-editorial__layer-wrap">
+
+        {%- if section.settings.back_video != blank -%}
+          <div class="featured-editorial__video">
+            {{ section.settings.back_video | video_tag: autoplay: true, loop: true, muted: true, controls: false, image_size: '1200x' }}
+          </div>
+        {%- elsif section.settings.image != blank -%}
+          <img
+            src="{{ section.settings.image | image_url: width: 1200 }}"
+            srcset="{{ section.settings.image | image_url: width: 600 }} 600w, {{ section.settings.image | image_url: width: 900 }} 900w, {{ section.settings.image | image_url: width: 1200 }} 1200w"
+            sizes="(min-width: 990px) 50vw, 100vw"
+            alt="{{ section.settings.image.alt | default: section.settings.heading_line_1 | escape }}"
+            loading="lazy"
+            class="featured-editorial__video-fallback"
+          >
+        {%- endif -%}
+
+        {%- if section.settings.front_image != blank -%}
+          <div class="featured-editorial__front-image">
+            <img
+              src="{{ section.settings.front_image | image_url: width: 800 }}"
+              srcset="{{ section.settings.front_image | image_url: width: 400 }} 400w, {{ section.settings.front_image | image_url: width: 600 }} 600w, {{ section.settings.front_image | image_url: width: 800 }} 800w"
+              sizes="(min-width: 990px) 20vw, 50vw"
+              alt="{{ section.settings.front_image.alt | default: section.settings.heading_line_1 | escape }}"
+              width="{{ section.settings.front_image.width }}"
+              height="{{ section.settings.front_image.height }}"
+              loading="lazy"
+            >
+          </div>
+        {%- endif -%}
+
+      </div>
+    </div>
+
+    <div class="featured-editorial__content">
+      {% if section.settings.eyebrow_number != blank or section.settings.eyebrow_label != blank %}
+        <p class="eyebrow">
+          {% if section.settings.eyebrow_number != blank %}
+            <span class="eyebrow__n">{{ section.settings.eyebrow_number }}</span>
+          {% endif %}
+          <span class="eyebrow__line"></span>
+          {% if section.settings.eyebrow_label != blank %}
+            <span class="eyebrow__label">{{ section.settings.eyebrow_label }}</span>
+          {% endif %}
+        </p>
+      {% endif %}
+
+      <h2 class="featured-editorial__heading">
+        {{ section.settings.heading_line_1 }}{% if section.settings.heading_line_2 != blank %}<br>{{ section.settings.heading_line_2 }}{% endif %}
+      </h2>
+
+      {% if section.settings.subtext != blank %}
+        <p class="featured-editorial__subtext">{{ section.settings.subtext }}</p>
+      {% endif %}
+
+      {% if section.settings.button_label != blank %}
+        <a {% if section.settings.button_link != blank %}href="{{ section.settings.button_link }}"{% endif %} class="featured-editorial__cta" style="font-size: 16px; font-weight: 800; letter-spacing: 0.15em;" {% if section.settings.button_link == blank %}aria-disabled="true"{% endif %}>
+          <span>{{ section.settings.button_label }}</span>
+          <svg class="featured-editorial__arrow" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  .featured-editorial, .featured-editorial * { font-family:'Inter',system-ui,-apple-system,sans-serif; box-sizing:border-box; }
+  .featured-editorial__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    gap: 40px;
+    max-width: 1500px;
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+
+  @media (min-width: 990px) {
+    .featured-editorial__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+    }
+  }
+
+  .featured-editorial__media {
+    position: relative;
+  }
+
+  .featured-editorial__layer-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 5.2 / 5.8;
+  }
+
+  .featured-editorial__video,
+  .featured-editorial__video-fallback {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 60%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 2px;
+  }
+
+  .featured-editorial__video video,
+  .featured-editorial__video-fallback {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .featured-editorial__front-image {
+    position: absolute;
+    left: 42%;
+    top: 10%;
+    width: 50%;
+    height: 78%;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.22);
+    border: 5px solid #F3EEE8;
+    z-index: 2;
+  }
+
+  .featured-editorial__front-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  @media (max-width: 749px) {
+    .featured-editorial__layer-wrap {
+      aspect-ratio: 4 / 5.8;
+    }
+    .featured-editorial__video,
+    .featured-editorial__video-fallback {
+      width: 80%;
+    }
+    .featured-editorial__front-image {
+      left: 40%;
+      top: 10%;
+      width: 55%;
+      height: 76%;
+    }
+  }
+
+  .featured-editorial__content {
+    max-width: 420px;
+  }
+
+  .featured-editorial .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(13,17,23,0.55);
+  }
+
+  .featured-editorial .eyebrow__n {
+    color: #D92231;
+  }
+
+  .featured-editorial .eyebrow__line {
+    width: 32px;
+    height: 1px;
+    background: #D7DCE1;
+  }
+
+  .featured-editorial__heading {
+    margin: 20px 0 0;
+    font-size: 36px;
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: #0D1117;
+  }
+
+  @media (min-width: 990px) {
+    .featured-editorial__heading {
+      font-size: 52px;
+    }
+  }
+
+  .featured-editorial__subtext {
+    margin: 20px 0 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(13,17,23,0.65);
+    max-width: 320px;
+  }
+
+  .featured-editorial__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 30px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #0D1117;
+    color: #0D1117;
+    text-decoration: none;
+    transition: opacity .25s ease;
+  }
+
+  .featured-editorial__cta:hover {
+    opacity: 0.7;
+  }
+
+  .featured-editorial__cta[aria-disabled="true"] {
+    pointer-events: none;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Featured editorial",
+  "tag": "section",
+  "class": "shopify-section--featured-editorial",
+  "settings": [
+    { "type": "header", "content": "Background video (behind)" },
+    { "type": "video", "id": "back_video", "label": "Background video" },
+    { "type": "image_picker", "id": "image", "label": "Fallback image (shown if no video uploaded)" },
+    { "type": "header", "content": "Front image (static, overlapping)" },
+    { "type": "image_picker", "id": "front_image", "label": "Front image" },
+    { "type": "text", "id": "eyebrow_number", "label": "Eyebrow number", "default": "03" },
+    { "type": "text", "id": "eyebrow_label", "label": "Eyebrow label", "default": "Featured" },
+    { "type": "text", "id": "heading_line_1", "label": "Heading — line 1", "default": "The Linen" },
+    { "type": "text", "id": "heading_line_2", "label": "Heading — line 2", "default": "Shirt" },
+    { "type": "text", "id": "subtext", "label": "Subtext", "default": "Lightweight. Relaxed. Made for the everyday." },
+    { "type": "text", "id": "button_label", "label": "Button label", "default": "Explore the shirt" },
+    { "type": "url", "id": "button_link", "label": "Button link" },
+    { "type": "header", "content": "Section padding" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 10, "default": 100, "unit": "px", "label": "Padding top" },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 10, "default": 100, "unit": "px", "label": "Padding bottom" }
+  ],
+  "presets": [
+    { "name": "Featured editorial" }
+  ]
+}
+{% endschema %}

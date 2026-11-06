@@ -1,0 +1,77 @@
+<div class="share-icons">
+
+  {% if show_facebook %}
+    <a
+      title="{{ 'social.icons.facebook' | t }}"
+      href="//www.facebook.com/sharer.php?u={{ shop.url | append: share_permalink }}{% if template contains 'blog' or template == 'article' %}{{ article.url }}{% else %}{{ product.url }}{% endif %}"
+      class="facebook"
+      target="_blank">
+      {% render 'snip-icons',
+         wrapper: '.share-icons',
+         type: 'social',
+         icon: 'facebook',
+         classes: 'share-icons--icon',
+         size: '20px',
+         fill: 'var(--text-color)',
+         hover: 'var(--text-color)' %}
+    </a>
+  {% endif %}
+
+
+  {% if show_twitter %}
+    <a
+      title="{{ 'social.icons.twitter' | t }}"
+      href="//twitter.com/intent/tweet?text={{ shop.url | append: share_permalink }}{% if template contains 'blog' or template == 'article' %}{{ article.url }}{% else %}{{ product.url }}{% endif %}"
+      title="Share on Twitter"
+      target="_blank"
+      class="twitter">
+      {% render 'snip-icons',
+         wrapper: '.share-icons',
+         type: 'social',
+         icon: 'twitter',
+         classes: 'share-icons--icon',
+         size: '20px',
+         fill: 'var(--text-color)',
+         hover: 'var(--text-color)' %}
+    </a>
+  {% endif %}
+
+  {% if show_pinterest %}
+    {% if template contains 'blog' or template contains 'article' %}
+      {% if article.image %}
+        <a
+          title="{{ 'social.icons.pinterest' | t }}"
+          target="blank"
+          href="//pinterest.com/pin/create/button/?url={{ shop.url | append: share_permalink }}{{ article.url }}&amp;media={{ article.image.src | image_url: width: 1024, height: 1024 | prepend: 'http:' }}"
+          title="Pin this"
+          class="pinterest">
+          {% render 'snip-icons',
+             wrapper: '.share-icons',
+             type: 'social',
+             icon: 'pinterest',
+             classes: 'share-icons--icon',
+             size: '20px',
+             fill: 'var(--text-color)',
+             hover: 'var(--text-color)' %}
+        </a>
+      {% endif %}
+    {% else %}
+      <a
+        title="{{ 'social.icons.pinterest' | t }}"
+        target="blank"
+        href="//pinterest.com/pin/create/button/?url={{ shop.url | append: share_permalink }}{{ product.url }}&amp;media={{ product.featured_media | image_url: width: 1024, height: 1024 | prepend: 'http:' }}"
+        title="Pin this"
+        class="pinterest">
+        {% render 'snip-icons',
+           wrapper: '.share-icons',
+           type: 'social',
+           icon: 'pinterest',
+           classes: 'share-icons--icon',
+           size: '20px',
+           fill: 'var(--text-color)',
+           hover: 'var(--text-color)' %}
+      </a>
+    {% endif %}
+  {% endif %}
+
+</div>

@@ -1,0 +1,118 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<section class="cle" id="cle-{{ section.id }}">
+  <div class="cle__grid">
+
+    <div class="cle__big">
+      <div class="cle__frame cle__frame--big">
+        {%- if section.settings.image_top != blank -%}
+          {{ section.settings.image_top | image_url: width: 1400 | image_tag: loading: 'lazy', widths: '500, 800, 1100, 1400', sizes: '(max-width: 600px) 90vw, (max-width: 900px) 50vw, 40vw', class: 'cle__pic', alt: section.settings.image_top.alt | default: section.settings.caption_top }}
+        {%- else -%}
+          <img class="cle__pic" src="{{ 'cc-ed-top.jpg' | asset_url }}" alt="{{ section.settings.caption_top | escape }}" loading="lazy" width="1000" height="1333">
+        {%- endif -%}
+      </div>
+      {%- if section.settings.caption_top != blank -%}<p class="cle__cap">{{ section.settings.caption_top }}</p>{%- endif -%}
+    </div>
+
+    <div class="cle__mid">
+      <span class="cle__bar" aria-hidden="true"></span>
+      {%- if section.settings.eyebrow != blank -%}<p class="cle__eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      <h2 class="cle__title">{{ section.settings.title | escape | replace: ' / ', '<br>' | replace: '/', '<br>' }}</h2>
+      {%- if section.settings.text != blank -%}<p class="cle__text">{{ section.settings.text }}</p>{%- endif -%}
+      <div class="cle__btns">
+        {%- if section.settings.primary_btn != blank -%}<a href="{{ section.settings.primary_link | default: '/pages/our-story' }}" class="cle__btn cle__btn--primary">{{ section.settings.primary_btn }}</a>{%- endif -%}
+        {%- if section.settings.secondary_btn != blank -%}<a href="{{ section.settings.secondary_link | default: '/collections/new-arrival' }}" class="cle__btn cle__btn--ghost">{{ section.settings.secondary_btn }}</a>{%- endif -%}
+      </div>
+    </div>
+
+    <div class="cle__sm">
+      <div class="cle__frame cle__frame--sm">
+        {%- if section.settings.image_btm != blank -%}
+          {{ section.settings.image_btm | image_url: width: 1000 | image_tag: loading: 'lazy', widths: '400, 600, 800, 1000', sizes: '(max-width: 600px) 45vw, (max-width: 900px) 30vw, 25vw', class: 'cle__pic', alt: section.settings.image_btm.alt | default: section.settings.caption_btm }}
+        {%- else -%}
+          <img class="cle__pic" src="{{ 'cc-ed-btm.jpg' | asset_url }}" alt="{{ section.settings.caption_btm | escape }}" loading="lazy" width="800" height="1000">
+        {%- endif -%}
+      </div>
+      {%- if section.settings.caption_btm != blank -%}<p class="cle__cap">{{ section.settings.caption_btm }}</p>{%- endif -%}
+    </div>
+
+  </div>
+</section>
+
+<style>
+  .cle { background:#fff; padding:clamp(48px,7vw,100px) 5%; }
+  .cle, .cle * { box-sizing:border-box; font-family:'Inter',system-ui,sans-serif; }
+  .cle__grid { display:grid; grid-template-columns:5fr 4fr 3fr; gap:clamp(18px,3vw,48px); align-items:start; max-width:1440px; margin:0 auto; }
+
+  .cle__frame { position:relative; overflow:hidden; background:#E6E6E3; }
+  .cle__frame--big { aspect-ratio:3/4; }
+  .cle__frame--sm  { aspect-ratio:4/5; }
+  .cle .cle__pic { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
+
+  .cle .cle__cap { margin:10px 0 0; color:#8A8A85 !important; font-size:11px; line-height:1.5; }
+
+  .cle__mid { padding-top:clamp(40px,12vw,180px); }
+  .cle__bar { display:block; width:40px; height:2px; background:#D92231; margin-bottom:22px; }
+  .cle .cle__eyebrow { margin:0 0 14px; color:#8A8A85 !important; font-size:13px; font-weight:500; }
+  .cle .cle__title { margin:0 0 20px; color:#141414 !important; font-family:'Cormorant Garamond',Georgia,serif !important; font-size:clamp(36px,4.2vw,64px); line-height:1.02; font-weight:400; letter-spacing:-.01em; text-transform:none; }
+  .cle .cle__text { margin:0 0 30px; color:#6B6B66 !important; font-size:14px; line-height:1.75; max-width:380px; }
+
+  .cle__btns { display:flex; flex-direction:column; align-items:flex-start; gap:18px; }
+  .cle .cle__btn { display:inline-flex; align-items:center; text-decoration:none; font-size:13px; font-weight:500; line-height:1.2; transition:opacity .2s; }
+  .cle .cle__btn:hover { opacity:.7; }
+  .cle .cle__btn:focus-visible { outline:2px solid #D92231; outline-offset:3px; }
+  .cle .cle__btn--primary { background:#141414; color:#fff !important; padding:16px 30px; }
+  .cle .cle__btn--ghost { color:#141414 !important; border-bottom:1px solid #D92231; padding-bottom:4px; }
+
+  .cle__sm { padding-top:clamp(0px,18vw,300px); }
+
+  /* Tablet: big photo on the left, text + small photo stacked on the right */
+  @media (max-width:900px){
+    .cle { padding:56px 5%; }
+    .cle__grid { grid-template-columns:1fr 1fr; grid-template-rows:auto 1fr; column-gap:32px; row-gap:24px; max-width:760px; }
+    .cle__big { grid-column:1; grid-row:1 / span 2; }
+    .cle__mid { grid-column:2; grid-row:1; padding-top:8px; }
+    .cle__sm { grid-column:2; grid-row:2; padding-top:0; width:58%; justify-self:end; align-self:end; }
+    .cle .cle__text { max-width:none; }
+  }
+
+  /* Mobile: overlapping photo collage first, then the text */
+  @media (max-width:600px){
+    .cle { padding:36px max(20px,env(safe-area-inset-right)) 56px max(20px,env(safe-area-inset-left)); }
+    .cle__grid { grid-template-columns:repeat(12,1fr); grid-template-rows:auto auto auto; column-gap:0; row-gap:0; max-width:none; }
+    .cle__big { grid-column:1 / span 10; grid-row:1; }
+    .cle__frame--big { aspect-ratio:4/5; }
+    .cle__sm { grid-column:8 / span 5; grid-row:2; margin-top:-22vw; padding-top:0; width:auto; justify-self:stretch; align-self:start; position:relative; z-index:2; }
+    .cle__frame--sm { border:6px solid #fff; }
+    .cle__mid { grid-column:1 / -1; grid-row:3; padding-top:32px; }
+    .cle__bar { margin-bottom:18px; }
+    .cle .cle__title { font-size:clamp(36px,11vw,44px); margin-bottom:16px; }
+    .cle .cle__text { max-width:none; font-size:15px; margin-bottom:26px; }
+    .cle__btns { width:100%; align-items:stretch; gap:16px; }
+    .cle .cle__btn--primary { justify-content:center; min-height:52px; font-size:14px; }
+    .cle .cle__btn--ghost { align-self:center; font-size:14px; padding-bottom:5px; }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Legacy Editorial",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small label (optional)" },
+    { "type": "text", "id": "title", "label": "Heading", "default": "A Legacy / Unveiled", "info": "Use / to break the heading onto a new line" },
+    { "type": "textarea", "id": "text", "label": "Text", "default": "A study in restraint, texture, and silhouette. Heritage detail, quietly modern." },
+    { "type": "text", "id": "primary_btn", "label": "Primary button text", "default": "Read the story" },
+    { "type": "url", "id": "primary_link", "label": "Primary button link" },
+    { "type": "text", "id": "secondary_btn", "label": "Secondary link text", "default": "View the lookbook" },
+    { "type": "url", "id": "secondary_link", "label": "Secondary link" },
+    { "type": "header", "content": "Images" },
+    { "type": "image_picker", "id": "image_top", "label": "Large image (portrait works best)" },
+    { "type": "text", "id": "caption_top", "label": "Large image caption", "default": "The Linen Henley, in white" },
+    { "type": "image_picker", "id": "image_btm", "label": "Small image (fabric / detail shot)" },
+    { "type": "text", "id": "caption_btm", "label": "Small image caption", "default": "Hand-finished slub linen" }
+  ],
+  "presets": [ { "name": "Legacy Editorial" } ]
+}
+{% endschema %}

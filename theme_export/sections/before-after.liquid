@@ -1,0 +1,354 @@
+{% liquid
+
+  assign full_width = false
+  if section.settings.full_width
+    assign full_width = true
+  endif
+
+  assign sm_render = '100vw'
+  assign md_render = '100vw'
+  assign lg_render = '100vw'
+
+  assign fixed_height = false
+  if section.settings.section_height == 'fixed_height'
+    assign fixed_height = true
+  endif
+
+  assign desktop_height = section.settings.desktop_height | append: 'px'
+  assign mobile_height = section.settings.mobile_height | append: 'px'
+
+  assign has_button = false
+  assign has_heading = false
+  assign has_subheading = false
+  assign has_button_text = false
+  assign has_caption = false
+  assign caption_first = false
+  assign caption_last = false
+
+  if section.settings.button_text != blank and section.settings.link != blank
+    assign has_button = true
+  endif
+  if section.settings.heading != blank
+    assign has_heading = true
+  endif
+  if section.settings.subheading != blank
+    assign has_subheading = true
+  endif
+  if has_heading or has_subheading or has_button
+    assign has_caption = true
+  endif
+
+  if section.settings.caption_first
+    assign caption_first = true
+  else
+    assign caption_last = true
+  endif
+
+  if section.index == 1
+    assign loading = 'eager'
+    assign fetch_priority = 'high'
+  endif
+
+%}
+
+{% style %}
+{% if fixed_height %}
+  .before-after_section.section-{{ section.id }} {
+    --desktop-section-height: {{ desktop_height }};
+    --mobile-section-height: {{ mobile_height }};
+  }
+{% endif %}
+  .before-after_section.section-{{ section.id }} {
+    --text-color: {{ section.settings.text_color }};
+    --button-text: {{ section.settings.button_color }};
+    --button-color: {{ section.settings.button_background }};
+    --background-color: {{ section.settings.section_background }};
+  }
+{% endstyle %}
+
+<section
+  class="before-after_section global__section section-{{ section.id }} global__section pb0 mt0" 
+  data-section-id="{{ section.id }}"
+  data-section-type="before-after"
+>
+{% if full_width %}
+  <div class="gridlock-fluid">
+  <div class="row">
+{% endif %}
+
+  <div class="before--after_container grid__wrapper row{% if full_width %} edge{% endif %}">
+
+      {% if has_caption %}
+        {% capture caption %}
+          <div class="before--after_caption span-4 sm-span-12 auto">
+            {% if has_heading %}
+            <h3>{{ section.settings.heading | escape }}</h3>
+            {% endif %}
+            {% if has_subheading %}
+            <div class="rte">
+              {{ section.settings.subheading }}
+            </div>
+            {% endif %}
+            {% if has_button %}
+            <div class="before-after__btn-wrapper">
+              <a href="{{ section.settings.link }}">{{ section.settings.button_text | escape }}</a>
+            </div>
+            {% endif %}
+          </div>
+        {% endcapture %}
+      {% endif %}
+
+      {% if caption_first %}
+        {{ caption }}
+      {% endif %}
+
+      <div class="before--after{% if has_caption %} span-8{% else %} span-12{% endif %} auto sm-span-12{% if fixed_height %} fixed-height{% endif %}">
+        {% for block in section.blocks %}
+
+          {% liquid
+
+            assign has_image = false
+
+            if block.settings.image != blank
+              assign has_image = true
+            endif
+
+          %}
+
+          {% if forloop.first %}
+            <div id="before--after--{{ section.id }}-image-{{ forloop.index0 }}" class="before-image"{{ block.shopify_attributes }}>
+              {% if has_image %}
+                {% render 'basic-responsive-image',
+                    type:  block.settings.image,
+                    width: 3000,
+                    loading: 'lazy',
+                    sm_render: sm_render,
+                    md_render: md_render,
+                    lg_render: lg_render,
+                    loading: loading,
+                    fetchpriority: fetch_priority
+                  %}
+                {% else %}
+                  <div class="onboard before--image_placeholder">
+                    {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                  </div>
+                {% endif %}
+            </div>
+          {% else %}
+            <div id="before--after--{{ section.id }}-image-{{ forloop.index0 }}" class="after-image"{{ block.shopify_attributes }}>
+              {% if has_image %}
+                {% render 'basic-responsive-image',
+                    type:  block.settings.image,
+                    width: 3000,
+                    loading: 'lazy',
+                    sm_render: sm_render,
+                    md_render: md_render,
+                    lg_render: lg_render,
+                    loading: loading,
+                    fetchpriority: fetch_priority
+                  %}
+                {% else %}
+                  <div class="onboard after--image_placeholder">
+                    {{ 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg' }}
+                  </div>
+                {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+          <div class="before--after_slider">
+            <button class="before--after_button">
+              {% render 'snip-icons',
+                wrapper: '.before--after_button',
+                type: 'apollo',
+                icon: 'down-carrot',
+                classes: 'before--after_button-icon--first',
+                size: '8px',
+                fill: 'var(--text-color)',
+                hover: 'var(--text-color)' %}
+              {% render 'snip-icons',
+                wrapper: '.before--after_button',
+                type: 'apollo',
+                icon: 'down-carrot',
+                classes: 'before--after_button-icon--last',
+                size: '8px',
+                fill: 'var(--text-color)',
+                hover: 'var(--text-color)' %}
+            </button>
+          </div>
+      </div>
+
+    {% if caption_last %}
+      {{ caption }}
+    {% endif %}
+
+  </div>
+
+{% if full_width %}
+  <div class="</div>">
+  <div class="</div>">
+{% endif %}
+
+</section>
+<div class="clear"></div>
+
+{% schema %}
+{
+"name": "Before and after",
+"max_blocks": 2,
+"settings":
+[
+  {
+    "type": "paragraph",
+    "content": "Layer 2 images with a before &  after comparison slider. Optionally add text content beside the images"
+  },
+  {
+    "type": "checkbox",
+    "id": "full_width",
+    "label": "Full width",
+    "default": false
+  },
+  
+  {
+    "type": "radio",
+    "id": "section_height",
+    "label": "Section height",
+    "default":"natural",
+    "options": [
+      {
+        "value": "natural",
+        "label": "Natural"
+      },
+      {
+        "value": "fixed_height",
+        "label": "Fixed height"
+      }
+    ]
+  },
+  {
+    "type": "range",
+    "id": "desktop_height",
+    "min": 200,
+    "max": 1000,
+    "step": 100,
+    "unit": "px",
+    "label": "Desktop fixed height",
+    "default": 800
+  },
+  {
+    "type": "range",
+    "id": "mobile_height",
+    "min": 200,
+    "max": 1000,
+    "step": 100,
+    "unit": "px",
+    "label": "Mobile fixed height",
+    "default": 600
+  },
+  {
+    "type": "header",
+    "content": "Caption"
+  },
+  {
+    "type": "paragraph",
+    "content": "Leave all text areas blank for a full size before & after slider"
+  },
+  {
+    "type": "checkbox",
+    "id": "caption_first",
+    "label": "Show caption before images"
+  },
+  {
+    "type": "text",
+    "id": "heading",
+    "label": "Heading",
+    "default": "Heading"
+  },
+  {
+    "type": "richtext",
+    "id": "subheading",
+    "label": "Subheading",
+    "default": "<p>Add some text content beside a before & after image slider</p>"
+  },
+  {
+    "type": "url",
+    "id": "link",
+    "label": "Button link",
+    "default":"\/collections\/all"
+  },
+  {
+    "type": "text",
+    "id": "button_text",
+    "label": "Button text",
+    "default": "Button"
+  },
+  {
+    "type": "header",
+    "content": "Caption style"
+  },
+  {
+    "type": "color",
+    "id": "text_color",
+    "label": "Heading and subheading",
+    "default": "#000000"
+  },
+  {
+    "type": "color",
+    "id": "button_color",
+    "label": "Button text",
+    "default": "#ffffff"
+  },
+  {
+    "type": "color",
+    "id": "button_background",
+    "label": "Button background",
+    "default": "#000000"
+  },
+  {
+    "type": "color",
+    "id": "section_background",
+    "label": "Background color",
+    "default": "#f7f7f7"
+  }
+],
+"blocks":
+[
+  {
+    "type": "image",
+    "name": "Image",
+    "settings":
+    [
+      {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Image",
+        "info": "2880px x 1620px recommended"
+      }
+    ]
+  }
+],
+"presets":
+[
+  {
+    "name": "Before and after",
+    "blocks":
+    [
+      {
+        "type": "image",
+        "settings": {
+          "image": ""
+        }
+      },
+      {
+        "type": "image",
+        "settings": {
+          "image": ""
+        }
+      }
+    ]
+  }
+],
+"disabled_on": {
+  "groups": ["header", "footer"]
+}
+}
+{% endschema %}

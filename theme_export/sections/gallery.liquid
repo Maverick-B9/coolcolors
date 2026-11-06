@@ -1,0 +1,474 @@
+{%- liquid
+
+  assign section_space = section.settings.section_space
+  assign section_space_class = ''
+
+  if section_space == 'top'
+    assign section_space_class = ' pb0'
+  elsif section_space == 'bottom'
+    assign section_space_class = ' mt0'
+  elsif section_space == 'none'
+    assign section_space_class = ' mt0 pb0'
+  endif
+
+  assign is_fixed = false
+  if section.settings.image_height == 'fixed'
+    assign is_fixed = true
+  endif
+
+    assign show_slider = false
+  if section.settings.show_slider
+    assign show_slider = true
+  endif
+
+  assign desktop_fixed_height = section.settings.desktop_fixed_height
+  assign mobile_fixed_height = section.settings.mobile_fixed_height
+
+-%}
+{% for block in section.blocks %}
+{% style %}
+  .gallery__image-section .item-{{ block.id }} {
+    --text-color: {{ block.settings.text_color }};
+    --button-text: {{ block.settings.button_text_color }};
+    --button-color: {{ block.settings.button_color }};
+  }
+{% endstyle %}
+{% endfor %}
+
+<section class="global__section {{ section.settings.custom_css }} gallery__image-section{{ section_space_class }} {% if is_fixed %}is-fixed_height{% endif %}" data-section-id="{{ section.id }}" >
+{% if section.settings.full_width %}<div class="gridlock-fluid"><div class="row">{% endif %}
+  <div class="row grid__wrapper {% if show_slider %}swiper{% endif %}">
+
+
+    {% if show_slider %}
+      <div class="swiper-wrapper">
+        {% endif %}
+    
+    {% for block in section.blocks %}
+
+      {%- liquid
+        case block.settings.image_width
+          when '25%'
+            assign image_width = 'span-3'
+            assign md_render = 'calc(100vw / 4)'
+            assign lg_render = 'calc(1600px / 4)'
+          when '33%'
+            assign image_width = 'span-4'
+            assign md_render = 'calc(100vw / 3)'
+            assign lg_render = 'calc(1600px / 3)'
+          when '50%'
+            assign image_width = 'span-6'
+            assign md_render = 'calc(100vw / 2)'
+            assign lg_render = 'calc(1600px / 2)'
+          when '66%'
+            assign image_width = 'span-8'
+            assign md_render = 'calc(100vw * 0.6667)'
+            assign lg_render = 'calc(1600px * 0.6667)'
+          when '75%'
+            assign image_width = 'span-9'
+            assign md_render = 'calc(100vw * 0.75)'
+            assign lg_render = 'calc(1600px * 0.75)'
+          when '100%'
+            assign image_width = 'span-12'
+            assign md_render = '100vw'
+            assign lg_render = '100vw'
+        endcase
+
+        assign has_image = false
+        assign has_link = false
+        assign image_is_link = false
+        assign has_button = false
+        assign button_text = block.settings.button_text
+
+        if block.settings.image != blank
+          assign has_image = true
+        endif
+
+        if block.settings.link != blank and block.settings.button_text == blank
+          assign image_is_link = true
+        endif
+
+        assign loading = 'lazy'
+        assign fetch_priority = 'auto'
+        if section.index == 1 and forloop.index <= 3
+          assign loading = 'eager'
+          assign fetch_priority = 'high'
+        endif
+
+      -%}
+
+      <div class="swiper-slide gallery__item{% if block.settings.text_position == 'on_image' %} floating__text{% endif %} {{ image_width }} sm-span-12 auto item-{{ block.id }}" {{ block.shopify_attributes }}>
+        <div class="gallery__item-container">
+            {% if image_is_link %}<a href="{{ block.settings.link }}">{% endif %}
+            {% if has_image %}
+              <div class="gallery__item-image{% if block.settings.overlay %} overlay{% endif %}">
+                <a href="{{ block.settings.link }}">
+              {%
+                render 'basic-responsive-image',
+                type: block.settings.image,
+                width: 1200,
+                lg_render: lg_render,
+                md_render: md_render,
+                loading: loading,
+                fetchpriority: fetch_priority
+              %}
+                </a>
+              </div>
+            {% else %}
+              <div class="onboard">
+              {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+              </div>
+            {% endif %}
+            {% if image_is_link %}</a>{% endif %}
+            <div class="gallery__item-caption rte">
+              {% if block.settings.title_text != blank %}
+                <h3>{{ block.settings.title_text | escape }}</h3>
+              {% endif %}
+              {% if block.settings.hidden_text != blank %}
+                {{ block.settings.hidden_text }}
+              {% endif %}
+              {% if block.settings.link != blank and block.settings.button_text != blank %}
+                <div class="gallery__btn-wrapper">
+                  <a href="{{ block.settings.link }}">{{ block.settings.button_text | escape }}</a>
+                </div>
+                {% endif %}
+              {% if block.settings.link != blank and block.settings.button_text == blank %}</a>{% endif %}
+            </div>
+        </div>
+        <style>
+          .gallery__item.item-{{ block.id }} .gallery__item-caption {
+            text-align: {{ block.settings.text_align }};
+          }
+          {% if block.settings.text_position == 'on_image' %}
+          .gallery__item.floating__text.item-{{ block.id }} .gallery__item-container .gallery__item-caption,
+          .gallery__item.floating__text.item-{{ block.id }} .gallery__item-container .gallery__item-caption > a {
+            position: absolute;
+            top: {{ block.settings.caption_vertical }}%;
+            left: {{ block.settings.caption_horizontal }}%;
+            -webkit-transform: translate(-{{ block.settings.caption_horizontal }}%, -{{ block.settings.caption_vertical }}%);
+            -ms-transform: translate(-{{ block.settings.caption_horizontal }}%, -{{ block.settings.caption_vertical }}%);
+            -moz-transform: translate(-{{ block.settings.caption_horizontal }}%, -{{ block.settings.caption_vertical }}%);
+            -o-transform: translate(-{{ block.settings.caption_horizontal }}%, -{{ block.settings.caption_vertical }}%);
+            transform: translate(-{{ block.settings.caption_horizontal }}%, -{{ block.settings.caption_vertical }}%);
+          }
+          {% endif %}
+        </style>
+      </div>
+
+      {% if section.blocks.size == 0 %}
+        {% render 'no-blocks' %}
+      {% endif %}
+    {% endfor %}
+
+    {% if show_slider %}
+      </div>
+
+
+  <div class="swiper-button-next"></div>
+  <div class="swiper-button-prev"></div>
+  <div class="swiper-pagination"></div>
+  
+  {% endif %}
+
+
+  </div>
+  {% if section.settings.full_width %}</div></div>{% endif %}
+  <style>
+    #shopify-section-{{ section.id }} .gallery__item .gallery__item-container h3 {
+      font-size: {{ section.settings.promo_size }}px;
+    }
+    #shopify-section-{{ section.id }} .gallery__item .gallery__item-container p {
+      font-size: {{ section.settings.hidden_size }}px;
+    }
+    #shopify-section-{{ section.id }} .gallery__item > a {
+      display: inline-block;
+      width: 100%;
+      padding: {{ settings.focus_border_weight }}px;
+    }
+    #shopify-section-{{ section.id }} .gridlock-fluid .row .row.grid__wrapper {
+      max-width: 102.08333333%;
+    }
+    @media screen and (max-width: 740px) {
+      #shopify-section-{{ section.id }} .gallery__item .gallery__item-container h3 {
+        font-size: calc({{ section.settings.promo_size }}px - ({{ section.settings.promo_size }}px * 0.15))
+      }
+      #shopify-section-{{ section.id }} .gallery__item .gallery__item-container p {
+        font-size: calc({{ section.settings.hidden_size }}px - ({{ section.settings.hidden_size }}px * 0.15))
+      }
+    }
+    {% if is_fixed %}
+      #shopify-section-{{ section.id }} {
+        --desktop-fixed-height: {{ desktop_fixed_height }}px;
+        --mobile-fixed-height: {{ mobile_fixed_height }}px;
+      }
+    {% endif %}
+  </style>
+</section>
+<div class="clear"></div>
+
+
+{% schema %}
+{
+  "name": "Image gallery",
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full width",
+      "default": false
+    },
+    {
+      "type": "radio",
+      "id": "image_height",
+      "label": "Image height",
+      "default": "none",
+      "options":
+      [
+        {
+          "value": "none",
+          "label": "Natural"
+        },
+        {
+          "value": "fixed",
+          "label": "Fixed"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "desktop_fixed_height",
+      "min": 200,
+      "max": 1000,
+      "step": 50,
+      "unit": "px",
+      "label": "Desktop fixed height",
+      "default": 400
+    },
+    {
+      "type": "range",
+      "id": "mobile_fixed_height",
+      "min": 200,
+      "max": 1000,
+      "step": 50,
+      "unit": "px",
+      "label": "Mobile fixed height",
+      "default": 400
+    },
+    {
+      "type": "range",
+      "id": "promo_size",
+      "min": 12,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "hidden_size",
+      "min": 12,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "label": "Subheading size",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "section_space",
+      "label": "Section spacing",
+      "default": "top_and_bottom",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "top_and_bottom",
+          "label": "Top and bottom"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_slider",
+      "label": "Show Slider",
+      "default":false
+    },
+    {
+      "type": "text",
+      "id": "custom_css",
+      "label": "Add Custom CSS Here"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image",
+          "info": "800px x 600px recommended if 3 per row"
+        },
+        {
+          "type": "checkbox",
+          "id": "overlay",
+          "label": "Add image overlay",
+          "info": "This can help with text contrast"
+        },
+        {
+          "type": "select",
+          "id": "image_width",
+          "label": "Image width",
+          "default": "33%",
+          "options": [
+            {
+              "value": "25%",
+              "label": "25%"
+            },
+            {
+              "value": "33%",
+              "label": "33%"
+            },
+            {
+              "value": "50%",
+              "label": "50%"
+            },
+            {
+              "value": "66%",
+              "label": "66%"
+            },
+            {
+              "value": "75%",
+              "label": "75%"
+            },
+            {
+              "value": "100%",
+              "label": "100%"
+            }
+          ]
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "header",
+          "content": "Content"
+        },
+        {
+          "type": "text",
+          "id": "title_text",
+          "label": "Heading",
+          "default": "Heading"
+        },
+        {
+          "type": "richtext",
+          "id": "hidden_text",
+          "label": "Subheading",
+          "default": "<p>Subheading</p>"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text",
+          "default": "Button",
+          "info": "Visible only if a link is chosen"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#000000"
+        },
+        {
+          "type": "color",
+          "id": "button_text_color",
+          "label": "Button text",
+          "default": "#fff"
+        },
+        {
+          "type": "color",
+          "id": "button_color",
+          "label": "Button color",
+          "default": "#000"
+        },
+        {
+          "type": "select",
+          "id": "text_position",
+          "default": "on_image",
+          "options": [
+            {
+              "value": "on_image",
+              "label": "Over image"
+            },
+            {
+              "value": "below_image",
+              "label": "Below image"
+            }
+          ],
+          "label": "Text position"
+        },
+        {
+          "type": "range",
+          "id": "caption_vertical",
+          "min": 0,
+          "max": 100,
+          "step": 2,
+          "unit": "%",
+          "label": "Text over image vertical position",
+          "default": 80
+        },
+        {
+          "type": "range",
+          "id": "caption_horizontal",
+          "min": 0,
+          "max": 100,
+          "step": 2,
+          "unit": "%",
+          "label": "Text over image horizontal position",
+          "default": 50
+        },
+        {
+          "type": "text_alignment",
+          "id": "text_align",
+          "label": "Text alignment",
+          "default": "center"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image gallery",
+      "blocks": [
+        {
+          "type": "image"
+        },
+        {
+          "type": "image"
+        },
+        {
+          "type": "image"
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}

@@ -1,0 +1,159 @@
+{%- liquid
+
+  assign section_space = section.settings.section_space
+  assign section_space_class = ''
+
+  if section_space == 'top'
+    assign section_space_class = ' pb0'
+  elsif section_space == 'bottom'
+    assign section_space_class = ' pt0'
+  elsif section_space == 'none'
+    assign section_space_class = ' pt0 pb0'
+  endif
+
+  assign menu = linklists[section.settings.quick_links_list]
+
+-%}
+
+<section class="quick__links-section section-{{ section.id }} global__section padded__section{{ section_space_class }}" data-section-id="{{ section.id }}">
+
+  <div class="row grid__wrapper quick__link-container">
+    {% if menu == blank %}
+      {% for n in (1..grid) %}
+      {% assign link = "link " | append: n %}
+        <div class="quick__link center">
+          <a href="#">{{ link }}</a>
+        </div>
+      {% endfor %}
+    {% else %}
+      {% for link in menu.links %}
+        <div class="quick__link center">
+           <a href="{{ link.url }}" title="{{ link.title | escape }}">{{ link.title | escape }}</a>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+</section>
+
+<style>
+  .quick__links-section.section-{{ section.id }} {
+    background: {{ section.settings.section_background }};
+  }
+  .quick__links-section.section-{{ section.id }} .quick__link-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    flex-wrap: nowrap;
+    column-gap: 10px;
+    row-gap: 10px;
+    overflow-x: scroll;
+    padding-bottom: 10px;
+    padding-top: 10px;
+  }
+  @media screen and (min-width: 741px) {
+    .quick__links-section.section-{{ section.id }} .quick__link-container {
+      flex-wrap: wrap;
+      overflow-x: inherit;
+      justify-content: center;
+    }
+  }
+  .quick__links-section.section-{{ section.id }} .quick__link a {
+    display: block;
+    color: {{ section.settings.link_color }};
+  }
+  .quick__links-section.section-{{ section.id }} .quick__link a:hover {
+    text-decoration: underline;
+  }
+  .quick__links-section.section-{{ section.id }} .quick__link {
+    background: {{ section.settings.link_background }};
+    color: {{ section.settings.link_color }};
+    padding: 10px;
+    display: flex;
+    white-space: nowrap;
+    align-items: center;
+  }
+  {% if section.settings.item_border %}
+    .quick__links-section.section-{{ section.id }} .quick__link {
+      border: 1px solid var(--dotted-color);
+    }
+  {% endif %}
+  .quick__links-section.section-{{ section.id }} .quick__link-container::-webkit-scrollbar{
+    height: 4px;
+    width: 4px;
+    background: #eee;
+  }
+  .quick__links-section.section-{{ section.id }} .quick__link-container::-webkit-scrollbar-thumb:horizontal{
+    background: #333;
+    border-radius: 10px;
+  }
+</style>
+
+
+{% schema %}
+{
+  "name": "Quick links",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "quick_links_list",
+      "label": "Choose link menu",
+      "info":"Display links from an existing navigation menu. Nested menu items will not be shown"
+    },
+    {
+      "type": "color",
+      "id": "link_color",
+      "label": "Link color"
+    },
+    {
+      "type": "color",
+      "id": "link_background",
+      "label": "Link background"
+    },
+    {
+      "type": "color",
+      "id": "section_background",
+      "label": "Section background"
+    },
+    {
+      "type": "checkbox",
+      "id": "item_border",
+      "label": "Border links",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "section_space",
+      "label": "Section spacing",
+      "default": "top_and_bottom",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "top_and_bottom",
+          "label": "Top and bottom"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Quick links"
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header"]
+  }
+}
+{% endschema %}

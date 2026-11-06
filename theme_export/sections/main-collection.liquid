@@ -1,0 +1,879 @@
+
+<!-- BEGIN USF -->
+
+{%- liquid
+
+  assign collection_link = ''
+
+  if collection.handle
+    assign collection_link = '/collections/' | append: collection.handle
+  elsif collection.products.first.type == collection.title
+    assign collection_link = collection.title | url_for_type
+  elsif collection.products.first.vendor == collection.title
+    assign collection_link = collection.title | url_for_vendor
+  endif
+
+  assign number = section.settings.products_per_page
+
+  case section.settings.products_per_row
+    when 2
+      assign prod_grid = 'span-6'
+    when 3
+      assign prod_grid = 'span-4'
+    when 4
+      assign prod_grid = 'span-3'
+    when 5
+      assign prod_grid = 'span-one-fifth'
+    when 6
+      assign prod_grid = 'span-2'
+  endcase
+
+  assign show_sidebar = false
+  assign filtering_enabled = false
+  assign horizontal_filtering_enabled = false
+  assign sort_by_enabled = false
+
+  for block in section.blocks
+    if block.type == 'menu' or block.type == 'image' or block.type == 'text' or block.type == 'side_filter'
+      assign show_sidebar = true
+    endif
+    if block.type == 'dropdown_filter'
+      assign horizontal_filtering_enabled = true
+      assign horizontal_block_id = block.id
+      assign show_filter_swatches = block.settings.show_filter_swatches
+    endif
+    if block.type == 'side_filter'
+      assign filtering_enabled = true
+    endif
+  endfor
+
+  if section.settings.sort_by
+    assign sort_by_enabled = true
+  endif
+
+  assign filter_count = 0
+  for filter in collection.filters
+    if filter.type == 'price_range'
+      if filter.min_value.value != nil or filter.max_value.value != nil
+        assign filter_count = 1
+      endif
+    endif
+
+    assign filter_count = filter_count | plus: filter.active_values.size
+  endfor
+
+  if section.settings.show_image and collection.image != blank
+    assign collection_image = true
+    assign desc_width = 'span-9'
+  else
+    assign collection_image = false
+    assign desc_width = 'span-12'
+  endif
+
+  assign mobile_1pr = false
+  if section.settings.mobile_1pr
+    assign mobile_1pr = true
+  endif
+  assign show_sidebar = false
+  -%}
+
+<!--begin usf settings-->
+
+		{% capture current %}{% cycle 1, 2, 3, 4, 5, 6 %}{% endcapture %}
+                   {%- liquid
+
+      if settings.quickview_type == 'modal'
+        assign quickview_classes = 'js-modal-open'
+        assign quickview_settings = 'data-wau-modal-target="quickview"'
+      else
+        assign quickview_classes = 'js-slideout-open'
+        assign quickview_settings = 'data-wau-slideout-target="quickview" data-slideout-direction="right"'
+      endif
+
+    -%}
+          {% comment %} <script>
+            window._usf_quickview_classes = {{ quickview_classes | json }};
+            window._usf_quickview_settings = {{ quickview_settings | json }};
+            window._usfNoImage =  {{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg' | json }};
+            window._usfSaleText = {{ 'products.general.sale' | t | json }};
+            window._usfSoldOutText = {{ 'products.general.sold' | t | json }};
+            window._usfNewText = {{ 'products.general.new' | t | json }};
+            window._usfQuickViewText = {{ 'products.general.quick_view' | t | json }};
+            window._usfUnitPriceText = {{ 'products.product.unit_price_label' | t | json }};
+            window._usfRegulatPriceText = {{ 'products.general.regular_price' | t | json }};
+            window._usfFromPriceHtml = {{ 'products.product.from_lowest_price_html' | t | json }};
+            window._usfSalePriceText = {{ 'products.general.sale_price' | t | json }};
+            window._usfGlobalSettings = {
+              product_image_size: {{ settings.product_image_size | json }},
+              secondary_images_hover: {{ settings.secondary_images_hover | json }},
+              quickview: {{ settings.quickview | json }},
+              vendor: {{ settings.vendor | json }},
+              color_swatch_style: {{ settings.color_swatch_style | json }},
+              use_swatch_images: {{ settings.use_swatch_images | json }},
+              icon_style: {{ settings.icon_style | json }},
+              sale_items: {{ settings.sale_items | json }},
+              switch_image: {{ settings.switch_image | json }},
+              quickview_type: {{ settings.quickview_type | json }},
+              alternate_colors: {{ settings.alternate_colors | json }},
+            };
+            window._usfSectionSettings = {
+              products_per_row: {{ section.settings.products_per_row | json }},
+              mobile_1pr: {{ section.settings.mobile_1pr | json }}
+            };
+            window._usf_prod_grid = {{ prod_grid | json }};
+            window._usfCollectionById = {};
+            {% for collection in collections %}
+            window._usfCollectionById[{{ collection.id | json }}] = {{ collection.handle | json }};
+            {% endfor %}
+          </script> {% endcomment %}
+          
+<!--end usf settings-->
+
+<section class="collection__page main__section" data-section-id="{{ section.id }}" data-section-type="collection-section" data-collection-link="{{ collection_link }}">
+  <form id="main-collection-form" {% if show_sidebar %}data-collection-sidebar-filters{% endif %}  {%- if horizontal_filtering_enabled or sort_by_enabled -%}data-collection-filters{% endif %}>
+
+    {% paginate collection.products by number %}
+      <div id="CollectionProductGrid">
+        <div class="row grid__wrapper rg0">
+          <div class="span-12 auto">
+              <h1 class="colleciton__page-title page-title">
+                {% if collection.handle == 'all' %}{{ 'collections.general.all_products' | t }}{% else %}{{ collection.title }}{% endif %}
+              </h1>
+          </div>
+          {% if section.settings.description_position == 'top' and collection.description != blank and collection.description != '[banner]' %}
+          <div class="collection__page-description span-12 auto">
+              <div class="grid__wrapper grid__wrapper-nest edge">
+                <div class="rte {{ desc_width }} sm-span-12 auto">
+                {% comment %}
+                    {{ collection.description | remove: "[banner]" }}
+                    {% endcomment %}
+                </div>
+                {%- if collection_image -%}
+                <div class="collection__page-image span-3 sm-span-12 auto">
+                    {{ collection.image | image_url: width: 600 | image_tag: alt: collection.image.alt }}
+                </div>
+                {%- endif -%}
+              </div>
+          </div>
+          {% endif %}
+        </div>
+
+          <div class="grid__wrapper row clp-products">
+       
+
+            <div class="span-12 sm-span-12 auto">
+
+        
+
+              <style>
+#usf_container{
+    visibility:hidden;
+}
+</style>
+<div id="usf_container"></div>
+<div class="usf-skeleton-container">
+	<style>              
+	  @media (max-width: 749px){
+		.usf-mobile-hidden{
+		  display: none !important;
+		}
+		.usf-skeleton-container .usf-sr-config__mobile-filters-wrapper{
+		  display: flex;
+		  width: 100%;
+		  flex-wrap: wrap;
+		}
+		.usf-skeleton-container .usf-filters, 
+		.usf-skeleton-container .usf-sr-config__mobile-filters-wrapper .usf-c-select{
+		  height: 49px;
+		  border: 1px solid #ededed;
+		  width: 50%;
+		  border-left: none;
+		  display: flex !important;
+		  align-items: center;
+		}
+		.usf-skeleton-container .usf-filters{
+		  border-left: 1px solid #ededed;
+		}
+
+		.usf-skeleton-container .usf-results{
+		  height: 400px;
+		  margin-left: -20px;
+		  display: flex;
+		  flex-wrap: wrap;
+		}
+		.usf-skeleton-container .usf-sr-config{
+		  display: flex;
+		  align-items: center;
+		  justify-content: space-between;
+		  margin-top: 13px;
+		  flex-wrap: wrap;
+		}
+		
+		.usf-skeleton-container .usf-sr-summary:before{
+		  margin: 0 !important;
+		  width: 100px !important;
+		}
+		.usf-skeleton-container .usf-views:before{
+		  margin: 0 !important;
+		  width: 50px !important;
+		  margin-left: auto !important;
+		}
+		.usf-skeleton-container .usf-grid__item{
+		  width: 50%;
+		  padding-left: 20px;
+		}
+		.usf-skeleton-container .usf-sr-summary, 
+		.usf-skeleton-container .usf-views{
+		  margin: 30px 0 20px 0;
+		  display: block;
+		  width: 50%;
+		}
+		
+		.usf-skeleton-container .usf-filters:before,
+		.usf-skeleton-container .usf-c-select:before{
+		  margin: 30px;
+		}
+	  }
+	  
+	  .usf-skeleton-container .usf-filters:before,
+	  .usf-skeleton-container .usf-c-select:before,
+	  .usf-skeleton-container .usf-sr-summary:before,
+	  .usf-skeleton-container .usf-views:before,
+	  .usf-skeleton-container .usf-facet .usf-title:before,
+	  .usf-skeleton-container .usf-facet .usf-body:before,
+	  .usf-skeleton-container .usf-facet .usf-body:after              
+	  {
+		content:'';
+		display: block;
+		background-color: #0000000b;
+		-webkit-animation: usf-skeleton-animation 2.3s infinite;
+		animation: usf-skeleton-animation 2.3s infinite;
+		height: 10px;
+		border-radius: 10px;
+		width: 100%;                
+	  }
+	  
+	  @keyframes usf-skeleton-animation {
+		0% {
+			opacity: 1
+		}
+
+		50% {
+			opacity: .5
+		}
+
+		100% {
+			opacity: 1
+		}
+	  }
+	  
+	  @media (min-width: 750px){
+		.usf-skeleton-container .usf-desktop-hidden{
+		  display: none !important;
+		}
+		.usf-skeleton-container .usf-facet .usf-title,
+		.usf-skeleton-container .usf-facet .usf-body,
+		.usf-skeleton-container .usf-c-select
+		{
+		  display: block !important;
+		}              
+	  
+		.usf-skeleton-container .usf-sr-config__mobile-filters-wrapper{
+		  display: none;
+		}
+		
+		.usf-skeleton-container .usf-facets{
+		  display: block;
+		  width: 23%;
+		  float: left;
+		  margin-top: 17px;
+		}
+		
+		.usf-skeleton-container .usf-sr-container {
+		  width: 77%;
+		  float: left;
+		  padding-left: 30px;
+		  margin-top: 17px;
+		}
+		
+		.usf-skeleton-container .usf-sr-config{
+		  display: flex;
+		}
+		
+		.usf-skeleton-container .usf-sr-config > .usf-c-select{
+		  width: 200px;
+		}
+		
+		.usf-skeleton-container .usf-sr-summary{
+		  width: 100%;
+		}
+		.usf-skeleton-container .usf-sr-summary:before{
+		  margin: auto;
+		  width: 200px;
+		}
+		.usf-skeleton-container .usf-views:before{
+		}
+		.usf-skeleton-container .usf-grid__item{
+		  width: 50%;
+		  padding-left: 20px;
+		}
+		.usf-skeleton-container .usf-views{
+		  display: block;
+		  width: 50px;
+		}
+		
+		.usf-skeleton-container .usf-sr-container{
+		  min-height: 700px;
+		}
+	  }  
+	  
+	  .usf-skeleton-container .usf-facet{
+		margin-bottom: 40px;
+	  }
+	  
+	  .usf-skeleton-container .usf-facet .usf-title:before{                
+		margin-bottom: 25px;
+		width: 70%;
+	  }
+	  
+	  .usf-skeleton-container .usf-facet .usf-body:before,
+	  .usf-skeleton-container .usf-facet .usf-body:after
+	  {
+		margin-bottom: 16px;
+	  }
+	</style>
+  
+	<div class="usf-facets usf-mobile-hidden">
+	  <div class="usf-facet">
+		<div class="usf-title"></div>
+		<div class="usf-body"></div>                
+	  </div>
+	  <div class="usf-facet">
+		<div class="usf-title"></div>
+		<div class="usf-body"></div>
+	  </div>
+	</div>
+	<div class="usf-sr-container">
+	  <div class="usf-sr-config">
+		<div class="usf-sr-config__mobile-filters-wrapper">
+		  <div class="usf-filters"></div>
+		  <div class="usf-c-select"></div>
+		</div>
+		<div class="usf-views usf-mobile-hidden"></div>
+		<span class="usf-sr-summary"></span>
+		<div class="usf-views usf-desktop-hidden"></div>
+		<div class="usf-c-select usf-mobile-hidden"></div>
+	  </div>
+	  <div class="usf-results usf-grid">
+		<div class="usf-grid__item"></div>
+		<div class="usf-grid__item"></div>
+		<div class="usf-grid__item"></div>
+		<div class="usf-grid__item"></div>
+	  </div>
+	</div>       
+</div>
+
+                <style>
+              .collection__page-products {
+                grid-template-columns: repeat({{ grid }}, 1fr);
+              }
+            </style>
+              
+            </div>
+
+          </div>
+
+      </div>
+    {% endpaginate %}
+
+    {% if section.settings.description_position == 'bottom' %}
+      <div class="collection__page-description desktop-12 tablet-6 mobile-3 description__bottom">
+        <div class="row">
+          <div class="rte {{ desc_width }}">
+            {{ collection.description | remove: "[banner]" }}
+          </div>
+          {%- if collection_image -%}
+            <div class="collection__page-image desktop-3 mobile-3">
+              <img src="{{ collection.image | img_url: '350x' }}" alt="{{ collection.image.alt }}">
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    {% endif %}
+
+</form><!-- /#main-collection-form -->
+</section>
+<!-- END USF -->
+
+{% comment %}USF
+{%- liquid
+
+  assign collection_link = ''
+
+  if collection.handle
+    assign collection_link = '/collections/' | append: collection.handle
+  elsif collection.products.first.type == collection.title
+    assign collection_link = collection.title | url_for_type
+  elsif collection.products.first.vendor == collection.title
+    assign collection_link = collection.title | url_for_vendor
+  endif
+
+  assign number = section.settings.products_per_page
+
+  case section.settings.products_per_row
+    when 2
+      assign prod_grid = 'span-6'
+    when 3
+      assign prod_grid = 'span-4'
+    when 4
+      assign prod_grid = 'span-3'
+    when 5
+      assign prod_grid = 'span-one-fifth'
+    when 6
+      assign prod_grid = 'span-2'
+  endcase
+
+  assign show_sidebar = false
+  assign filtering_enabled = false
+  assign horizontal_filtering_enabled = false
+  assign sort_by_enabled = false
+
+  for block in section.blocks
+    if block.type == 'menu' or block.type == 'image' or block.type == 'text' or block.type == 'side_filter'
+      assign show_sidebar = true
+    endif
+    if block.type == 'dropdown_filter'
+      assign horizontal_filtering_enabled = true
+      assign horizontal_block_id = block.id
+      assign show_filter_swatches = block.settings.show_filter_swatches
+    endif
+    if block.type == 'side_filter'
+      assign filtering_enabled = true
+    endif
+  endfor
+
+  if section.settings.sort_by
+    assign sort_by_enabled = true
+  endif
+
+  assign filter_count = 0
+  for filter in collection.filters
+    if filter.type == 'price_range'
+      if filter.min_value.value != nil or filter.max_value.value != nil
+        assign filter_count = 1
+      endif
+    endif
+
+    assign filter_count = filter_count | plus: filter.active_values.size
+  endfor
+
+  if section.settings.show_image and collection.image != blank
+    assign collection_image = true
+    assign desc_width = 'span-9'
+  else
+    assign collection_image = false
+    assign desc_width = 'span-12'
+  endif
+
+  assign mobile_1pr = false
+  if section.settings.mobile_1pr
+    assign mobile_1pr = true
+  endif
+
+  -%}
+
+<section class="collection__page main__section" data-section-id="{{ section.id }}" data-section-type="collection-section" data-collection-link="{{ collection_link }}">
+  <form id="main-collection-form" {% if show_sidebar %}data-collection-sidebar-filters{% endif %}  {%- if horizontal_filtering_enabled or sort_by_enabled -%}data-collection-filters{% endif %}>
+
+    {% paginate collection.products by number %}
+      <div id="CollectionProductGrid">
+        <div class="row grid__wrapper rg0">
+          <div class="span-12 auto">
+            <h1 class="colleciton__page-title page-title">
+              {% if collection.handle == 'all' %}{{ 'collections.general.all_products' | t }}{% else %}{{ collection.title }}{% endif %}
+            </h1>
+          </div>
+          {% if section.settings.description_position == 'top' and collection.description != blank and collection.description != '[banner]' %}
+            <div class="collection__page-description span-12 auto">
+              <div class="grid__wrapper grid__wrapper-nest edge">
+                <div class="rte {{ desc_width }} sm-span-12 auto">
+                  {{ collection.description | remove: "[banner]" }}
+                </div>
+                {%- if collection_image -%}
+                  <div class="collection__page-image span-3 sm-span-12 auto">
+                    {{ collection.image | image_url: width: 600 | image_tag: alt: collection.image.alt }}
+                  </div>
+                {%- endif -%}
+              </div>
+            </div>
+            {% endif %}
+          </div>
+
+          {% if section.settings.show_subcollections %}
+            {% liquid
+
+              assign menu = linklists[section.settings.subcollection_linklist]
+              assign has_subcollections = false
+
+              case settings.collection_image_size
+                when 'natural'
+                  assign aspect_ratio = 'natural'
+                when 'square'
+                  assign aspect_ratio = 'square'
+                when 'landscape'
+                  assign aspect_ratio = 'landscape'
+                when 'portrait'
+                  assign aspect_ratio = 'portrait'
+              endcase
+
+              if settings.title_position == 'floating'
+                assign is_floating = true
+              endif
+
+              assign bold_collection_title = false
+              if settings.bold_collection_title
+                assign bold_collection_title = true
+              endif
+            %}
+
+            {% capture subcollections %}
+            <div class="grid__wrapper row">
+            <div class="collection--list_submenus span-12 auto">
+              {% for link in menu.links %}
+                {% if link.type == 'collection_link' and link.handle == collection.handle %}
+                  {% if link.links.size > 0 %}
+                    {% for child_link in link.links %}
+                      {% if child_link.type == 'collection_link' and child_link.handle != collection.handle %}
+                        {% liquid
+                          if section.index == 1
+                            assign loading = 'eager'
+                            assign fetch_priority = 'high'
+                          endif
+                         %}
+                        {% assign has_subcollections = true %}
+                        <div class="collection__list-item{% if is_floating %} floating__title{% endif %} auto" data-alpha="{{ collection.title }}">
+                          {% render 'collection-grid-item',
+                            collection: child_link.object,
+                            aspect_ratio: aspect_ratio,
+                            bold_collection_title: bold_collection_title,
+                            loading: loading,
+                            fetchpriority: fetch_priority
+                          %}
+                        </div>
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+              {% comment %}Extract sub-collections from nav child link level{% endcomment %}
+              {% for link in menu.links %}
+                  {% if link.child_current %}
+                    {% for child_link in link.links %}
+                      {% if child_link.type == 'collection_link' and child_link.handle == collection.handle %}
+                        {% if child_link.links != blank and child_link != active %}
+                            {% for grandchild_link in child_link.links %}
+                              {% if grandchild_link.type == 'collection_link' %}
+                                {% unless grandchild_link.url contains child_link.url %}
+                                  {% assign has_subcollections = true %}
+                                  <div class="collection__list-item{% if is_floating %} floating__title{% endif %} auto" data-alpha="{{ collection.title }}">
+                                    {% liquid
+                                      if section.index == 1
+                                        assign loading = 'eager'
+                                        assign fetch_priority = 'high'
+                                      endif
+                                     %}
+                                    {% render 'collection-grid-item',
+                                      collection: grandchild_link.object,
+                                      aspect_ratio: aspect_ratio,
+                                      bold_collection_title: bold_collection_title
+                                    %}
+                                  </div>
+                                {% endunless %}
+                              {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+              {% endfor %}
+            </div>
+            </div>
+            {% endcapture %}
+
+            {% comment %}Extract sub-collections from nav top level{% endcomment %}
+            {% if has_subcollections %}
+              {{ subcollections }}
+            {% endif %}
+          {% endif %}
+
+
+          <div class="grid__wrapper row">
+            {% if show_sidebar %}
+              <div class="span-3 auto md-span-12 sm-span-12">
+                {% render 'collection-sidebar', collection: collection %}
+              </div>
+            {% endif %}
+
+            <div class="{% if show_sidebar %}span-9 {% else %}span-12{% endif %} md-span-12 sm-span-12 auto">
+
+              {%- if horizontal_filtering_enabled or sort_by_enabled -%}
+                  {% render 'collection-horizontal-toolbar',
+                    collection: collection,
+                    paginate: paginate,
+                    block: block,
+                    horizontal_filtering_enabled: horizontal_filtering_enabled,
+                    sort_by_enabled: sort_by_enabled,
+                    show_filter_swatches: show_filter_swatches,
+                    unique_id: horizontal_block_id %}
+                  </form>
+                  <div class="clear"></div>
+              {%- endif -%}
+
+              {% if filter_count > 0  %}
+                <div class="filtering__results js-filters-reset">
+                  <ul class="current_tags">
+                    {%- for filter in collection.filters -%}
+                      {%- for value in filter.active_values -%}
+                        <li class="current_filters--filter current_tag">
+                          <a class="js-current-filter" href="{{ value.url_to_remove }}">
+                            {{ value.label | escape }}
+                          </a>
+                        </li>
+                      {%- endfor -%}
+                      {% if filter.type == "price_range" %}
+                        {%- if filter.min_value.value != nil or filter.max_value.value != nil -%}
+                          <li class="current_filters--filter current_tag">
+                            <a class="js-current-filter" href="{{ filter.url_to_remove }}">
+                              {%- if filter.min_value.value -%}{{ filter.min_value.value | money }}{%- else -%}{{ 0 | money }}{%- endif -%}-{%- if filter.max_value.value -%}{{ filter.max_value.value | money }}{%- else -%}{{ filter.range_max | money }}{%- endif -%}
+                            </a>
+                          </li>
+                        {%- endif -%}
+                      {% endif %}
+                    {%- endfor -%}
+                    <li><a class="current_filters--clear js-current-filter clear-tags" href="{{ collection.url }}">{{ 'collections.filters.clear_all' | t }}</a></li>
+                  </ul>
+                </div>
+                <div class="clear"></div>
+              {% endif %}
+
+              {%- if collection.products.size >=1 -%}
+                <div id="main-collection-product-grid"
+                  class="collection__page-products product-loop grid__wrapper grid__wrapper-nest edge{% if section.settings.products_per_row == 5 %} five--columns{% endif %}"
+                  data-id="{{ section.id }}">
+                  {% for product in collection.products %}
+                    <div id="product-listing-{{ product.id }}" class="collection__page-product product-index {{ prod_grid }}{% if mobile_1pr %} sm-span-12{% else %} sm-span-6{% endif %} auto js-product-listing" data-alpha="{{ product.title }}" data-price="{{ product.price }}"  data-product-id="{{ product.id }}">
+                      {% liquid
+                        assign loading = 'lazy'
+                        assign fetch_priority = 'auto'
+                        if section.index == 1 and forloop.index <= section.settings.products_per_row
+                          assign loading = 'eager'
+                          assign fetch_priority = 'high'
+                        endif
+                       %}
+                      {% render 'product-listing', product: product, collection: collection, loading: loading, fetchpriority: fetch_priority %}
+                    </div>
+                  {% endfor %}
+                </div>
+              {%- else -%}
+                <div id="main-collection-product-grid"
+                  class="collection collection--empty"
+                  data-id="{{ section.id }}">
+                  {{ 'collections.filters.use_fewer_filters_html' | t: link: collection.url, class: "underline" }}
+                </div>
+              {%- endif -%}
+            </div>
+
+          </div>
+
+        {% render 'pagination', paginate: paginate %}
+      </div>
+    {% endpaginate %}
+
+    {% if section.settings.description_position == 'bottom' %}
+      <div class="collection__page-description desktop-12 tablet-6 mobile-3 description__bottom">
+        <div class="row">
+          <div class="rte {{ desc_width }}">
+            {{ collection.description | remove: "[banner]" }}
+          </div>
+          {%- if collection_image -%}
+            <div class="collection__page-image desktop-3 mobile-3">
+              {{ collection.image | image_url: width: 600 | image_tag: alt: collection.image.alt }}
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    {% endif %}
+
+</form><!-- /#main-collection-form -->
+</section>
+
+USF{% endcomment %}
+{% schema %}
+{
+  "name": "Collection page",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 2,
+      "max": 100,
+      "step": 1,
+      "label": "How many products per page",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "products_per_row",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "label": "Products per row",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_1pr",
+      "label": "1 per row on mobile",
+      "default":false
+    },
+    {
+      "type": "checkbox",
+      "id": "sort_by",
+      "label": "Show sort by",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Show collection image",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "description_position",
+      "label": "Description and image position",
+      "default": "top",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        }
+      ]
+    },
+    {
+      "type":"header",
+      "content":"Sub collections"
+    },
+    {
+      "type":"paragraph",
+      "content":"Select a navigation menu with submenus that contain links to collections. When a collection from your menu is shown any submenu collections will appear. We recommend using the same menu as your stores main navigation"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_subcollections",
+      "label": "Show subcollections",
+      "default": false
+    },
+    {
+      "type": "link_list",
+      "id": "subcollection_linklist",
+      "label": "Choose link menu",
+      "info":"Display links from an existing navigation menu. Nested menu items will not be shown"
+    }
+  ],
+  "blocks": [
+  {
+      "type": "dropdown_filter",
+      "name": "Dropdown filter",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Learn how to add storefront filters [here](https:\/\/help.shopify.com\/en\/manual\/online-store\/themes\/os20\/customize\/filters)"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_filter_swatches",
+          "label": "Show filter color swatches",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "menu",
+      "name": "Sidebar menu",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Menu title",
+          "default": "Explore"
+        },
+        {
+          "type": "link_list",
+          "id": "side_nav",
+          "default": "main-menu",
+          "label": "Sidebar menu",
+          "info": "This menu won't show dropdown items"
+        }
+      ]
+    },
+    {
+      "type": "side_filter",
+      "name": "Sidebar filter",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Learn how to add storefront filters [here](https:\/\/help.shopify.com\/en\/manual\/online-store\/themes\/os20\/customize\/filters)"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_filter_swatches",
+          "label": "Show filter color swatches",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "name": "Sidebar image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "id": "link",
+          "type": "url",
+          "label": "Link"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Sidebar rich text",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Made for you"
+        },
+        {
+          "type": "richtext",
+          "id": "sidebar_text",
+          "label": "Text",
+          "default": "<p>Add some text to the sidebar</p>"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

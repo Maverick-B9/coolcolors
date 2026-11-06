@@ -1,0 +1,155 @@
+{% comment %}
+sections/recently-viewed.liquid
+{% endcomment %}
+
+{%- liquid
+
+  if settings.section_titles == 'lines'
+    assign section_title_classes = 'lines'
+  elsif settings.section_titles == 'btm_border'
+    assign section_title_classes = 'btm_border'
+  endif
+
+  assign prod_limit = section.settings.limit
+  assign grid = section.settings.grid
+
+  assign is_carousel = false
+  if section.settings.carousel
+   assign is_carousel = true
+  endif
+
+  case section.settings.grid
+    when 2
+      assign prod_grid = 50
+    when 3
+      assign prod_grid = 33.333
+    when 4
+      assign prod_grid = 25
+    when 5
+      assign prod_grid = 20
+  endcase
+
+  if prod_limit <= grid
+    assign enough_to_wrap = false
+  endif
+
+  assign margin_offset = grid | minus: 1 | times: 20
+
+-%}
+
+{%- capture wrapper_id -%}
+  recently-viewed--{{ section.id }}
+{%- endcapture -%}
+
+{% capture classes %}
+  recently-viewed-products recently-viewed-products--hidden recently-viewed-products--{{ section.id }} {% if is_carousel %}recently-viewed-products--carousel flickity__section{% endif %} product-loop
+{% endcapture %}
+
+{% capture section_classes %}
+  recently-viewed recently-viewed--{{ section.id }} desktop-12 tablet-6 mobile-3
+{% endcapture %}
+
+{% capture slideshow_config %}{
+  "wrapAround"          : false,
+  "cellAlign"           : "left",
+  "dragThreshold"       : "15",
+  "draggable"           : false,
+  "pauseAutoPlayOnHover": false,
+  "prevNextButtons"     : false,
+  "pageDots"            : true,
+  "contain"             : true
+}{% endcapture %}
+
+<section
+  id="recently-viewed--{{ section.id }}"
+  class="{{ section_classes }}"
+  data-section-id="{{ section.id }}"
+  data-section-type="recently-viewed"
+  data-limit="{{ section.settings.limit }}"
+  data-grid="{{ section.settings.grid }}"
+  data-carousel="{{ section.settings.carousel }}"
+  data-wrapper-id="{{- wrapper_id -}}"
+  style="display: none;">
+  <div class="row">
+    {% if section.settings.title != blank %}
+      <div class="section-title {{ section_title_classes }} desktop-12 tablet-6 mobile-3">
+        <h2>{{ section.settings.title | escape }}</h2>
+      </div><!-- /.section-title -->
+      <div class="clear"></div><!-- /.clear -->
+    {% endif %}
+
+    <div
+      id="{{- wrapper_id -}}"
+      class="{{ classes }}"
+      {% if is_carousel %}
+      data-flickity-config='{{ slideshow_config }}'
+      {% endif %}
+      data-slideout-ignore
+    ></div><!-- /#recently-viewed-products -->
+  </div><!-- /.row -->
+  <style>
+    {% if is_carousel %}
+      .recently-viewed-products--{{ section.id }}.recently-viewed-products--carousel .product {
+        width: calc((100% - {{ margin_offset }}px)/{{ grid }});
+        margin-right: 20px;
+        margin-bottom: 40px;
+      }
+    {% else %}
+      .recently-viewed-products--{{ section.id }} {
+        display: grid;
+        grid-template-columns: repeat({{ grid }}, 1fr);
+        grid-column-gap: 25px;
+        grid-row-gap: 40px;
+      }
+    {% endif %}
+  </style>
+</section><!-- /#recently-viewed -->
+
+{% schema %}
+{
+  "name": "Recently Viewed",
+  "settings":
+  [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "You also Viewed"
+    },
+    {
+      "id": "carousel",
+      "type": "checkbox",
+      "label": "Display in carousel",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "grid",
+      "min": 3,
+      "max": 5,
+      "step": 1,
+      "label": "Products per row",
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "min": 2,
+      "max": 30,
+      "step": 1,
+      "label": "Products shown",
+      "default": 5
+    }
+  ],
+  "presets":
+  [
+    {
+      "name": "Recently viewed",
+      "category": "Products"
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}

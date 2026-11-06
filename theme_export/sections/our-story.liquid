@@ -1,0 +1,302 @@
+{%- liquid
+  assign title_parts = section.settings.title | split: '/'
+  assign cta_parts = section.settings.cta_text | split: '/'
+  assign stats = section.blocks | where: 'type', 'stat'
+  assign values = section.blocks | where: 'type', 'value'
+  assign ms = section.blocks | where: 'type', 'milestone'
+-%}
+
+{%- if section.settings.display_font -%}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&display=swap" rel="stylesheet">
+{%- endif -%}
+
+<section
+  class="cos{% if section.settings.display_font %} cos--font{% endif %}"
+  style="--cos-bg:{{ section.settings.bg | default: '#eef0f2' }};--cos-ink:{{ section.settings.ink | default: '#151a20' }};--cos-accent:{{ section.settings.accent | default: '#66788f' }};"
+>
+  <div class="cos__hero">
+    <div class="cos__heroimg">
+      {%- if section.settings.hero_image != blank -%}
+        {{
+          section.settings.hero_image
+          | image_url: width: 2400
+          | image_tag:
+            loading: 'eager',
+            fetchpriority: 'high',
+            widths: '800, 1200, 1600, 2000, 2400',
+            sizes: '100vw',
+            alt: ''
+        }}
+      {%- else -%}
+        <img src="{{ 'cc-hero.jpg' | asset_url }}" alt="" loading="eager">
+      {%- endif -%}
+    </div>
+    <div class="cos__heroin">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="cos__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+      <h1 class="cos__h1">
+        <span>{{ title_parts[0] | strip | escape }}</span>
+        {%- if title_parts.size > 1 -%}<span class="cos__h1b">{{ title_parts[1] | strip | escape }}</span>{%- endif -%}
+      </h1>
+    </div>
+  </div>
+
+  <div class="cos__wrap cos__intro">
+    <h2 class="cos__statement">{{ section.settings.statement | escape }}</h2>
+    <div class="cos__copy">{{ section.settings.story }}</div>
+  </div>
+
+  {%- if stats.size > 0 -%}
+    <div class="cos__wrap cos__stats">
+      {%- for b in stats -%}
+        <div class="cos__stat" {{ b.shopify_attributes }}>
+          <b>{{ b.settings.number | escape }}</b>
+          <span>{{ b.settings.label | escape }}</span>
+        </div>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+
+  <div class="cos__wrap cos__pair">
+    <div class="cos__p cos__p--1">
+      {%- if section.settings.image_a != blank -%}
+        {{
+          section.settings.image_a
+          | image_url: width: 1400
+          | image_tag: loading: 'lazy', widths: '600, 900, 1200, 1400', sizes: '(min-width: 901px) 55vw, 100vw', alt: ''
+        }}
+      {%- else -%}
+        <img src="{{ 'cc-ed-top.jpg' | asset_url }}" alt="" loading="lazy">
+      {%- endif -%}
+    </div>
+    <div class="cos__p cos__p--2">
+      {%- if section.settings.image_b != blank -%}
+        {{
+          section.settings.image_b
+          | image_url: width: 1400
+          | image_tag: loading: 'lazy', widths: '600, 900, 1200, 1400', sizes: '(min-width: 901px) 35vw, 70vw', alt: ''
+        }}
+      {%- else -%}
+        <img src="{{ 'cc-ed-btm.jpg' | asset_url }}" alt="" loading="lazy">
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- if values.size > 0 -%}
+    <div class="cos__values">
+      <div class="cos__wrap">
+        {%- if section.settings.values_label != blank -%}
+          <p class="cos__label">{{ section.settings.values_label | escape }}</p>
+        {%- endif -%}
+        <div class="cos__vgrid">
+          {%- for b in values -%}
+            <div class="cos__value" {{ b.shopify_attributes }}>
+              <h3>{{ b.settings.title | escape }}</h3>
+              <p>{{ b.settings.text | escape }}</p>
+            </div>
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+
+  {%- if ms.size > 0 -%}
+    <div class="cos__wrap cos__time">
+      {%- if section.settings.timeline_label != blank -%}
+        <p class="cos__label">{{ section.settings.timeline_label | escape }}</p>
+      {%- endif -%}
+      <div class="cos__tl">
+        {%- for b in ms -%}
+          <div class="cos__ms" {{ b.shopify_attributes }}>
+            <span class="cos__year">{{ b.settings.year | escape }}</span>
+            <div class="cos__mtx">
+              <h3>{{ b.settings.title | escape }}</h3>
+              <p>{{ b.settings.text | escape }}</p>
+            </div>
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- endif -%}
+
+  <div class="cos__cta">
+    <div class="cos__cta-in">
+      <h2>
+        {{ cta_parts[0] | strip | escape }}
+        {%- if cta_parts.size > 1 -%}<span>{{ cta_parts[1] | strip | escape }}</span>{%- endif -%}
+      </h2>
+      <div class="cos__btns">
+        {%- if section.settings.cta_btn != blank -%}
+          <a href="{{ section.settings.cta_link | default: '/collections/new-arrival' }}" class="cos__btn cos__btn--p">{{ section.settings.cta_btn | escape }}</a>
+        {%- endif -%}
+        {%- if section.settings.cta2_btn != blank -%}
+          <a href="{{ section.settings.cta2_link | default: '/pages/lookbook' }}" class="cos__btn cos__btn--g">{{ section.settings.cta2_btn | escape }}</a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cos{ --cos-mut:#5f6a74; --cos-line:#cdd3d8; --cos-tint:#e1e6ea; }
+  @supports (color: color-mix(in srgb, red, blue)){
+    .cos{
+      --cos-mut: color-mix(in srgb, var(--cos-ink) 60%, var(--cos-bg));
+      --cos-line: color-mix(in srgb, var(--cos-ink) 16%, var(--cos-bg));
+      --cos-tint: color-mix(in srgb, var(--cos-accent) 14%, var(--cos-bg));
+    }
+  }
+  .cos, .cos *, .cos *::before, .cos *::after{ box-sizing:border-box; }
+  .cos{ display:block; background:var(--cos-bg); color:var(--cos-ink); font-family:inherit; overflow-x:clip; -webkit-font-smoothing:antialiased; }
+  .cos--font{ font-family:'Bricolage Grotesque','Helvetica Neue',Arial,sans-serif; }
+  .cos h1, .cos h2, .cos h3, .cos p, .cos span, .cos b, .cos a, .cos div{ font-family:inherit !important; }
+  .cos img{ display:block; max-width:none; }
+
+  .cos .cos__wrap{ max-width:1400px; margin:0 auto; padding-left:5vw; padding-right:5vw; }
+
+  /* hero */
+  .cos .cos__hero{ position:relative; display:flex; flex-direction:column; justify-content:flex-end; min-height:82vh; overflow:hidden; background:#2a323b; color:#fff; }
+  .cos .cos__heroimg, .cos .cos__heroimg img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 20%; }
+  .cos .cos__hero::after{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(14,18,23,.12) 0%, rgba(14,18,23,.62) 100%); }
+  .cos .cos__heroin{ position:relative; z-index:2; width:100%; max-width:1400px; margin:0 auto; padding:140px 5vw 6vw; }
+  .cos .cos__eyebrow{ margin:0 0 20px; font-size:14px; letter-spacing:0; text-transform:none; color:#fff !important; opacity:.85; }
+  .cos .cos__h1{ margin:0; padding:0; font-size:clamp(40px,7.4vw,118px); font-weight:500; font-stretch:80%; line-height:.96; letter-spacing:-.045em; text-transform:none; color:#fff !important; }
+  .cos .cos__h1 span{ display:block; }
+  .cos .cos__h1 .cos__h1b{ margin-left:6vw; font-weight:300; opacity:.82; }
+
+  /* intro */
+  .cos .cos__intro{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); column-gap:2vw; padding-top:9vw; padding-bottom:5vw; }
+  .cos .cos__statement{ grid-column:1/8; margin:0; font-size:clamp(26px,3.9vw,60px); font-weight:500; font-stretch:85%; line-height:1.08; letter-spacing:-.04em; text-transform:none; color:var(--cos-ink) !important; }
+  .cos .cos__copy{ grid-column:9/13; margin-top:5vw; font-size:16px; line-height:1.85; color:var(--cos-mut); }
+  .cos .cos__copy p{ margin:0 0 16px; color:var(--cos-mut) !important; font-size:16px; line-height:1.85; }
+
+  /* stats */
+  .cos .cos__stats{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); column-gap:2vw; padding-top:2vw; padding-bottom:8vw; }
+  .cos .cos__stat{ border-top:1px solid var(--cos-line); padding-top:22px; }
+  .cos .cos__stat:nth-child(2){ margin-top:2.5vw; } .cos .cos__stat:nth-child(4){ margin-top:5vw; }
+  .cos .cos__stat b{ display:block; font-size:clamp(44px,6vw,92px); font-weight:300; font-stretch:80%; line-height:.95; letter-spacing:-.05em; color:var(--cos-ink); }
+  .cos .cos__stat span{ display:block; margin-top:12px; font-size:14px; color:var(--cos-mut); }
+
+  /* images */
+  .cos .cos__pair{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); column-gap:2vw; padding-bottom:9vw; align-items:start; }
+  .cos .cos__p{ position:relative; overflow:hidden; background:var(--cos-line); }
+  .cos .cos__p img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .cos .cos__p--1{ grid-column:1/8; aspect-ratio:4/5; }
+  .cos .cos__p--2{ grid-column:9/13; aspect-ratio:3/4; margin-top:9vw; }
+
+  /* values: soft tinted panel */
+  .cos .cos__values{ background:var(--cos-tint); padding:7vw 0; }
+  .cos .cos__label{ margin:0 0 4vw; font-size:14px; letter-spacing:0; text-transform:none; color:var(--cos-mut) !important; }
+  .cos .cos__vgrid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); column-gap:3vw; }
+  .cos .cos__value{ border-top:1px solid var(--cos-accent); padding-top:22px; }
+  .cos .cos__value:nth-child(2){ margin-top:4vw; }
+  .cos .cos__value h3{ margin:0 0 12px; font-size:clamp(20px,2vw,30px); font-weight:500; letter-spacing:-.03em; line-height:1.15; text-transform:none; color:var(--cos-ink) !important; }
+  .cos .cos__value p{ margin:0; max-width:320px; font-size:15px; line-height:1.75; color:var(--cos-mut) !important; }
+
+  /* timeline */
+  .cos .cos__time{ padding-top:8vw; padding-bottom:4vw; }
+  .cos .cos__ms{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); column-gap:2vw; align-items:center; padding:2.4vw 0; border-top:1px solid var(--cos-line); }
+  .cos .cos__year{ grid-column:1/6; font-size:clamp(44px,7vw,108px); font-weight:300; font-stretch:80%; line-height:1; letter-spacing:-.05em; color:var(--cos-accent); }
+  .cos .cos__mtx{ grid-column:6/11; }
+  .cos .cos__ms:nth-child(even) .cos__year{ grid-column:2/7; }
+  .cos .cos__ms:nth-child(even) .cos__mtx{ grid-column:7/12; }
+  .cos .cos__ms h3{ margin:0 0 6px; font-size:clamp(18px,1.7vw,24px); font-weight:500; letter-spacing:-.02em; text-transform:none; color:var(--cos-ink) !important; }
+  .cos .cos__ms p{ margin:0; max-width:360px; font-size:15px; line-height:1.75; color:var(--cos-mut) !important; }
+
+  /* closing: soft tint, dark text */
+  .cos .cos__cta{ background:var(--cos-tint); margin-top:5vw; padding:8vw 5vw; border-top:1px solid var(--cos-line); }
+  .cos .cos__cta-in{ display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:32px; max-width:1400px; margin:0 auto; }
+  .cos .cos__cta h2{ margin:0; font-size:clamp(34px,6vw,92px); font-weight:500; font-stretch:80%; line-height:.96; letter-spacing:-.045em; text-transform:none; color:var(--cos-ink) !important; }
+  .cos .cos__cta h2 span{ display:block; font-weight:300; color:var(--cos-accent) !important; }
+  .cos .cos__btns{ display:flex; gap:12px; flex-wrap:wrap; }
+  .cos .cos__btn{ display:inline-flex; align-items:center; justify-content:center; min-height:52px; padding:0 32px; font-size:14px; font-weight:500; letter-spacing:.01em; text-decoration:none; border-radius:0; transition:background .2s, color .2s; }
+  .cos .cos__btn--p{ background:var(--cos-ink); color:var(--cos-bg) !important; border:1px solid var(--cos-ink); }
+  .cos .cos__btn--g{ background:transparent; color:var(--cos-ink) !important; border:1px solid var(--cos-ink); }
+  .cos .cos__btn:focus-visible{ outline:2px solid var(--cos-accent); outline-offset:4px; }
+  @media (hover:hover){
+    .cos .cos__btn--p:hover{ background:transparent; color:var(--cos-ink) !important; }
+    .cos .cos__btn--g:hover{ background:var(--cos-ink); color:var(--cos-bg) !important; }
+  }
+
+  @media (max-width:900px){
+    .cos .cos__p--2{ margin-top:6vw; }
+    .cos .cos__copy{ margin-top:6vw; }
+  }
+
+  @media (max-width:760px){
+    .cos .cos__hero{ min-height:72vh; }
+    .cos .cos__heroin{ padding:110px 20px 12vw; }
+    .cos .cos__h1{ font-size:13.5vw; }
+    .cos .cos__h1 .cos__h1b{ margin-left:6vw; }
+
+    .cos .cos__wrap{ padding-left:20px; padding-right:20px; }
+    .cos .cos__intro{ display:block; padding-top:14vw; padding-bottom:8vw; }
+    .cos .cos__statement{ font-size:8.4vw; }
+    .cos .cos__copy{ margin:8vw 0 0 12%; }
+
+    .cos .cos__stats{ grid-template-columns:1fr 1fr; column-gap:6vw; row-gap:9vw; padding-bottom:14vw; }
+    .cos .cos__stat:nth-child(n){ margin-top:0; }
+    .cos .cos__stat:nth-child(even){ margin-top:7vw; }
+    .cos .cos__stat b{ font-size:15vw; }
+
+    .cos .cos__pair{ display:block; padding-bottom:14vw; }
+    .cos .cos__p--1{ width:100%; }
+    .cos .cos__p--2{ width:66%; margin:-12vw 0 0 auto; box-shadow:0 0 0 6px var(--cos-bg); }
+
+    .cos .cos__values{ padding:14vw 0; }
+    .cos .cos__label{ margin-bottom:9vw; }
+    .cos .cos__vgrid{ display:block; }
+    .cos .cos__value:nth-child(n){ margin:0 0 10vw; }
+    .cos .cos__value:nth-child(2){ margin-left:12%; }
+    .cos .cos__value:last-child{ margin-bottom:0; }
+
+    .cos .cos__time{ padding-top:14vw; padding-bottom:6vw; }
+    .cos .cos__ms{ display:block; padding:7vw 0; }
+    .cos .cos__year{ display:block; font-size:22vw; }
+    .cos .cos__mtx{ margin:3vw 0 0 12%; }
+    .cos .cos__ms:nth-child(even) .cos__year{ text-align:right; }
+    .cos .cos__ms:nth-child(even) .cos__mtx{ margin:3vw 12% 0 0; }
+
+    .cos .cos__cta{ padding:14vw 20px; }
+    .cos .cos__cta-in{ display:block; }
+    .cos .cos__cta h2{ font-size:13vw; margin-bottom:9vw; }
+    .cos .cos__btns{ flex-direction:column; }
+    .cos .cos__btn{ width:100%; }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Our story",
+  "settings": [
+    { "type": "image_picker", "id": "hero_image", "label": "Hero image" },
+    { "type": "text", "id": "eyebrow", "label": "Small intro line", "default": "Our story" },
+    { "type": "text", "id": "title", "label": "Title (use / for a second, lighter line)", "default": "Crafted in India/Worn everywhere" },
+    { "type": "textarea", "id": "statement", "label": "Big statement", "default": "We make menswear that feels calm, sharp and unmistakably premium." },
+    { "type": "richtext", "id": "story", "label": "Story", "default": "<p>Cool Colors began with a simple idea: modern Indian menswear should be as considered as the people who wear it. Premium fabrics, honest craftsmanship and a quiet editorial eye guide every piece we make.</p><p>From our design office in Jodhpur to our manufacturing units across the country, every garment is cut, stitched and finished with care.</p>" },
+    { "type": "image_picker", "id": "image_a", "label": "Image left (large)" },
+    { "type": "image_picker", "id": "image_b", "label": "Image right (small)" },
+    { "type": "text", "id": "values_label", "label": "Values label", "default": "What we stand for" },
+    { "type": "text", "id": "timeline_label", "label": "Timeline label", "default": "The journey" },
+    { "type": "text", "id": "cta_text", "label": "Closing heading (use / for a second line)", "default": "Wear/the story." },
+    { "type": "text", "id": "cta_btn", "label": "Primary button", "default": "Shop new arrivals" },
+    { "type": "url", "id": "cta_link", "label": "Primary link" },
+    { "type": "text", "id": "cta2_btn", "label": "Secondary button", "default": "View the lookbook" },
+    { "type": "url", "id": "cta2_link", "label": "Secondary link" },
+    { "type": "header", "content": "Design" },
+    { "type": "checkbox", "id": "display_font", "label": "Use the Bricolage Grotesque display font", "info": "Recommended. Turn off to use your theme font.", "default": true },
+    { "type": "color", "id": "accent", "label": "Accent colour", "default": "#66788f" },
+    { "type": "color", "id": "bg", "label": "Background", "default": "#eef0f2" },
+    { "type": "color", "id": "ink", "label": "Text colour", "default": "#151a20" }
+  ],
+  "blocks": [
+    { "type": "stat", "name": "Stat", "settings": [ { "type": "text", "id": "number", "label": "Number", "default": "10+" }, { "type": "text", "id": "label", "label": "Label", "default": "Years of craft" } ] },
+    { "type": "value", "name": "Value", "settings": [ { "type": "text", "id": "title", "label": "Title", "default": "Premium fabrics" }, { "type": "textarea", "id": "text", "label": "Text", "default": "Soft, breathable and built to last." } ] },
+    { "type": "milestone", "name": "Milestone", "settings": [ { "type": "text", "id": "year", "label": "Year", "default": "2015" }, { "type": "text", "id": "title", "label": "Title", "default": "The first stitch" }, { "type": "textarea", "id": "text", "label": "Text", "default": "Where it all began." } ] }
+  ],
+  "presets": [ { "name": "Our story" } ]
+}
+{% endschema %}

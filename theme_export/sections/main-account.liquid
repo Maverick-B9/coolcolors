@@ -1,0 +1,90 @@
+<section class="customer-account">
+  <div class="row">
+
+    <h1 class="page-title">{{ 'customer.account.title' | t }}</h1>
+
+    <div class="main-content desktop-8 desktop-push-2">
+
+      {% comment %}
+      Account details
+      {% endcomment %}
+      <div id="account-details" class="content-item">
+        <h5 class="name">{{ 'customer.account.details' | t }}</h5>
+        <p class="name note">{{ customer.name }}</p>
+        <p class="email note">{{ customer.email }}</p>
+        <div class="address note">
+          {% if customer.default_address != nil %}
+            {{ customer.default_address | format_address }}
+          {% endif %}
+        </div>
+        <a href="{{ routes.account_addresses_url }}">
+          {{ 'customer.account.view_addresses' | t }} ({{ customer.addresses_count }})
+        </a>
+      </div><!-- /#account-details -->
+      <hr>
+
+      {% comment %}
+      Order History
+      {% endcomment %}
+      <div id="order-history" class="content-item">
+        <h5 class="name">{{ 'customer.orders.title' | t }}</h5>
+        {% if customer.orders.size != 0 %}
+          {% paginate customer.orders by 30 %}
+        <table>
+          <thead>
+            <tr>
+              <th class="order_number">{{ 'customer.orders.order_number' | t }}</th>
+              <th class="date">{{ 'customer.orders.date' | t }}</th>
+              <th class="payment_status status">{{ 'customer.orders.payment_status' | t }}</th>
+              <th class="fulfillment_status status">{{ 'customer.orders.fulfillment_status' | t }}</th>
+              <th class="total">{{ 'customer.orders.total' | t }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in customer.orders %}
+            <tr class="{% cycle 'odd', 'even' %} {% if order.cancelled %}cancelled_order{% endif %}">
+              <td>{{ order.name | link_to: order.customer_url }}</td>
+              <td class="date"><span>{{ order.created_at | date: "%b %d, %Y" }}</span></td>
+              <td class="status"><span>{{ order.financial_status }}</span></td>
+              <td class="status"><span>{{ order.fulfillment_status }}</span></td>
+              <td class="total"><span>{{ order.total_price | money }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {{ paginate | default_pagination }}
+        {% endpaginate %}
+        {% else %}
+        <h5>{{ 'customer.orders.none' | t }}</h5>
+        {% endif %}
+      </div>
+      <hr>
+
+      {% comment %}
+      Returns/Exchanges
+      {% endcomment %}
+      {% if settings.show_ca_returns %}
+        <div id="returns-exchanges" class="content-item">
+          <h5 class="name">{{ 'customer.account.returns_content' | t }}</h5>
+          <div class="rte">
+            {% if settings.ca_returns_page != blank %}
+              {{ settings.ca_returns_page.content }}
+            {% else %}
+              {% assign refund_policy = shop.policies | where: 'title', 'Refund policy' | first %}
+              {% if refund_policy.body != blank %}
+                {{ refund_policy.body }}
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+        <hr>
+      {% endif %}
+
+      {% comment %}
+      Logout
+      {% endcomment %}
+      {{ 'general.header.logout' | t | link_to: routes.account_logout_url }}
+
+    </div>
+  </div>
+</section>

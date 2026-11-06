@@ -1,0 +1,486 @@
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  if product.template_suffix == 'pre-order'
+    assign button_text = 'Pre-order'
+  else
+    assign button_text = 'Add to Cart'
+  endif
+  assign eyebrow = product.type
+  if eyebrow == blank
+    assign eyebrow = collection.title
+  endif
+  assign fabric = product.metafields.custom.fabric.value | default: product.metafields.custom.fabric
+  assign fit = product.metafields.custom.fit.value | default: product.metafields.custom.fit
+  assign origin = product.metafields.custom.origin.value | default: product.metafields.custom.origin
+  assign rating_val = product.metafields.reviews.rating.value.rating | default: product.metafields.custom.rating
+  assign rating_count = product.metafields.reviews.rating_count
+  assign media_count = product.media.size
+-%}
+
+<section class="ccp" id="ccp-{{ section.id }}" data-ccp data-product-id="{{ product.id }}">
+  {% render 'product-json', product: product %}
+  <div class="ccp__grid">
+
+    <!-- ============ GALLERY ============ -->
+    <div class="ccp__gallery">
+      <div class="ccp__stage">
+        <div class="ccp__track" data-ccp-track>
+          {%- for media in product.media -%}
+            <div class="ccp__slide" data-media-id="{{ media.id }}">
+              {%- if media.media_type == 'image' -%}
+                <img src="{{ media | image_url: width: 1400 }}" srcset="{{ media | image_url: width: 700 }} 700w, {{ media | image_url: width: 1100 }} 1100w, {{ media | image_url: width: 1600 }} 1600w" sizes="(min-width:1000px) 50vw, 100vw" alt="{{ media.alt | default: product.title | escape }}" width="{{ media.width }}" height="{{ media.height }}" loading="{% if forloop.first %}eager{% else %}lazy{% endif %}" {% if forloop.first %}fetchpriority="high"{% endif %}>
+              {%- else -%}
+                {{ media | media_tag: image_size: '1100x', controls: true }}
+              {%- endif -%}
+            </div>
+          {%- else -%}
+            <div class="ccp__slide">{{ 'product-1' | placeholder_svg_tag: 'ccp__ph' }}</div>
+          {%- endfor -%}
+        </div>
+        <button type="button" class="ccp__expand" data-ccp-expand aria-label="View full screen">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        </button>
+        {%- if media_count > 1 -%}<span class="ccp__count" data-ccp-count>1 / {{ media_count }}</span>{%- endif -%}
+      </div>
+
+      {%- if media_count > 1 -%}
+        <div class="ccp__dots" aria-hidden="true">
+          {%- for media in product.media -%}<i class="ccp__dot{% if forloop.first %} is-on{% endif %}"></i>{%- endfor -%}
+        </div>
+        <div class="ccp__thumbs" data-ccp-thumbs>
+          {%- for media in product.media -%}
+            <button type="button" class="ccp__thumb{% if forloop.first %} is-active{% endif %}" data-thumb="{{ forloop.index0 }}" aria-label="Show image {{ forloop.index }}">
+              <img src="{{ media.preview_image | image_url: width: 260 }}" alt="" width="130" height="130" loading="lazy">
+            </button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+
+    <!-- ============ DETAILS ============ -->
+    <div class="ccp__info">
+      {%- if eyebrow != blank -%}<p class="ccp__eyebrow">Menswear / {{ eyebrow }}</p>{%- endif -%}
+      <h1 class="ccp__title">{{ product.title }}</h1>
+
+      <div class="ccp__pricerow">
+        <div class="ccp__price" data-ccp-price>
+          <span data-ccp-price-now>{{ current_variant.price | money }}</span>
+          {%- if current_variant.compare_at_price > current_variant.price -%}
+            <s data-ccp-price-was>{{ current_variant.compare_at_price | money }}</s>
+          {%- else -%}
+            <s data-ccp-price-was hidden></s>
+          {%- endif -%}
+        </div>
+        {%- if rating_val != blank -%}
+          <div class="ccp__rating" aria-label="Rated {{ rating_val }} out of 5">
+            <span class="ccp__stars">★★★★★</span> <b>{{ rating_val }}</b>{%- if rating_count != blank -%} <span>({{ rating_count }} reviews)</span>{%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- assign short_desc = product.description | strip_html | strip_newlines | truncatewords: 34 -%}
+      {%- if short_desc != blank -%}<p class="ccp__lead">{{ short_desc }}</p>{%- endif -%}
+
+      {%- if fabric != blank or fit != blank or origin != blank -%}
+        <div class="ccp__chips">
+          {%- if fabric != blank -%}<div class="ccp__chip"><small>Fabric</small><b>{{ fabric }}</b></div>{%- endif -%}
+          {%- if fit != blank -%}<div class="ccp__chip"><small>Fit</small><b>{{ fit }}</b></div>{%- endif -%}
+          {%- if origin != blank -%}<div class="ccp__chip"><small>Origin</small><b>{{ origin }}</b></div>{%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- form 'product', product, id: 'ccp-form', class: 'ccp__form', novalidate: 'novalidate', data-ccp-form: '' -%}
+        <input type="hidden" name="id" value="{{ current_variant.id }}" data-ccp-id>
+
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+
+          {%- when 'product_variants' -%}
+            {%- unless product.has_only_default_variant -%}
+              <div class="ccp__options" {{ block.shopify_attributes }}>
+                {%- for option in product.options_with_values -%}
+                  {%- assign is_color = false -%}
+                  {%- assign oname = option.name | downcase -%}
+                  {%- if oname contains 'colo' -%}{%- assign is_color = true -%}{%- endif -%}
+                  <div class="ccp__opt" data-opt-index="{{ forloop.index0 }}">
+                    <p class="ccp__optlabel">{{ option.name }}</p>
+                    <div class="ccp__optvals{% if is_color %} is-color{% endif %}" role="radiogroup" aria-label="{{ option.name | escape }}">
+                      {%- for value in option.values -%}
+                        <button type="button" role="radio" class="ccp__val{% if option.selected_value == value %} is-selected{% endif %}" data-value="{{ value | escape }}" aria-checked="{% if option.selected_value == value %}true{% else %}false{% endif %}">{{ value }}</button>
+                      {%- endfor -%}
+                    </div>
+                  </div>
+                {%- endfor -%}
+              </div>
+            {%- endunless -%}
+
+          {%- when 'product_buttons' -%}
+            <div class="ccp__buy" {{ block.shopify_attributes }}>
+              <button type="submit" name="add" class="ccp__atc" data-ccp-atc {% unless current_variant.available %}disabled{% endunless %}>
+                <span data-ccp-atc-text>{% if current_variant.available %}{{ button_text }}{% else %}Sold out{% endif %}</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
+              </button>
+              <p class="ccp__note">{{ section.settings.shipping_note }}</p>
+              <p class="ccp__error" data-ccp-error role="alert" hidden></p>
+            </div>
+          {%- endcase -%}
+        {%- endfor -%}
+      {%- endform -%}
+
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+
+        {%- when 'social_sharing' -%}
+          <div class="ccp__share" {{ block.shopify_attributes }}>
+            <span class="ccp__sharelabel">Share:</span>
+            <a class="ccp__ico" href="https://wa.me/?text={{ product.title | append: ' ' | append: shop.url | append: product.url | url_encode }}" target="_blank" rel="noopener" aria-label="Share on WhatsApp" title="WhatsApp"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.6-.8-2.6-1.4-3.7-3.2-.3-.5.3-.5.8-1.5.1-.2 0-.4 0-.5l-.9-2.1c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3 1.8.8 2.5.8 3.4.7.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg></a>
+            <button type="button" class="ccp__ico" data-ccp-insta data-url="{{ shop.url }}{{ product.url }}" aria-label="Share on Instagram" title="Instagram"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></button>
+            <button type="button" class="ccp__ico" data-ccp-copy data-url="{{ shop.url }}{{ product.url }}" aria-label="Copy link" title="Copy link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></button>
+            <span class="ccp__copied" data-ccp-copied hidden>Link copied</span>
+          </div>
+
+        {%- when 'product_description' -%}
+          {%- if product.description != blank -%}
+            <details class="ccp__acc" {% if block.settings.default_open_accordion %}open{% endif %} {{ block.shopify_attributes }}>
+              <summary><span>Details</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary>
+              <div class="ccp__acc-body rte">{{ product.description }}</div>
+            </details>
+          {%- endif -%}
+
+        {%- when 'accordion_content' -%}
+          {%- assign acc_title = block.settings.title -%}
+          {%- if block.settings.page != blank -%}
+            {%- assign acc_body = pages[block.settings.page].content -%}
+            {%- if acc_title == blank -%}{%- assign acc_title = pages[block.settings.page].title -%}{%- endif -%}
+          {%- else -%}
+            {%- assign acc_body = block.settings.text -%}
+          {%- endif -%}
+          {%- if acc_body != blank -%}
+            <details class="ccp__acc" {% if block.settings.default_open_accordion %}open{% endif %} {{ block.shopify_attributes }}>
+              <summary><span>{{ acc_title }}</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary>
+              <div class="ccp__acc-body rte">{{ acc_body }}</div>
+            </details>
+          {%- endif -%}
+
+        {%- when '@app' -%}
+          {% render block %}
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </div>
+
+  <div class="ccp__lightbox" data-ccp-lightbox hidden>
+    <button type="button" class="ccp__lbclose" data-ccp-lbclose aria-label="Close">×</button>
+    <img src="" alt="" data-ccp-lbimg>
+  </div>
+
+  <script type="application/json" data-ccp-variants>
+    [{%- for v in product.variants -%}{"id":{{ v.id }},"available":{{ v.available | json }},"options":{{ v.options | json }},"price":{{ v.price | money | json }},"compare":{% if v.compare_at_price > v.price %}{{ v.compare_at_price | money | json }}{% else %}""{% endif %},"media":{{ v.featured_media.id | default: 0 }}}{% unless forloop.last %},{% endunless %}{%- endfor -%}]
+  </script>
+
+  <div class="ccp__sticky" data-ccp-sticky>
+    <div class="ccp__sp">
+      <b data-ccp-sticky-now>{{ current_variant.price | money }}</b>
+      <s data-ccp-sticky-was{% unless current_variant.compare_at_price > current_variant.price %} hidden{% endunless %}>{% if current_variant.compare_at_price > current_variant.price %}{{ current_variant.compare_at_price | money }}{% endif %}</s>
+    </div>
+    <button type="button" data-ccp-sticky-btn{% unless current_variant.available %} disabled{% endunless %}><span data-ccp-sticky-text>{% if current_variant.available %}{{ button_text }}{% else %}Sold out{% endif %}</span></button>
+  </div>
+</section>
+
+<style>
+  .ccp { --ink:#0D1117; --steel:#5C6874; --line:#E3E7EB; --paper:#EEF0F3; background:var(--paper); font-family:'Inter',system-ui,sans-serif; color:var(--ink); padding:20px 0 0; }
+  .ccp *, .ccp *::before, .ccp *::after { box-sizing:border-box; font-family:'Inter',system-ui,sans-serif; }
+  .ccp { line-height:normal; }
+  /* neutralise the theme's global button / summary styles (100% width, 50px height, margins, etc.) */
+  :where(.ccp) button { width:auto; height:auto; min-width:0; min-height:0; margin:0; padding:0; border:0; border-radius:0; background:none; box-shadow:none; text-transform:none; letter-spacing:normal; font-size:13.3333px; font-weight:400; line-height:normal; color:#000; text-align:center; display:inline-block; transition:none; }
+  :where(.ccp) summary { background:none; margin:0; text-transform:none; letter-spacing:normal; }
+  :where(.ccp) details { margin:0 0 12px; }
+  .ccp details summary { background:transparent !important; }
+  .ccp__acc-body > :last-child { margin-bottom:0; }
+  .ccp__grid { max-width:1440px; margin:0 auto; padding:0 24px; display:grid; grid-template-columns:minmax(0,1.08fr) minmax(0,1fr); gap:40px; align-items:start; }
+
+  /* gallery */
+  .ccp__gallery { position:sticky; top:96px; }
+  .ccp__stage { position:relative; border:1.5px solid var(--ink); border-radius:22px; overflow:hidden; background:#E6E9ED; aspect-ratio:1/1; }
+  .ccp__track { display:flex; height:100%; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+  .ccp__track::-webkit-scrollbar { display:none; }
+  .ccp__slide { flex:0 0 100%; height:100%; scroll-snap-align:center; display:grid; place-items:center; }
+  .ccp__slide img, .ccp__slide video { width:100%; height:100%; object-fit:cover; display:block; }
+  .ccp__expand { position:absolute; right:18px; bottom:18px; width:52px; height:52px; border-radius:50%; border:0; background:#fff; color:var(--ink); display:grid; place-items:center; cursor:pointer; box-shadow:0 4px 14px rgba(13,17,23,.12); }
+  .ccp__thumbs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:14px; }
+  .ccp__thumb { padding:0; border:1.5px solid transparent; border-radius:16px; overflow:hidden; background:#fff; cursor:pointer; aspect-ratio:4/3; }
+  .ccp__thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .ccp__thumb.is-active { border-color:var(--ink); }
+
+  /* info */
+  .ccp__eyebrow { margin:0 0 10px; font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--steel); }
+  .ccp__title { margin:0 0 14px; font-size:clamp(26px,3vw,40px); line-height:1.1; font-weight:700; letter-spacing:-.02em; color:var(--ink); text-transform:none; }
+  .ccp__pricerow { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .ccp__price { font-size:26px; font-weight:700; display:flex; align-items:baseline; gap:10px; }
+  .ccp__price s { font-size:16px; font-weight:500; color:var(--steel); }
+  .ccp__rating { font-size:13px; color:var(--steel); } .ccp__rating b { color:var(--ink); font-size:13px; }
+  .ccp__stars { color:#D92231; letter-spacing:1px; }
+  .ccp__lead { margin:0 0 20px; font-size:15px; line-height:1.6; color:var(--steel); max-width:560px; }
+  .ccp__chips { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:22px; }
+  .ccp__chip { background:#fff; border:1px solid var(--line); border-radius:14px; padding:11px 14px; }
+  .ccp__chip small { display:block; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); } .ccp__chip b { font-size:13px; }
+
+  .ccp__opt { margin-bottom:18px; }
+  .ccp__optlabel { margin:0 0 10px; font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--steel); }
+  .ccp__optvals { display:flex; flex-wrap:wrap; gap:10px; }
+  .ccp__val { min-width:52px; height:48px; padding:0 18px; border-radius:14px; border:1px solid var(--line); background:#fff; color:#000; font-size:14px; font-weight:600; cursor:pointer; transition:.15s; }
+  .ccp__optvals.is-color .ccp__val { height:36px; min-width:0; border-radius:100px; padding:0 16px; font-size:12px; }
+  .ccp__val:hover { border-color:var(--ink); }
+  .ccp__val.is-selected { background:var(--ink); border-color:var(--ink); color:#fff; }
+  .ccp__val.is-unavailable { opacity:.4; text-decoration:line-through; }
+
+  .ccp__buy { margin:6px 0 20px; }
+  .ccp__atc { width:100%; height:56px; border:0; border-radius:100px; background:var(--ink); color:#fff; font-size:15px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px; cursor:pointer; transition:opacity .15s, transform .1s; }
+  .ccp__atc:active { transform:scale(.99); } .ccp__atc:disabled { background:#9AA3AD; cursor:not-allowed; }
+  .ccp__note { margin:12px 0 0; font-size:12.5px; color:var(--steel); }
+  .ccp__error { margin:10px 0 0; font-size:13px; color:#D92231; }
+
+  .ccp__share { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:18px; font-size:13px; }
+  .ccp__sharelabel { color:var(--steel); margin-right:4px; }
+  .ccp__sharebtn { text-decoration:none; display:inline-flex; align-items:center; gap:7px; padding:8px 14px; border-radius:100px; border:1px solid var(--line); background:#fff; font-size:12.5px; font-weight:600; color:var(--ink); cursor:pointer; }
+  .ccp__share { display:flex !important; align-items:center; gap:12px; margin:4px 0 20px; }
+  .ccp__sharelabel { font-size:14px; font-weight:700; color:var(--ink); margin-right:2px; }
+  .ccp__ico { width:44px; height:44px; padding:0; border-radius:50%; border:1px solid var(--line); background:#fff; color:var(--ink); display:inline-grid; place-items:center; cursor:pointer; text-decoration:none; transition:.18s; font-size:12.5px; font-weight:600; }
+  .ccp__ico:hover { background:var(--ink); border-color:var(--ink); color:#fff; transform:translateY(-2px); }
+  .ccp__ico:nth-of-type(1):hover { background:#25D366; border-color:#25D366; } .ccp__ico:nth-of-type(2):hover { background:#C13584; border-color:#C13584; }
+  .ccp__copied { font-size:12px; font-weight:600; background:var(--ink); color:#fff; padding:5px 10px; border-radius:8px; }
+
+  .ccp__acc { background:#fff; border:1px solid var(--line); border-radius:18px; margin-bottom:12px; overflow:hidden; }
+  .ccp__acc summary { list-style:none; cursor:pointer; padding:18px 20px; display:flex; justify-content:space-between; font-size:14px; font-weight:700; }
+  .ccp__acc summary::-webkit-details-marker { display:none; }
+  .ccp__acc summary svg { transition:transform .2s; flex:none; } .ccp__acc[open] summary svg { transform:rotate(180deg); }
+  .ccp__acc-body { padding:0 20px 18px; font-size:13.5px; line-height:1.65; color:var(--steel); }
+  .ccp__acc-body p { margin:0 0 8px; } .ccp__acc-body a { color:#D92231; }
+
+  .ccp__lightbox { position:fixed; inset:0; z-index:1000; background:rgba(13,17,23,.92); display:grid; place-items:center; padding:24px; }
+  .ccp__lightbox[hidden] { display:none; } .ccp__lightbox img { max-width:100%; max-height:100%; border-radius:12px; }
+  .ccp__lbclose { position:absolute; top:16px; right:20px; width:44px; height:44px; border-radius:50%; border:0; background:#fff; font-size:26px; line-height:1; cursor:pointer; }
+
+  /* mobile-only pieces: hidden on desktop */
+  .ccp__count, .ccp__dots, .ccp__sticky { display:none; }
+
+  @media (max-width:900px){
+    .template-product .content-wrapper { padding-top:0 !important; padding-bottom:0 !important; }
+    body.template-product { padding-bottom:calc(150px + env(safe-area-inset-bottom,0px)); }
+    .ccp { padding:10px 0 0; }
+    .ccp__grid { grid-template-columns:1fr; gap:16px; padding:0 16px; }
+
+    /* gallery: swipe + counter + dots, no thumbnails */
+    .ccp__gallery { position:static; }
+    .ccp__stage { aspect-ratio:4/5; border-width:1px; border-radius:20px; }
+    .ccp__thumbs { display:none; }
+    .ccp__count { display:block; position:absolute; left:12px; bottom:12px; background:rgba(13,17,23,.72); color:#fff; font-size:12px; font-weight:600; line-height:normal; padding:6px 11px; border-radius:100px; pointer-events:none; }
+    .ccp__expand { right:12px; bottom:12px; width:44px; height:44px; }
+    .ccp__dots { display:flex; justify-content:center; gap:6px; margin-top:12px; }
+    .ccp__dot { display:block; width:6px; height:6px; border-radius:6px; background:#C5CCD3; transition:.2s; }
+    .ccp__dot.is-on { width:18px; background:var(--ink); }
+
+    /* title, price, intro, chips */
+    .ccp__eyebrow { margin:0 0 8px; }
+    .ccp__title { margin:0 0 12px; font-size:22px; line-height:1.25; font-weight:600; letter-spacing:-.01em; }
+    .ccp__pricerow { gap:10px; margin-bottom:12px; }
+    .ccp__price { font-size:24px; }
+    .ccp__price s { font-size:15px; }
+    .ccp__rating, .ccp__rating b { font-size:12.5px; }
+    .ccp__lead { margin:0 0 16px; max-width:none; font-size:14.5px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+    .ccp__chips { gap:8px; margin-bottom:18px; }
+    .ccp__chip { border-radius:12px; padding:9px 11px; }
+    .ccp__chip small { font-size:9.5px; }
+    .ccp__chip b { font-size:12.5px; }
+
+    /* sizes: one even row */
+    .ccp__opt { margin-bottom:18px; }
+    .ccp__optvals:not(.is-color) { display:grid; grid-template-columns:repeat(auto-fill,minmax(50px,1fr)); gap:8px; }
+    .ccp__optvals:not(.is-color) .ccp__val { width:100%; min-width:0; height:46px; padding:0; border-radius:12px; }
+    .ccp__optvals.is-color { gap:8px; }
+
+    /* add to cart, note, share, accordions */
+    .ccp__buy { margin:0 0 18px; }
+    .ccp__atc { height:54px; }
+    .ccp__atc svg { display:none; }
+    .ccp__note { margin:10px 0 0; }
+    .ccp__share { gap:10px; margin:0 0 16px; }
+    .ccp__ico { width:40px; height:40px; }
+    .ccp__acc { background:#E8EBEF; border-color:transparent; border-radius:16px; margin-bottom:10px; }
+    .ccp__acc summary { padding:17px 18px; }
+    .ccp__acc-body { padding:0 18px 18px; }
+
+    /* sticky Add to Cart: sits above the header's bottom bar */
+    .ccp__sticky { display:flex; align-items:center; gap:12px; position:fixed; left:50%; bottom:calc(88px + env(safe-area-inset-bottom,0px)); z-index:55; width:min(calc(100% - 32px),398px); padding:10px 10px 10px 18px; background:#fff; border:1px solid var(--line); border-radius:100px; box-shadow:0 10px 28px rgba(13,17,23,.18); transform:translate(-50%,160%); opacity:0; visibility:hidden; transition:transform .3s, opacity .3s, visibility 0s .3s; }
+    .ccp__sticky.is-on { transform:translate(-50%,0); opacity:1; visibility:visible; transition:transform .3s, opacity .3s, visibility 0s; }
+    .ccp__sp { flex:1; min-width:0; line-height:1.2; }
+    .ccp__sp b { display:block; font-size:17px; }
+    .ccp__sp s { font-size:12px; color:var(--steel); }
+    .ccp__sp s[hidden] { display:none; }
+    .ccp__sticky button { flex:0 0 auto; height:46px; padding:0 26px; border-radius:100px; background:var(--ink); color:#fff; font-size:14px; font-weight:600; cursor:pointer; }
+    .ccp__sticky button:disabled { background:#9AA3AD; cursor:not-allowed; }
+  }
+
+  body.template-product, body.template-product main { background:#EEF0F3; }
+</style>
+
+<script>
+(function(){
+  function init(root){
+    if(!root || root.__ccp) return; root.__ccp = true;
+    var variants = []; try { variants = JSON.parse(root.querySelector('[data-ccp-variants]').textContent); } catch(e){}
+    var form = root.querySelector('[data-ccp-form]'), idInput = root.querySelector('[data-ccp-id]');
+    var atc = root.querySelector('[data-ccp-atc]'), atcText = root.querySelector('[data-ccp-atc-text]');
+    var errEl = root.querySelector('[data-ccp-error]');
+    var track = root.querySelector('[data-ccp-track]'), thumbs = root.querySelectorAll('.ccp__thumb'), counter = root.querySelector('[data-ccp-count]');
+    var slides = root.querySelectorAll('.ccp__slide'), addLabel = atcText ? atcText.textContent.trim() : 'Add to Cart';
+    if (addLabel === 'Sold out') addLabel = '{{ button_text }}';
+    var groups = root.querySelectorAll('.ccp__opt'), dots = root.querySelectorAll('.ccp__dot');
+
+    /* ---------- gallery ---------- */
+    function goTo(i){ if(!track || !slides[i]) return; track.scrollTo({ left: slides[i].offsetLeft, behavior:'smooth' }); }
+    function setActive(i){
+      thumbs.forEach(function(t,k){ t.classList.toggle('is-active', k===i); });
+      dots.forEach(function(d,k){ d.classList.toggle('is-on', k===i); });
+      if(counter) counter.textContent = (i+1)+' / '+slides.length;
+      if(thumbs[i] && thumbs[i].parentNode.scrollWidth > thumbs[i].parentNode.clientWidth){ thumbs[i].parentNode.scrollTo({ left: thumbs[i].offsetLeft - 12, behavior:'smooth' }); }
+    }
+    thumbs.forEach(function(t){ t.addEventListener('click', function(){ goTo(+t.dataset.thumb); }); });
+    if(track){ track.addEventListener('scroll', function(){ setActive(Math.round(track.scrollLeft / (track.clientWidth||1))); }, {passive:true}); }
+
+    var lb = root.querySelector('[data-ccp-lightbox]'), lbi = root.querySelector('[data-ccp-lbimg]');
+    var ex = root.querySelector('[data-ccp-expand]');
+    if(ex && lb) {
+      ex.addEventListener('click', function(){
+        var i = track ? Math.round(track.scrollLeft/(track.clientWidth||1)) : 0, img = slides[i] && slides[i].querySelector('img');
+        if(!img) return; lbi.src = img.currentSrc || img.src; lb.hidden = false;
+      });
+      root.querySelector('[data-ccp-lbclose]').addEventListener('click', function(){ lb.hidden = true; });
+      lb.addEventListener('click', function(e){ if(e.target===lb) lb.hidden = true; });
+      document.addEventListener('keydown', function(e){ if(e.key==='Escape') lb.hidden = true; });
+    }
+
+    /* ---------- variants ---------- */
+    function selected(){ return Array.prototype.map.call(groups, function(g){ var s=g.querySelector('.ccp__val.is-selected'); return s ? s.dataset.value : null; }); }
+    function decode(v){ var t=document.createElement('textarea'); t.innerHTML=v; return t.value; }
+    function match(sel){ return variants.find(function(v){ return v.options.every(function(o,i){ return o===decode(sel[i]||''); }); }); }
+    function refreshAvailability(){
+      var sel = selected();
+      groups.forEach(function(g,gi){
+        g.querySelectorAll('.ccp__val').forEach(function(b){
+          var val = decode(b.dataset.value);
+          var ok = variants.some(function(v){
+            if(!v.available || v.options[gi]!==val) return false;
+            return sel.every(function(s,si){ return si===gi || !s || v.options[si]===decode(s); });
+          });
+          b.classList.toggle('is-unavailable', !ok);
+        });
+      });
+    }
+    function apply(v){
+      if(!v){ atc.disabled = true; atcText.textContent = 'Unavailable'; return; }
+      idInput.value = v.id;
+      root.querySelector('[data-ccp-price-now]').textContent = v.price;
+      var was = root.querySelector('[data-ccp-price-was]'); if(was){ was.textContent = v.compare; was.hidden = !v.compare; }
+      atc.disabled = !v.available; atcText.textContent = v.available ? addLabel : 'Sold out';
+      var u = new URL(window.location.href); u.searchParams.set('variant', v.id); window.history.replaceState({}, '', u);
+      if(v.media){ for(var i=0;i<slides.length;i++){ if(+slides[i].dataset.mediaId===v.media){ goTo(i); break; } } }
+    }
+    groups.forEach(function(g){
+      g.addEventListener('click', function(e){
+        var b = e.target.closest('.ccp__val'); if(!b) return;
+        g.querySelectorAll('.ccp__val').forEach(function(x){ x.classList.remove('is-selected'); x.setAttribute('aria-checked','false'); });
+        b.classList.add('is-selected'); b.setAttribute('aria-checked','true');
+        refreshAvailability(); apply(match(selected()));
+      });
+    });
+    refreshAvailability();
+
+    /* ---------- add to cart ---------- */
+    if(form) form.addEventListener('submit', function(e){
+      e.preventDefault(); if(atc.disabled) return;
+      errEl.hidden = true; atc.disabled = true; atcText.textContent = 'Adding…';
+      fetch('/cart/add.js', { method:'POST', headers:{ 'Content-Type':'application/json', 'Accept':'application/json' }, body: JSON.stringify({ items:[{ id:+idInput.value, quantity:1 }] }) })
+        .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.description || j.message || 'Could not add to cart'); return j; }); })
+        .then(function(){
+          atcText.textContent = 'Added ✓';
+          document.dispatchEvent(new CustomEvent('cc:cart:added'));
+          setTimeout(function(){ window.location.href = '{{ routes.cart_url }}'; }, 500);
+        })
+        .catch(function(err){ errEl.textContent = err.message; errEl.hidden = false; atc.disabled = false; atcText.textContent = addLabel; });
+    });
+
+    /* ---------- sticky Add to Cart (mobile) ---------- */
+    var stk = root.querySelector('[data-ccp-sticky]');
+    if(stk && atc){
+      var sBtn = stk.querySelector('[data-ccp-sticky-btn]'), sTxt = stk.querySelector('[data-ccp-sticky-text]'),
+          sNow = stk.querySelector('[data-ccp-sticky-now]'), sWas = stk.querySelector('[data-ccp-sticky-was]'),
+          pBox = root.querySelector('[data-ccp-price]'), pNow = root.querySelector('[data-ccp-price-now]'), pWas = root.querySelector('[data-ccp-price-was]');
+      var syncSticky = function(){
+        sNow.textContent = pNow.textContent;
+        sWas.textContent = pWas.textContent; sWas.hidden = pWas.hidden || !pWas.textContent;
+        sTxt.textContent = atcText.textContent; sBtn.disabled = atc.disabled;
+      };
+      var mo = { childList:true, characterData:true, subtree:true, attributes:true };
+      new MutationObserver(syncSticky).observe(pBox, mo);
+      new MutationObserver(syncSticky).observe(atc, mo);
+      sBtn.addEventListener('click', function(){ atc.click(); });
+      var stkTick = false;
+      var chkSticky = function(){ stkTick = false; stk.classList.toggle('is-on', atc.getBoundingClientRect().bottom < 70); };
+      window.addEventListener('scroll', function(){ if(!stkTick){ stkTick = true; requestAnimationFrame(chkSticky); } }, {passive:true});
+      window.addEventListener('resize', chkSticky);
+      syncSticky(); chkSticky();
+    }
+
+    /* ---------- share ---------- */
+    var ig = root.querySelector('[data-ccp-insta]'), cp = root.querySelector('[data-ccp-copy]'), ok = root.querySelector('[data-ccp-copied]');
+    function copyText(txt, msg){
+      function done(){ if(ok){ ok.textContent = msg || 'Link copied'; ok.hidden = false; setTimeout(function(){ ok.hidden = true; }, 2200); } }
+      if(navigator.clipboard) navigator.clipboard.writeText(txt).then(done, done);
+      else { var t=document.createElement('textarea'); t.value=txt; document.body.appendChild(t); t.select(); try{document.execCommand('copy');}catch(e){} t.remove(); done(); }
+    }
+    if(cp) cp.addEventListener('click', function(){ copyText(cp.dataset.url); });
+    if(ig) ig.addEventListener('click', function(){
+      // Instagram has no web share URL: copy the link, then open Instagram so it can be pasted into a story/DM.
+      copyText(ig.dataset.url, 'Link copied – paste it in Instagram');
+      setTimeout(function(){ window.open('https://www.instagram.com/', '_blank', 'noopener'); }, 700);
+    });
+  }
+  function boot(){ document.querySelectorAll('[data-ccp]').forEach(init); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  document.addEventListener('shopify:section:load', boot);
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Product",
+  "settings": [
+    { "type": "textarea", "id": "shipping_note", "label": "Note under Add to Cart", "default": "Free shipping on orders above ₹2,499. Returns accepted within 15 days." }
+  ],
+  "blocks": [
+    { "type": "product_variants", "name": "Variant picker", "limit": 1 },
+    { "type": "product_quantity", "name": "Quantity (unused)", "limit": 1 },
+    { "type": "product_buttons", "name": "Add to Cart", "limit": 1, "settings": [ { "type": "checkbox", "id": "show_gift_card_recipient", "label": "Show gift card recipient (unused)", "default": false } ] },
+    { "type": "product_availability", "name": "Availability (unused)", "limit": 1 },
+    { "type": "social_sharing", "name": "Share + copy link", "limit": 1, "settings": [
+      { "type": "checkbox", "id": "show_twitter", "label": "Unused", "default": true },
+      { "type": "checkbox", "id": "show_facebook", "label": "Unused", "default": true },
+      { "type": "checkbox", "id": "show_pinterest", "label": "Unused", "default": true } ] },
+    { "type": "product_description", "name": "Product details", "limit": 1, "settings": [
+      { "type": "checkbox", "id": "show_as_accordion", "label": "Unused", "default": true },
+      { "type": "checkbox", "id": "default_open_accordion", "label": "Open by default", "default": true } ] },
+    { "type": "accordion_content", "name": "Accordion", "settings": [
+      { "type": "page", "id": "page", "label": "Use a page's content" },
+      { "type": "text", "id": "title", "label": "Title", "default": "Delivery" },
+      { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Dispatched within 24 hours. Metro delivery in 2-3 business days.</p>" },
+      { "type": "checkbox", "id": "default_open_accordion", "label": "Open by default", "default": false } ] },
+    { "type": "contact_popup", "name": "Contact popup (unused)", "limit": 1 },
+    { "type": "popup", "name": "Popup (unused)", "settings": [
+      { "type": "text", "id": "title", "label": "Title", "default": "Popup link" },
+      { "type": "page", "id": "page", "label": "Page" },
+      { "type": "richtext", "id": "text", "label": "Text" } ] },
+    { "type": "@app" }
+  ]
+}
+{% endschema %}

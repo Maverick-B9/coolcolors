@@ -1,0 +1,744 @@
+/* =====================================================================
+   Collection Filters - filter.css
+   Self-contained, namespaced with "pf-" (Product Filters) to avoid
+   clashing with theme styles. Pairs with collection-filters.liquid,
+   filter-product-card.liquid and filter.js.
+   ===================================================================== */
+
+.pf-root {
+  --pf-text: #111111;
+  --pf-muted: #767676;
+  --pf-border: #e5e5e5;
+  --pf-bg: #ffffff;
+  --pf-bg-soft: #f5f5f5;
+  --pf-accent: #111111;
+  --pf-danger: #d1361e;
+  --pf-radius: 8px;
+  --pf-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  --pf-columns: 4;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px 60px;
+  color: var(--pf-text);
+  font-family: 'Inter', system-ui, sans-serif;
+  position: relative;
+}
+
+.pf-root *,
+.pf-root *::before,
+.pf-root *::after {
+  box-sizing: border-box;
+}
+
+html.pf-scroll-lock,
+html.pf-scroll-lock body {
+  overflow: hidden !important;
+}
+
+/* -------------------- Breadcrumbs & Page Header -------------------- */
+.pf-header {
+  padding: 24px 0 12px;
+}
+.pf-header .crumb {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #5C6874;
+  margin-bottom: 12px;
+}
+.pf-header .crumb a {
+  color: inherit;
+  text-decoration: none;
+}
+.pf-header .crumb a:hover {
+  color: #111;
+}
+.pf-header h1 {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--pf-text);
+}
+
+/* -------------------- Toolbar -------------------- */
+
+.pf-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--pf-border);
+}
+
+.pf-toolbar__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  background: none;
+  border: 1px solid var(--pf-border);
+  border-radius: 6px;
+  padding: 8px 16px;
+  color: var(--pf-text);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.pf-toolbar__trigger:hover {
+  background: var(--pf-bg-soft);
+  border-color: #ccc;
+}
+
+.pf-toolbar__count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pf-text);
+}
+
+.pf-toolbar__sort {
+  margin-left: auto;
+}
+
+.pf-select {
+  margin: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--pf-text);
+  border: 1px solid var(--pf-border);
+  border-radius: 6px;
+  padding: 9px 34px 9px 14px;
+  background: var(--pf-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23111' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 12px center;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.pf-select:focus {
+  outline: none;
+  border-color: var(--pf-accent);
+}
+
+/* -------------------- Active tags row -------------------- */
+.pf-active-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 0 4px;
+}
+
+.pf-active-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--pf-bg-soft);
+  border: 1px solid var(--pf-border);
+  border-radius: 100px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--pf-text);
+}
+
+.pf-active-tag button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--pf-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.pf-active-tag button:hover {
+  color: var(--pf-danger);
+}
+
+.pf-active-clear {
+  background: none;
+  border: none;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pf-danger);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* -------------------- Mobile fixed bottom bar -------------------- */
+
+.pf-mobile-bar {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  z-index: 9000;
+  display: flex;
+  align-items: stretch;
+  background: #fff;
+  border: 1px solid rgba(13, 17, 23, 0.1);
+  border-radius: 100px;
+  box-shadow: 0 12px 28px rgba(13, 17, 23, 0.2);
+  overflow: hidden;
+}
+
+.pf-mobile-bar__btn {
+  flex: 1 1 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 12px;
+  min-height: 48px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pf-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.pf-mobile-bar__divider {
+  width: 1px;
+  margin: 10px 0;
+  background: var(--pf-border);
+}
+
+.pf-mobile-bar__select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  border: none;
+  cursor: pointer;
+}
+
+/* -------------------- Backdrop -------------------- */
+
+.pf-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.pf-backdrop.pf-backdrop--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* -------------------- Filter panel (full-height left drawer) -------------------- */
+
+.pf-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(420px, 100vw);
+  background: var(--pf-bg);
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  box-shadow: var(--pf-shadow);
+}
+
+.pf-panel.pf-panel--open {
+  transform: translateX(0);
+}
+
+.pf-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--pf-border);
+  flex: 0 0 auto;
+}
+
+.pf-panel__heading {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.pf-panel__close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--pf-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.pf-panel__close:hover {
+  background: var(--pf-bg-soft);
+}
+
+.pf-panel__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 0 20px;
+}
+
+.pf-panel__actions {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--pf-border);
+  flex: 0 0 auto;
+  background: #fff;
+}
+
+.pf-panel__actions .pf-btn {
+  flex: 1;
+}
+
+/* -------------------- Filter groups (accordion) -------------------- */
+
+.pf-group {
+  border-top: 1px solid var(--pf-border);
+  padding: 16px 0;
+}
+
+.pf-group:first-child {
+  border-top: none;
+}
+
+.pf-group__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 14px;
+  margin: 0;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.pf-group__title::-webkit-details-marker {
+  display: none;
+}
+
+.pf-group__title::after {
+  content: "";
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.pf-group[open] > .pf-group__title::after {
+  transform: rotate(-135deg);
+}
+
+.pf-group__options {
+  margin-top: 14px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+/* Size Pills in Drawer */
+.pf-size-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.pf-size-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border: 1px solid var(--pf-border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pf-text);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.pf-size-pill:hover {
+  border-color: #111;
+}
+
+.pf-size-pill.is-selected {
+  background: var(--pf-accent);
+  color: #fff;
+  border-color: var(--pf-accent);
+}
+
+/* Color Swatches Grid in Drawer */
+.pf-color-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pf-color-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 100px;
+  border: 1px solid var(--pf-border);
+  background: #fff;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: border-color 0.15s;
+}
+
+.pf-color-pill:hover {
+  border-color: #111;
+}
+
+.pf-color-pill.is-selected {
+  border-color: #111;
+  background: #f0f0f0;
+  font-weight: 600;
+}
+
+.pf-color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  flex: none;
+}
+
+/* -------------------- Checkboxes -------------------- */
+
+.pf-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  padding: 7px 0;
+  cursor: pointer;
+  color: var(--pf-text);
+}
+
+.pf-checkbox input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  accent-color: var(--pf-accent);
+  cursor: pointer;
+}
+
+.pf-checkbox__label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pf-checkbox__count {
+  color: var(--pf-muted);
+  font-size: 12px;
+}
+
+/* -------------------- Price inputs -------------------- */
+
+.pf-price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.pf-input {
+  font: inherit;
+  font-size: 13px;
+  border: 1px solid var(--pf-border);
+  border-radius: 6px;
+  padding: 9px 12px;
+  width: 100%;
+  color: var(--pf-text);
+  background: var(--pf-bg);
+}
+
+.pf-input:focus {
+  outline: none;
+  border-color: var(--pf-accent);
+}
+
+/* -------------------- Buttons -------------------- */
+
+.pf-btn {
+  font: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: 100px;
+  border: 1px solid transparent;
+  padding: 12px 18px;
+  cursor: pointer;
+  text-align: center;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.pf-btn--primary {
+  background: var(--pf-accent);
+  color: #fff;
+}
+
+.pf-btn--primary:hover {
+  opacity: 0.9;
+}
+
+.pf-btn--ghost {
+  background: transparent;
+  border-color: var(--pf-border);
+  color: var(--pf-text);
+}
+
+.pf-btn--ghost:hover {
+  background: var(--pf-bg-soft);
+}
+
+/* -------------------- Product grid -------------------- */
+
+.pf-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px 14px;
+  margin-top: 24px;
+}
+
+@media (min-width: 640px) {
+  .pf-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px 20px;
+  }
+}
+
+@media (min-width: 1000px) {
+  .pf-grid {
+    grid-template-columns: repeat(var(--pf-columns, 4), 1fr);
+    gap: 32px 24px;
+  }
+}
+
+.pf-card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #fff;
+  border: 1px solid #ECE9E4;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.pf-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
+}
+
+.pf-card__image-link {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--pf-bg-soft);
+}
+
+.pf-card__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.pf-card__image--hover {
+  opacity: 0;
+}
+
+.pf-card:hover .pf-card__image--primary {
+  transform: scale(1.04);
+}
+
+.pf-card:hover .pf-card__image--hover {
+  opacity: 1;
+  transform: scale(1.04);
+}
+
+.pf-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #C8FF3A;
+  color: #111;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 20px;
+  z-index: 2;
+}
+
+.pf-card .pf-card__wishlist,
+.pf-card .pf-badge-save {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  width: auto !important;
+  height: 32px !important;
+  padding: 0 10px !important;
+  gap: 5px;
+  border-radius: 100px !important;
+  border: 0 !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  color: #0D1117 !important;
+  font: 600 12px/1 'Inter', system-ui, sans-serif !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(13, 17, 23, 0.12);
+  z-index: 3;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.pf-card__wishlist:hover {
+  transform: scale(1.05);
+}
+
+.pf-card__wishlist.is-active svg {
+  fill: #D92231 !important;
+  stroke: #D92231 !important;
+}
+
+.pf-card__body {
+  padding: 14px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pf-card__title {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0D1117;
+  text-decoration: none;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pf-card__title:hover {
+  color: #D92231;
+}
+
+.pf-card__type {
+  color: #5C6874;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.pf-card__price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pf-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0D1117;
+}
+
+.pf-price--compare {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #7A7A7A;
+  text-decoration: line-through;
+}
+
+.pf-discount {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(60, 160, 60, 0.13);
+  color: #2F8A3A;
+}
+
+.pf-card__swatches {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.pf-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.pf-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--pf-muted);
+  padding: 80px 20px;
+}
+
+.pf-empty h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--pf-text);
+  margin: 0 0 8px;
+}
+
+/* -------------------- Toolbar / mobile bar handoff -------------------- */
+
+@media (max-width: 899px) {
+  .pf-toolbar__trigger,
+  .pf-toolbar__sort {
+    display: none;
+  }
+
+  .pf-root {
+    padding-bottom: 120px;
+  }
+}
+
+@media (min-width: 900px) {
+  .pf-mobile-bar {
+    display: none;
+  }
+}
+

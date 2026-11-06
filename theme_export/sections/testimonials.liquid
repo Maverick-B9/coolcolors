@@ -1,0 +1,533 @@
+{%- liquid
+
+  assign section_space = section.settings.section_space
+  assign section_space_class = ''
+
+  if section_space == 'top'
+    assign section_space_class = ' pb0'
+  elsif section_space == 'bottom'
+    assign section_space_class = ' mt0'
+  elsif section_space == 'none'
+    assign section_space_class = ' mt0 pb0'
+  endif
+
+  assign enough_to_wrap = true
+  if section.blocks.size == 1
+    assign enough_to_wrap = false
+  endif
+
+  assign text_color = section.settings.text_color
+  assign background_color = section.settings.background_color
+
+-%}
+
+{% style %}
+#shopify-section-{{ section.id }} {
+  --text-color: {{ text_color }};
+  --section-background: {{ background_color }};
+}
+{%- if section.settings.image_position == 'right' -%}
+  @media screen and (min-width: 741px) {
+    .testimonials__section.section-{{ section.id }} .testimonials__image {
+      order: 2;
+      grid-column-start: 8;
+      grid-column-end: 13;
+    }
+    .testimonials__section.section-{{ section.id }} .testimonials__content {
+      order: 1;
+      grid-column-start: 2;
+      grid-column-end: 7;
+    }
+  }
+{%- endif -%}
+{% endstyle %}
+
+{% capture slideshow_config %}{
+  "wrapAround":{{ enough_to_wrap }},
+  "cellAlign": "left",
+  "dragThreshold":{{ enough_to_wrap }},
+  "pauseAutoPlayOnHover":false,
+  "prevNextButtons":false,
+  "pageDots": {{ enough_to_wrap }}
+}{% endcapture %}
+
+<section class="testimonials__section{% if section.settings.image_position == 'right' %} image-right{% endif %} section-{{ section.id }} global__section" data-section-id="{{ section.id }}" data-section-type="testimonials-section">
+
+
+    <div class="row testionials__carousel js-testimonial-carousel" data-flickity='{{ slideshow_config }}'>
+      {% for block in section.blocks %}
+      <div class="grid__wrapper full testimonials__container testimonials__container--{{ block.id }}" data-slider-index="{{ forloop.index0 }}" {{ block.shopify_attributes }} id="testimonials__container--{{ block.id }}">
+        {%- liquid
+
+          assign has_image = false
+          assign has title = false
+          assign has_text = false
+          assign has_author = false
+          assign has_link = false
+          assign has_button = false
+          assign has_rating = true
+          assign link = block.settings.link
+          assign loading = 'lazy'
+          assign fetch_priority = 'auto'
+
+          if block.settings.image != blank
+            assign has_image = true
+          endif
+
+          if block.settings.title != blank
+            assign has_title = true
+          endif
+
+          if block.settings.text != blank
+            assign has_text = true
+          endif
+
+          if block.settings.author != blank
+            assign has_author = true
+          endif
+
+          if block.settings.link != blank
+            assign has_link = true
+          endif
+
+          if block.settings.button_text != blank
+            assign has_button = true
+          endif
+
+          if block.settings.rating == 0
+            assign has_rating = false
+          endif
+
+          assign image_ratio = 'image_square'
+
+          if section.index == 1 and forloop.first
+            assign loading = 'eager'
+            assign fetch_priority = 'high'
+          endif
+
+          case block.type
+            when 'product'
+              if block.settings.show_second_image
+                assign image_ratio = 'image_portrait'
+              endif
+              assign product = all_products[block.settings.product]
+              assign preview_image = product.featured_media.preview_image
+              assign link = product.url
+              assign show_type_title = false
+              if block.settings.show_product_title
+                assign show_type_title = true
+                assign type_title = product.title
+              endif
+            when 'collection'
+              assign collection = collections[block.settings.collection]
+              assign link = collection.url
+              assign show_type_title = false
+              if block.settings.show_collection_title
+                assign show_type_title = true
+                assign type_title = collection.title
+              endif
+            when 'image_width_text'
+              assign link = block.settings.link
+          endcase
+
+        -%}
+
+        <div class="testimonials__image {{ image_ratio }} span-5 push-1 sm-span-12 auto type__{{ block.type }}">
+          {% case block.type %}
+            {% when 'image_with_text' %}
+              {%- if has_image -%}
+                {%
+                  render 'basic-responsive-image',
+                  type: block.settings.image,
+                  width: 1200,
+                  loading: loading,
+                  fetchpriority: fetch_priority
+                %}
+              {%- else -%}
+                <div class="onboard">
+                {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+                </div>
+              {%- endif -%}
+            {% when 'product' %}
+            <div class="testimonial__first-image">
+              {% if product != blank %}
+                <a href="{{ product.url }}">
+                  {%
+                    render 'basic-responsive-image',
+                    type: preview_image,
+                    width: 1200,
+                    loading: loading,
+                    fetchpriority: fetch_priority
+                  %}
+                </a>
+              {% else %}
+                <div class="onboard">
+                  {{ 'product-1' | placeholder_svg_tag }}
+                </div>
+              {% endif %}
+            </div>
+            {% if block.settings.show_second_image %}
+              <div class="testimonial__second-image">
+                {% if product != blank %}
+                  <a href="{{ product.url }}">
+                    {%
+                      render 'basic-responsive-image',
+                      type: product.media[1],
+                      width: 1200,
+                      loading: loading,
+                      fetchpriority: fetch_priority
+                    %}
+                  </a>
+                {% else %}
+                  <div class="onboard">
+                    {{ 'product-2' | placeholder_svg_tag }}
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+            <style>
+              {% if block.settings.show_second_image %}
+                .testimonials__section.section-{{ section.id }} .testimonials__container--{{ block.id }} .testimonial__first-image {
+                    transform: translate(-20%, 5%);
+                    position: relative;
+                    width: 65%;
+                }
+                .testimonials__section.section-{{ section.id }} .testimonials__container--{{ block.id }} .testimonials__image {
+                    position: relative;
+                }
+                .testimonials__section.section-{{ section.id }} .testimonials__container--{{ block.id }} .testimonial__second-image {
+                    position: absolute;
+                    top: -10px;
+                    left: 30%;
+                    z-index: 3;
+                    width: 60%;
+                }
+                @media screen and (max-width: 740px) {
+                    .testimonials__container--{{ block.id }} .testimonial__first-image {
+                        transform: translate(0, 0);
+                        width: 60%;
+                    }
+                    .testimonials__container--{{ block.id }} .testimonial__second-image {
+                        left: unset;
+                        right: 0;
+                        top: -20px;
+                        width: 60%;
+                    }
+                }
+              {% endif %}
+            </style>
+            {% when 'collection' %}
+              {% if collection != blank %}
+                <a href="{{ collection.url }}">
+                  {% if collection.image %}
+                    {%
+                      render 'basic-responsive-image',
+                      type: collection.image,
+                      width: 1200,
+                      loading: loading,
+                      fetchpriority: fetch_priority
+                    %}
+                  {% elsif collection.products.first and collection.products.first.media != empty %}
+                    {%
+                      render 'basic-responsive-image',
+                      type: collection.products.first.featured_media.preview_image,
+                      width: 1200,
+                      loading: loading,
+                      fetchpriority: fetch_priority
+                    %}
+                  {% else %}
+                    <div class="onboard">
+                      {{ 'collection-1' | placeholder_svg_tag }}
+                    </div>
+                  {% endif %}
+                </a>
+              {% else %}
+                <div class="onboard">
+                  {{ 'collection-1' | placeholder_svg_tag }}
+                </div>
+              {% endif %}
+          {% endcase %}
+        </div>
+
+        <div class="testimonials__content span-5 sm-span-12 auto m-center">
+          {%- if has_title -%}
+            <h3>{{ block.settings.title | escape }}</h3>
+          {%- endif -%}
+          {% if has_rating %}
+            <div class="testimonial__rating">
+              {% for i in (1..block.settings.rating) %}
+                {% render 'snip-icons',wrapper: '.testimonial__rating',type: 'testament-theme',icon: 'star',classes: 'vib-center',size: '18px',fill: section.settings.star_color %}
+              {% endfor %}
+            </div>
+          {% endif %}
+          {%- if has_text -%}
+            <div class="rte">
+              {{ block.settings.text }}
+            </div>
+          {%- endif -%}
+          {%- if has_author -%}
+            <div class="rte testimonial__author">
+              <p>{{ block.settings.author }}</p>
+            </div>
+          {%- endif -%}
+          {% if block.type != 'image_with_text' and show_type_title %}
+            <div class="testimonial__type-title rte">
+              <span><a href="{{ link }}">{{ type_title }}</a></span>
+            </div>
+          {% endif %}
+          {%- if has_button -%}
+            <div class="testimonial__btn-wrapper">
+              <a href="{{ link }}">{{ block.settings.button_text | escape }}</a>
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <style>
+      .testimonials__section.section-{{ section.id }} {
+        --section-text-color: {{ section.settings.text_color }};
+      }
+    </style>
+</section>
+
+<div class="clear"></div>
+
+
+{% schema %}
+{
+  "name": "Testimonials",
+  "max_blocks": 5,
+  "settings": [
+    {
+      "type": "radio",
+      "id": "image_position",
+      "label": "Image position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type":"color",
+      "id":"text_color",
+      "label":"Text color",
+      "default":"#000000"
+    },
+    {
+      "type":"color",
+      "id":"star_color",
+      "label":"Star color",
+      "default":"#000000"
+    },
+    {
+      "type":"color",
+      "id":"background_color",
+      "label":"Background color",
+      "default":"#f7f7f7"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection",
+      "settings": [
+        {
+          "label": "Collection",
+          "id": "collection",
+          "type": "collection"
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "min": 0,
+          "max": 5,
+          "step": 1,
+          "label": "Rating (stars)",
+          "default": 5
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "So pleased"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Add a few sentences of text from a customer testimonial to your store.</p>"
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Author",
+          "default": "A. Customer"
+        },
+        {
+          "id": "show_collection_title",
+          "type": "checkbox",
+          "label": "Show collection title"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button",
+          "default": "View collection"
+        }
+      ]
+    },
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "label": "Product",
+          "id": "product",
+          "type": "product"
+        },
+        {
+          "id": "show_second_image",
+          "type": "checkbox",
+          "label": "Show second product image"
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "min": 0,
+          "max": 5,
+          "step": 1,
+          "label": "Rating (stars)",
+          "default": 5
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "So pleased"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Add a few sentences of text from a customer testimonial to your store.</p>"
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Author",
+          "default": "A. Customer"
+        },
+        {
+          "id": "show_product_title",
+          "type": "checkbox",
+          "label": "Show product title"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button",
+          "default": "View product"
+        }
+      ]
+    },
+    {
+      "type": "image_with_text",
+      "name": "Image with text",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image",
+          "info": "800px x 800px recommended"
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "min": 0,
+          "max": 5,
+          "step": 1,
+          "label": "Rating (stars)",
+          "default": 5
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "So pleased"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Add a few sentences of text from a customer testimonial to your store.</p>"
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Author",
+          "default": "A. Customer"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button",
+          "default": "Button"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link",
+          "info": "Optional"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Testimonials",
+      "blocks":
+      [
+        {
+          "type": "product",
+          "settings": {
+            "product": "",
+            "show_second_image": false,
+            "rating": 5,
+            "title": "Best product ever!",
+            "text": "<p>Add a few sentences of text from a customer testimonial to your store.<\/p>",
+            "author": "A. Customer",
+            "show_product_title": false,
+            "button_text": "View product"
+          }
+        },
+        {
+          "type": "image_with_text",
+          "settings": {
+            "rating": 5,
+            "title": "Helpful support team",
+            "text": "<p>Add a few sentences of text from a customer testimonial to your store.<\/p>",
+            "author": "A. Customer",
+            "button_text": "Button",
+            "link": ""
+          }
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}

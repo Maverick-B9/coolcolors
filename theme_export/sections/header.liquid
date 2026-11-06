@@ -1,0 +1,271 @@
+{%- assign is_home = false -%}
+{%- if template.name == 'index' and section.settings.transparent_on_home -%}{%- assign is_home = true -%}{%- endif -%}
+<header class="cc-header{% if is_home %} cc-header--overlay{% if section.settings.overlay_text == 'light' %} cc-header--light{% endif %}{% endif %}" data-cc-header data-overlay="{{ is_home }}">
+  <div class="cc-wrap cc-header__bar">
+    <button class="cc-header__burger" aria-label="Menu" aria-expanded="false" data-cc-burger>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+
+    <a href="{{ routes.root_url }}" class="cc-header__logo">
+      {%- if section.settings.logo != blank -%}
+        <img src="{{ section.settings.logo | image_url: width: 400 }}" alt="{{ shop.name | escape }}" width="{{ section.settings.logo_width }}" height="auto" style="max-width:{{ section.settings.logo_width }}px;height:auto">
+      {%- else -%}
+        <span class="cc-header__mark">CC</span>
+        <span class="cc-header__brand"><strong>{{ shop.name | upcase }}</strong><small>EDITORIAL</small></span>
+      {%- endif -%}
+    </a>
+
+    {%- assign visible_max = section.settings.visible_links | default: 5 -%}
+    <nav class="cc-header__nav" aria-label="Main">
+      {%- for link in linklists[section.settings.menu].links limit: visible_max -%}
+        {%- if link.links.size > 0 -%}
+          <div class="cc-dd">
+            <a href="{{ link.url }}" aria-haspopup="true" class="{% if link.active or link.child_active %}is-active{% endif %}">{{ link.title }} <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg></a>
+            <div class="cc-dd__menu">
+              {%- for child in link.links -%}
+                <a href="{{ child.url }}" class="{% if child.active %}is-active{% endif %}">{{ child.title }}</a>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- else -%}
+          <a href="{{ link.url }}" class="{% if link.active or link.child_active %}is-active{% endif %}">{{ link.title }}</a>
+        {%- endif -%}
+      {%- endfor -%}
+      {%- if linklists[section.settings.menu].links.size > visible_max -%}
+        <div class="cc-more" data-cc-more>
+          <button type="button" class="cc-more__btn" aria-haspopup="true" aria-expanded="false" data-cc-more-btn>More <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="cc-more__menu" role="menu">
+            {%- for link in linklists[section.settings.menu].links offset: visible_max -%}
+              <a href="{{ link.url }}" role="menuitem" class="{% if link.active or link.child_active %}is-active{% endif %}">{{ link.title }}</a>
+            {%- endfor -%}
+          </div>
+        </div>
+      {%- endif -%}
+    </nav>
+
+    <div class="cc-header__icons cc-hide-mobile">
+      <a href="{{ routes.search_url }}" class="cc-ibtn" aria-label="Search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></a>
+      <a href="{{ routes.account_url }}" class="cc-ibtn cc-hide-sm" aria-label="Account"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+      <a href="{{ routes.cart_url }}" class="cc-ibtn" aria-label="Cart"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>{%- if cart.item_count > 0 -%}<span class="cc-ibtn__count">{{ cart.item_count }}</span>{%- endif -%}</a>
+    </div>
+  </div>
+
+  <div class="cc-drawer" data-cc-drawer hidden>
+    {%- for link in linklists[section.settings.menu].links -%}
+      {%- if link.links.size > 0 -%}
+        <details class="cc-drawer__group">
+          <summary>{{ link.title }}</summary>
+          <a href="{{ link.url }}" class="cc-drawer__sub">All {{ link.title }}</a>
+          {%- for child in link.links -%}
+            <a href="{{ child.url }}" class="cc-drawer__sub">{{ child.title }}</a>
+          {%- endfor -%}
+        </details>
+      {%- else -%}
+        <a href="{{ link.url }}">{{ link.title }}</a>
+      {%- endif -%}
+    {%- endfor -%}
+    <a href="{{ routes.account_url }}">Account</a>
+  </div>
+</header>
+
+<nav class="cc-bottombar" aria-label="Quick actions">
+    <a href="{{ routes.search_url }}" class="cc-bb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span>Search</span></a>
+    <a href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}" class="cc-bb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>{% if customer %}Account{% else %}Sign in{% endif %}</span></a>
+    <a href="{{ routes.cart_url }}" class="cc-bb"><span class="cc-bb__ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>{%- if cart.item_count > 0 -%}<i class="cc-ibtn__count">{{ cart.item_count }}</i>{%- endif -%}</span><span>Cart</span></a>
+  </nav>
+
+
+<style>
+  :root { --cc-ink:#0D1117; --cc-steel:#5C6874; --cc-line:#E3E7EB; --cc-red:#D92231; --cc-hdr-h:72px; }
+  .cc-wrap, .page-width { max-width:1440px; margin:0 auto; padding-left:40px; padding-right:40px; box-sizing:border-box; width:100%; }
+  @media (max-width:768px){ .cc-wrap, .page-width{ padding-left:20px; padding-right:20px; } }
+  body{ font-family:'Inter',system-ui,-apple-system,sans-serif; }
+  /* gh-style.css forces helvetica on a/div/p — make header + announcement inherit Inter instead */
+  .cc-header, .cc-header *, .announcement__bar-section, .announcement__bar-section * { font-family:'Inter',system-ui,-apple-system,sans-serif; }
+
+  /* Whole group (announcement + header) sticks. It is a direct child of .page-wrap, so it can. */
+  #header-group { position:sticky; top:0; z-index:200; }
+  {%- if is_home -%}
+  /* Pull the hero up underneath the header so the header can be transparent over it */
+  #header-group { margin-bottom: calc(var(--cc-hdr-h) * -1); }
+  {%- endif -%}
+
+  .cc-header { font-family:'Inter',system-ui,sans-serif; height:var(--cc-hdr-h); background:rgba(255,255,255,.92);
+    -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); border-bottom:1px solid var(--cc-line);
+    color:var(--cc-ink); transition:background .3s, border-color .3s, color .3s; max-width:100%; overflow:visible; }
+  .cc-header__bar { height:100%; display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:24px; }
+  .cc-header__logo { display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit; justify-self:start; min-width:0; }
+  .cc-header__mark { width:32px; height:32px; border-radius:8px; background:var(--cc-red); color:#fff; font-weight:800; font-size:13px; display:grid; place-items:center; }
+  .cc-header__brand { display:flex; flex-direction:column; line-height:1.1; }
+  .cc-header__brand strong { font-size:16px; font-weight:800; letter-spacing:.3px; }
+  .cc-header__brand small { font-size:9px; letter-spacing:1.4px; font-weight:600; opacity:.65; }
+  .cc-header__nav { display:flex; gap:26px; justify-self:center; flex-wrap:nowrap; white-space:nowrap; }
+  .cc-header__nav a { position:relative; text-decoration:none; color:inherit; font-size:13px; font-weight:600; padding:6px 0; opacity:.8; white-space:nowrap; transition:opacity .2s; }
+  .cc-header__nav a::after { content:''; position:absolute; left:0; bottom:0; height:2px; width:100%; background:currentColor; transform:scaleX(0); transform-origin:left; transition:transform .25s; }
+  .cc-header__nav a:hover { opacity:1; } .cc-header__nav a:hover::after { transform:scaleX(1); }
+  .cc-header__nav a.is-active { opacity:1; } .cc-header__nav a.is-active::after { transform:scaleX(1); background:var(--cc-red); }
+
+  /* "More" dropdown for overflow menu items */
+  .cc-more { position:relative; }
+  .cc-more__btn { background:none; border:0; padding:6px 0; font:inherit; font-size:13px; font-weight:600; color:inherit; opacity:.8; cursor:pointer; display:flex; align-items:center; gap:5px; }
+  .cc-more__btn:hover, .cc-more.is-open .cc-more__btn { opacity:1; }
+  .cc-more__btn svg { transition:transform .2s; } .cc-more.is-open .cc-more__btn svg { transform:rotate(180deg); }
+  .cc-more__menu { position:absolute; top:calc(100% + 14px); left:50%; transform:translate(-50%,6px); min-width:210px; background:#fff; border:1px solid var(--cc-line); border-radius:14px; padding:8px; box-shadow:0 16px 32px rgba(13,17,23,.12); opacity:0; visibility:hidden; transition:.18s; display:flex; flex-direction:column; z-index:50; }
+  .cc-more.is-open .cc-more__menu, .cc-more:hover .cc-more__menu, .cc-more:focus-within .cc-more__menu { opacity:1; visibility:visible; transform:translate(-50%,0); }
+  .cc-more__menu::before { content:''; position:absolute; left:0; right:0; top:-16px; height:16px; }
+  .cc-header .cc-more__menu a { color:#0D1117; opacity:1; padding:10px 12px; border-radius:8px; font-size:13px; }
+  .cc-header .cc-more__menu a::after { display:none; }
+  .cc-header .cc-more__menu a:hover { background:#F1F3F5; }
+  .cc-header .cc-more__menu a.is-active { color:var(--cc-red); }
+  .cc-header__icons { display:flex; gap:10px; justify-self:end; }
+  .cc-ibtn { position:relative; width:42px; height:42px; display:grid; place-items:center; border:1px solid var(--cc-line); border-radius:12px; color:inherit; transition:background .2s,border-color .2s; }
+  .cc-ibtn:hover { background:rgba(13,17,23,.06); }
+  .cc-ibtn__count { position:absolute; top:-6px; right:-6px; min-width:18px; height:18px; border-radius:9px; background:var(--cc-red); color:#fff; font-size:10px; font-weight:700; display:grid; place-items:center; padding:0 4px; }
+  .cc-header__burger { display:none; background:none; border:0; color:inherit; padding:8px; cursor:pointer; justify-self:start; }
+
+  /* Transparent over hero (home only, until the page scrolls). Dark text by default; "light" is for dark hero images. */
+  .cc-header--overlay:not(.is-solid) { background:transparent; -webkit-backdrop-filter:none; backdrop-filter:none; border-bottom-color:rgba(13,17,23,.10); }
+  .cc-header--overlay:not(.is-solid) .cc-ibtn { border-color:rgba(13,17,23,.25); }
+  .cc-header--overlay:not(.is-solid) .cc-ibtn:hover { background:rgba(13,17,23,.06); }
+  .cc-header--overlay.cc-header--light:not(.is-solid) { color:#fff; border-bottom-color:rgba(255,255,255,.18); }
+  .cc-header--overlay.cc-header--light:not(.is-solid) .cc-ibtn { border-color:rgba(255,255,255,.4); }
+  .cc-header--overlay.cc-header--light:not(.is-solid) .cc-ibtn:hover { background:rgba(255,255,255,.15); }
+
+  .cc-drawer { position:absolute; left:0; right:0; top:100%; background:#fff; border-top:1px solid var(--cc-line); padding:8px 20px 20px; display:flex; flex-direction:column; box-shadow:0 12px 24px rgba(0,0,0,.08); max-height:calc(100vh - var(--cc-hdr-h)); overflow-y:auto; }
+  .cc-drawer[hidden]{ display:none; }
+  .cc-drawer a { padding:14px 0; color:var(--cc-ink); text-decoration:none; font-weight:600; border-bottom:1px solid #F1F3F5; }
+
+  .announcement__bar-section{ background:#0D1117 !important; color:#fff !important; }
+  .announcement__bar-section, .announcement__bar-section p, .announcement__bar-section a{ color:#fff !important; font-family:'Inter',system-ui,sans-serif; }
+
+
+  /* ===== Alignment fixes: logo | centred nav | icons, all on one centre line ===== */
+  .cc-header__bar { grid-template-columns:1fr auto 1fr !important; align-items:center; }
+  .cc-header__logo { justify-self:start; align-items:center; }
+  .cc-header__icons { justify-self:end; align-items:center; }
+  .cc-header__nav { display:flex; align-items:center; justify-content:center; gap:28px; justify-self:center; margin:0; padding:0; }
+  .cc-header__nav > a, .cc-header .cc-more__btn { display:inline-flex !important; align-items:center; height:40px; margin:0 !important; padding:0 !important; line-height:1 !important; font-size:13px !important; font-weight:600 !important; letter-spacing:0 !important; text-transform:none !important; font-family:'Inter',system-ui,sans-serif !important; }
+  .cc-header__nav > a::after { bottom:6px; }
+  .cc-more { display:flex; align-items:center; height:40px; }
+  .cc-more__btn { background:none !important; border:0 !important; box-shadow:none !important; border-radius:0 !important; width:auto !important; }
+  .cc-bottombar { display:none; }
+  @media (max-width:1280px){ .cc-header__nav{ gap:18px; } .cc-header__nav a{ font-size:12px; } }
+
+  /* ===== Subcategory dropdowns (desktop) ===== */
+  .cc-dd { position:relative; display:flex; align-items:center; height:40px; }
+  .cc-header__nav .cc-dd > a { display:inline-flex !important; align-items:center; gap:5px; height:40px; padding:0 !important; margin:0 !important; line-height:1 !important; font-size:13px !important; font-weight:600 !important; }
+  .cc-dd > a svg { transition:transform .2s; }
+  .cc-dd:hover > a svg, .cc-dd:focus-within > a svg { transform:rotate(180deg); }
+  .cc-dd:hover > a, .cc-dd:focus-within > a { opacity:1; }
+  .cc-dd__menu { position:absolute; top:calc(100% + 14px); left:50%; transform:translate(-50%,6px); min-width:210px; background:#fff; border:1px solid var(--cc-line); border-radius:14px; padding:8px; box-shadow:0 16px 32px rgba(13,17,23,.12); opacity:0; visibility:hidden; transition:.18s; display:flex; flex-direction:column; z-index:50; }
+  .cc-dd__menu::before { content:''; position:absolute; left:0; right:0; top:-16px; height:16px; } /* hover bridge */
+  .cc-dd:hover .cc-dd__menu, .cc-dd:focus-within .cc-dd__menu { opacity:1; visibility:visible; transform:translate(-50%,0); }
+  .cc-header .cc-dd__menu a { display:block !important; height:auto !important; color:#0D1117; opacity:1; padding:10px 12px !important; border-radius:8px; font-size:13px; white-space:nowrap; }
+  .cc-header .cc-dd__menu a::after { display:none; }
+  .cc-header .cc-dd__menu a:hover { background:#F1F3F5; }
+  .cc-header .cc-dd__menu a.is-active { color:var(--cc-red); }
+
+  /* ===== Subcategory accordion (mobile drawer) ===== */
+  .cc-drawer__group { border-bottom:1px solid #F1F3F5; }
+  .cc-drawer__group summary { padding:14px 0; font-weight:600; cursor:pointer; list-style:none; display:flex; justify-content:space-between; color:var(--cc-ink); }
+  .cc-drawer__group summary::-webkit-details-marker { display:none; }
+  .cc-drawer__group summary::after { content:'+'; }
+  .cc-drawer__group[open] summary::after { content:'–'; }
+  .cc-drawer .cc-drawer__sub { padding:10px 0 10px 14px; font-weight:500; border-bottom:0; color:var(--cc-steel); display:block; }
+
+  /* ===== Tablet + mobile header: [burger] [ centred logo ] [icons / spacer] ===== */
+  @media (max-width:1100px){
+    .cc-header__nav{ display:none !important; }
+    .cc-header__burger{ display:flex !important; align-items:center; justify-content:center; grid-column:1; grid-row:1; justify-self:start; width:44px; height:44px; padding:0; margin:0 0 0 -11px; line-height:0; }
+    .cc-header__logo{ grid-column:2; grid-row:1; justify-self:center; }
+    .cc-header__icons{ grid-column:3; grid-row:1; }
+  }
+  @media (max-width:900px){
+    :root{ --cc-hdr-h:64px; }
+    .cc-hide-mobile{ display:none !important; }
+    .cc-header .cc-wrap{ padding-left:16px; padding-right:16px; }
+    /* equal side columns keep the logo exactly centred even though the right column is empty */
+    .cc-header__bar{ grid-template-columns:44px minmax(0,1fr) 44px !important; gap:8px; }
+    .cc-header__logo{ max-width:100%; justify-content:center; }
+    .cc-header__logo img{ width:auto !important; max-width:min(150px,100%) !important; max-height:34px; height:auto; display:block; }
+    .cc-drawer{ padding:8px 16px 20px; }
+
+    /* Floating bottom action bar (search / sign in / cart) */
+    .cc-bottombar{ display:flex; position:fixed; left:50%; bottom:calc(14px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); z-index:9999;
+      width:min(calc(100% - 32px), 380px); padding:8px 10px; justify-content:space-around; align-items:center;
+      background:rgba(255,255,255,.96); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+      border:1px solid rgba(13,17,23,.08); border-radius:100px; box-shadow:0 14px 34px rgba(13,17,23,.22);
+      animation:ccBbIn .55s cubic-bezier(.2,.9,.3,1.2) both; }
+    .cc-bb{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 4px; color:#0D1117 !important; text-decoration:none !important; font-size:10.5px; font-weight:600; border-radius:100px; transition:transform .12s, background .2s; -webkit-tap-highlight-color:transparent; }
+    .cc-bb:active{ transform:scale(.92); background:rgba(13,17,23,.06); }
+    .cc-bb span{ line-height:1; font-family:'Inter',system-ui,sans-serif; }
+    .cc-bb__ico{ position:relative; display:grid; place-items:center; }
+    .cc-bb__ico .cc-ibtn__count{ top:-7px; right:-9px; font-style:normal; }
+    body{ padding-bottom:calc(92px + env(safe-area-inset-bottom,0px)); }
+    .cc-wa{ bottom:calc(98px + env(safe-area-inset-bottom,0px)) !important; right:16px !important; width:48px !important; height:48px !important; }
+  }
+  @keyframes ccBbIn{ from{ transform:translate(-50%,140%); opacity:0; } to{ transform:translate(-50%,0); opacity:1; } }
+</style>
+
+<script>
+(function(){
+  function init(){
+    var h = document.querySelector('[data-cc-header]'); if(!h || h.__ccInit) return; h.__ccInit = true;
+    var group = document.getElementById('header-group');
+    var overlay = h.dataset.overlay === 'true';
+
+    // Announcement bar scrolls away; header stays stuck at the top.
+    function setTop(){
+      if(!group) return;
+      var wrap = h.closest('.shopify-section'), ann = 0;
+      for (var i = 0; i < group.children.length; i++) { if (group.children[i] !== wrap) ann += group.children[i].offsetHeight; }
+      group.style.top = (-ann) + 'px';
+    }
+    setTop(); window.addEventListener('resize', setTop); window.addEventListener('load', setTop);
+
+    // Transparent over the hero at the very top, solid as soon as the page scrolls.
+    var drawer = h.querySelector('[data-cc-drawer]');
+    function update(){
+      var drawerOpen = drawer && !drawer.hasAttribute('hidden');
+      var solid = !overlay || window.scrollY > 24 || drawerOpen;
+      h.classList.toggle('is-solid', solid);
+    }
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('pageshow', update);
+
+
+    // "More" dropdown (click/tap toggle; hover handled in CSS)
+    var more = h.querySelector('[data-cc-more]');
+    if (more) {
+      var mb = more.querySelector('[data-cc-more-btn]');
+      mb.addEventListener('click', function(e){ e.stopPropagation(); var o = !more.classList.contains('is-open'); more.classList.toggle('is-open', o); mb.setAttribute('aria-expanded', o); });
+      document.addEventListener('click', function(e){ if(!more.contains(e.target)){ more.classList.remove('is-open'); mb.setAttribute('aria-expanded','false'); } });
+    }
+
+    // Mobile drawer
+    var b = h.querySelector('[data-cc-burger]');
+    if (b && drawer) b.addEventListener('click', function(){
+      var open = drawer.hasAttribute('hidden'); drawer.toggleAttribute('hidden', !open);
+      b.setAttribute('aria-expanded', open); update();
+    });
+  }
+  // The header section renders BEFORE the hero/main content, so wait for the DOM.
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  document.addEventListener('shopify:section:load', init);
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Logo image (leave empty for CC mark + shop name)" },
+    { "type": "range", "id": "logo_width", "min": 60, "max": 300, "step": 10, "unit": "px", "label": "Logo width", "default": 140 },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    { "type": "range", "id": "visible_links", "min": 3, "max": 8, "step": 1, "label": "Menu items shown before \"More\"", "default": 5 },
+    { "type": "checkbox", "id": "transparent_on_home", "label": "Transparent over the home hero", "default": true },
+    { "type": "select", "id": "overlay_text", "label": "Header text colour while transparent", "options": [ { "value": "dark", "label": "Dark (for light hero images)" }, { "value": "light", "label": "Light (for dark hero images)" } ], "default": "dark" }
+  ]
+}
+{% endschema %}

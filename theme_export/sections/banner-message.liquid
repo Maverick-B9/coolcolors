@@ -1,0 +1,243 @@
+{%- liquid
+
+  assign section_space = section.settings.section_space
+  assign section_space_class = ''
+
+  if section_space == 'top'
+    assign section_space_class = ' pb0'
+  elsif section_space == 'bottom'
+    assign section_space_class = ' mt0'
+  elsif section_space == 'none'
+    assign section_space_class = ' mt0 pb0'
+  endif
+
+  assign has_image = false
+  assign has_content = false
+  assign has_heading = false
+  assign has_banner_text = false
+  assign has_link = false
+  assign has_button = false
+
+  if section.settings.image != blank
+    assign has_image = true
+  endif
+
+  if section.settings.heading != blank
+    assign has_heading = true
+  endif
+
+  if section.settings.banner_text != blank
+    assign has_banner_text = true
+  endif
+
+  if section.settings.link != blank
+    assign has_link = true
+  endif
+
+  if section.settings.button_text != blank and has_link
+    assign has_button = true
+  endif
+
+  if has_heading or has_banner_text or has_button
+    assign has_content = true
+  endif
+
+-%}
+{% style %}
+  #banner--section__{{ section.id }} {
+    --desktop-section-height: {{ section.settings.banner_height }}px;
+    --mobile-section-height: {{ section.settings.banner_height_mobile }}px;
+    --text-color: {{ section.settings.text_color }};
+    --button-text: {{ section.settings.button_text_color }};
+    --button-color: {{ section.settings.button_color }};
+    --overlay-color: {{ section.settings.overlay_color }};
+  }
+{% endstyle %}
+
+<section 
+  class="global__section {{ section.settings.custom_css }} banner--message__section banner-{{ section.id }}{{ section_space_class }}"
+  id="banner--section__{{ section.id }}"
+  data-section-id="{{ section.id }}" >
+    <div class="banner--section__container grid__wrapper row">
+      {%- if has_image -%}
+        <div class="banner--section__image">
+          {% if has_link and has_button == false %}
+            <a href="{{ section.settings.link }}">
+          {% endif %}
+              {% liquid
+                if section.index == 1
+                  assign loading = 'eager'
+                  assign fetch_priority = 'high'
+                endif
+               %}
+              {%
+                render 'basic-responsive-image',
+                type: section.settings.image,
+                width: 2000,
+                loading: loading,
+                fetchpriority: fetch_priority
+              %}
+          {% if has_link and has_button == false %}
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+      <div class="banner--overlay"></div>
+      {%- if has_content -%}
+        <div class="banner--section__content {{ section.settings.content_appearance }}">
+          {% if has_heading or has_banner_text %}
+            <div class="banner--section__text">
+              {% if has_heading %}
+                <h2 class="h3">{{ section.settings.heading }}</h2>
+              {% endif %}
+              {% if has_banner_text %}
+                <span>{{ section.settings.banner_text }}</span>
+              {% endif %}
+            </div>
+          {% endif %}
+          {% if has_button %}
+            <div class="banner--section__button">
+              <a class="button" href="{{ section.settings.link }}">{{ section.settings.button_text }}</a>
+            </div>
+          {% endif %}
+        </div>
+      {%- endif -%}
+    </div>
+</section>
+
+
+{% schema %}
+{
+  "name": "Banner message",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "1920px x 300px recommended"
+    },
+    {
+      "type": "radio",
+      "id": "content_appearance",
+      "label": "Content appearance",
+      "options": [
+        {
+          "value": "split",
+          "label": "Split"
+        },
+        {
+          "value": "stacked",
+          "label": "Stacked"
+        }
+      ],
+      "info":"Split layout makes text and button appear inline, stacked places button below text",
+      "default": "split"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Banner title"
+    },
+    {
+      "type": "richtext",
+      "id": "banner_text",
+      "label": "Text content",
+      "default": "<p>Banner text content</p>"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Link",
+      "default":"\/collections\/all"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Button"
+    },
+    {
+      "type": "range",
+      "id": "banner_height",
+      "min": 150,
+      "max": 300,
+      "step": 10,
+      "unit": "px",
+      "label": "Banner height (desktop)",
+      "default": 150
+    },
+    {
+      "type": "range",
+      "id": "banner_height_mobile",
+      "min": 150,
+      "max": 300,
+      "step": 10,
+      "unit": "px",
+      "label": "Banner height (mobile)",
+      "default": 250
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Button background",
+      "default": "#000000"
+    },
+    {
+      "type": "color_background",
+      "id": "overlay_color",
+      "label": "Overlay",
+      "default": "linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(0, 0, 0, 1) 100%)"
+    },
+    {
+      "type": "select",
+      "id": "section_space",
+      "label": "Section spacing",
+      "default": "bottom",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "top_and_bottom",
+          "label": "Top and bottom"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "custom_css",
+      "label": "Add Custom CSS Here"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner message"
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}

@@ -1,0 +1,495 @@
+{%- liquid
+
+  assign hd_locale_selector = false
+  assign hd_currency_selector = false
+
+  if section.settings.show_country_selector and localization.available_countries.size > 1
+    assign hd_currency_selector = true
+  endif
+
+  if section.settings.show_locale_selector and localization.available_languages.size > 1
+    assign hd_locale_selector = true
+  endif
+
+  assign announcement = false
+  assign announcement_2 = false
+  assign announcement_3 = false
+
+  if section.settings.announcement_text != blank
+    assign announcement = true
+  endif
+
+  if section.settings.announcement_text_2 != blank
+    assign announcement_2 = true
+  endif
+
+  if section.settings.announcement_text_3 != blank
+    assign announcement_3 = true
+  endif
+
+  if section.settings.full_width_header
+    assign is_full_width = true
+  endif
+
+-%}
+
+{% if hd_locale_selector or hd_currency_selector %}
+  {{ 'component-header-disclosures.css' | asset_url | stylesheet_tag }}
+{% endif %}
+
+<header class="announcement__bar-section js-top-bar" data-section-id="{{ section.id }}" data-section-type="announcement-bar-section">
+  {% if is_full_width %}
+  <div class="gridlock-fluid">
+    {% endif %}
+    <div class="row grid__wrapper" id="upper-content">
+      {%- liquid
+
+        if announcement or announcement_2 or announcement_3
+          assign social_grid = 'span-3 auto sm-hide v-center'
+        else
+          assign social_grid = 'span-6 auto sm-hide v-center'
+        endif
+
+      -%}
+      {% render 'social-icons',
+        wrapper: '.announcement__bar-section',
+        fill_color: 'var(--announcement-text)',
+        hover_color: 'var(--announcement-text)',
+        social_grid:  social_grid %}
+
+      {% if announcement or announcement_2 or announcement_3 %}
+        {% capture slideshow_config %}{
+          "wrapAround":true,
+          "dragThreshold":"15",
+          "pauseAutoPlayOnHover":false,
+          "autoPlay": 5000,
+          "pageDots":false,
+          "prevNextButtons": true
+        }{% endcapture %}
+        <div id="hello" class="span-6 auto sm-span-12 v-center swiper announcement_swiper">
+            <div class="swiper-wrapper">
+              {% if announcement %}
+              <div class="swiper-slide announcement__carousel-item" data-slider-index="1">
+                  {{ section.settings.announcement_text }}
+              </div>
+              {% endif %}
+              {% if announcement_2 %}
+                <div class="swiper-slide announcement__carousel-item" data-slider-index="2">
+                  {{ section.settings.announcement_text_2 }}
+                </div>
+              {% endif %}
+              {% if announcement_3 %}
+                <div class="swiper-slide announcement__carousel-item" data-slider-index="3">
+                  {{ section.settings.announcement_text_3 }}
+                </div>
+              {% endif %}
+            </div>
+        </div>
+      {% endif %}
+      <ul class="cart-links__wrapper {% if announcement or announcement_2 or announcement_3 %}span-3 {% else %}span-6{% endif %} auto sm-hide v-center a-right">
+        {%- if hd_locale_selector -%}
+          <li class="lang-selector">
+            <div class="selectors-form__item">
+              <noscript>
+                {%-
+                  form 'localization',
+                  id: 'HeaderLanguageFormNoScript',
+                  class: 'localization-form selectors-form',
+                  data-disclosure-form: ''
+                -%}
+                  <h2 class="visually-hidden" id="HeaderLanguageLabelNoScript">
+                    {{ 'general.currency.dropdown_label' | t }}
+                  </h2>
+                  <div class="selectors-form__select">
+                    <select
+                      name="locale_code"
+                      class="localization-selector button"
+                      aria-labelledby="HeaderLanguageLabelNoScript">
+                      <option value="" disabled>{{ 'general.language.dropdown_label' | t }}</option>
+                      {%- for language in localization.available_languages -%}
+                        <option
+                          value="{{ language.iso_code }}"
+                          lang="{{ language.iso_code }}"
+                          {%- if language.iso_code == localization.language.iso_code %}
+                          selected
+                          {% endif %}>
+                          {{ language.endonym_name | capitalize }}
+                        </option>
+                      {%- endfor -%}
+                    </select>
+                    {% render 'snip-icons',
+                       type: 'apollo',
+                       icon: 'down-carrot',
+                       size: '5px',
+                       fill: 'var(--announcement-text)',
+                       hover: 'var(--announcement-background)' %}
+                  </div><!-- /.selectors-form__select -->
+                  <button class="localization-form__noscript-btn">
+                    {% render 'snip-icons',
+                       type: 'apollo',
+                       icon: 'checkmark',
+                       size: '12px',
+                       fill: 'var(--announcement-text)',
+                       hover: 'var(--announcement-background)' %}
+                  </button>
+                {%- endform -%}
+              </noscript>
+              {%-
+                form 'localization',
+                id: 'HeaderLanguageForm',
+                class: 'localization-form selectors-form',
+                data-disclosure-form: ''
+              -%}
+                <div class="disclosure" data-disclosure-locale>
+                  <div class="no-js-hidden">
+                    <h2 class="visually-hidden" id="HeaderLanguageLabel">
+                      {{ 'general.language.dropdown_label' | t }}
+                    </h2>
+                    <button
+                      type="button"
+                      class="disclosure__toggle"
+                      aria-expanded="false"
+                      aria-controls="HeaderLanguageList"
+                      aria-describedby="HeaderLanguageLabel"
+                      data-disclosure-toggle>
+                      {{ localization.language.endonym_name | capitalize }}
+                      {% render 'snip-icons',
+                         type: 'apollo',
+                         icon: 'down-carrot',
+                         size: '5px',
+                         fill: 'var(--announcement-text)',
+                         hover: 'var(--announcement-background)' %}
+                    </button>
+                    <ul
+                      id="HeaderLanguageList"
+                      class="disclosure-list"
+                      data-disclosure-list>
+                      {%- for language in localization.available_languages -%}
+                        <li class="disclosure-list__item {% if language.iso_code == localization.language.iso_code %}disclosure-list__item--current{% endif %}">
+                          <a
+                            class="disclosure-list__option"
+                            href="#"
+                            title="{{ locale.endonym_name }}"
+                            lang="{{ locale.iso_code }}"
+                            {% if language.iso_code == localization.language.iso_code %}
+                            aria-current="true"
+                            {% endif %}
+                            data-value="{{ language.iso_code | capitalize }}"
+                            data-disclosure-option>
+                            {{ language.endonym_name | capitalize }}
+                          </a>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                    <input type="hidden" name="locale_code" id="LocaleSelector" value="{{ localization.language.iso_code }}" data-disclosure-input/>
+                  </div><!-- /.no-js-hidden -->
+                </div><!-- /.disclosure -->
+              {%- endform -%}
+            </div><!-- /.selectors-form__item -->
+          </li>
+        {%- endif -%}
+        {%- if hd_currency_selector -%}
+          <li class="curr-selector">
+            <div class="selectors-form__item">
+              <noscript>
+                {%-
+                  form 'localization',
+                  id: 'HeaderCountryFormNoScript',
+                  class: 'localization-form selectors-form',
+                  data-disclosure-form: ''
+                -%}
+                  <h2 class="visually-hidden" id="HeaderCountryLabelNoScript">
+                    {{ 'general.currency.dropdown_label' | t }}
+                  </h2>
+                  <div class="selectors-form__select">
+                    <select
+                      class="localization-selector button"
+                      name="country_code"
+                      aria-labelledby="HeaderCountryLabelNoScript">
+                      <option value="" disabled>{{ 'general.currency.dropdown_label' | t }}</option>
+                      {%- for country in localization.available_countries -%}
+                        <option
+                          value="{{ country.iso_code }}"
+                          {%- if country.iso_code == localization.country.iso_code %}
+                          selected
+                          {% endif %}>
+                          {{ country.name }} ({{ country.currency.iso_code }} {{ country.currency.symbol }})
+                        </option>
+                      {%- endfor -%}
+                    </select>
+                    {% render 'snip-icons',
+                       type: 'apollo',
+                       icon: 'down-carrot',
+                       size: '5px',
+                       fill: 'var(--announcement-text)',
+                       hover: 'var(--announcement-text)' %}
+                  </div><!-- /.selectors-form__select -->
+                  <button class="localization-form__noscript-btn">
+                    {% render 'snip-icons',
+                       type: 'apollo',
+                       icon: 'checkmark',
+                       size: '12px',
+                       fill: 'var(--announcement-text)',
+                       hover: 'var(--announcement-background)' %}
+                  </button>
+                {% endform %}
+              </noscript>
+              {%-
+                form 'localization',
+                id: 'HeaderCountryForm',
+                class: 'localization-form selectors-form',
+                data-disclosure-form: ''
+              -%}
+                <div class="disclosure" data-disclosure-country>
+                  <div class="no-js-hidden">
+                    <h2 class="visually-hidden" id="HeaderCountryLabel">
+                      {{ 'general.currency.dropdown_label' | t }}
+                    </h2>
+                    <button
+                      type="button"
+                      class="disclosure__toggle"
+                      aria-expanded="false"
+                      aria-controls="HeaderCountryList"
+                      aria-describedby="HeaderCountryLabel"
+                      data-disclosure-toggle>
+                      {% if section.settings.show_flag %}
+                        <span class="country--flag">
+                          {{ localization.country | image_url: width: 32 | image_tag: class: 'disclosure__toggle__flag', loading: 'eager', fetchpriority: 'high', alt: country.name }}
+                        </span>
+                      {% endif %}
+                      {{ localization.country.currency.iso_code }} {{ localization.country.currency.symbol }}
+                      {% render 'snip-icons',
+                         type: 'apollo',
+                         icon: 'down-carrot',
+                         size: '5px',
+                         fill: 'var(--announcement-text)',
+                         hover: 'var(--announcement-text)' %}
+                    </button>
+                    <ul
+                      id="HeaderCountryList"
+                      class="disclosure-list"
+                      data-disclosure-list>
+                      {% for country in localization.available_countries %}
+                        <li
+                          class="disclosure-list__item {% if country.iso_code == localization.country.iso_code %}disclosure-list__item--current{% endif %}">
+                          <a
+                            class="disclosure-list__option"
+                            href="#"
+                            title="{{ country.iso_code }}"
+                            {% if country.iso_code == localization.country.iso_code %}
+                            aria-current="true"
+                            {% endif %}
+                            data-value="{{ country.iso_code }}"
+                            data-disclosure-option>
+                            <span class="country--name">{{ country.name }}</span> <span class="localization-form__currency">{{ country.currency.iso_code }} {{ country.currency.symbol }}</span>
+                          </a>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                    <input type="hidden" name="country_code" value="{{ localization.country.iso_code }}" data-disclosure-input/>
+                  </div><!-- /.no-js-hidden -->
+                </div><!-- /.disclosure -->
+              {%- endform -%}
+            </div><!-- /.selectors-form__item -->
+          </li>
+        {%- endif -%}
+      </ul>
+    </div>
+    {% if is_full_width %}
+  </div>
+  {% endif %}
+
+  <style>
+  :root {
+    --announcement-text-size: {{ section.settings.announcement_text_size }}px;
+  }
+  .announcement__bar-section .gridlock-fluid .grid__wrapper {
+    max-width: 100%;
+  }
+  .announcement__bar-section button,
+  .announcement__bar-section .disclosure-list__option {
+    font-size: {{ section.settings.announcement_text_size }}px;
+    margin-bottom: 0;
+  }
+
+  /* ---------- Centering fix ---------- */
+
+  /* Slide text: always centred, no stray paragraph margins */
+  .announcement__bar-section .announcement_swiper {
+    text-align: center;
+    overflow: hidden;
+  }
+  .announcement__bar-section .announcement__carousel-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .announcement__bar-section .announcement__carousel-item p {
+    margin: 0;
+    text-align: center;
+  }
+
+  /* Desktop: equal side columns so the middle column is truly centred */
+  @media (min-width: 741px) {
+    .announcement__bar-section #upper-content {
+      display: grid;
+      grid-template-columns: 1fr minmax(0, 50%) 1fr;
+      align-items: center;
+    }
+    /* Neutralise the framework's span/width classes inside the grid */
+    .announcement__bar-section #upper-content > * {
+      width: auto;
+      max-width: none;
+      margin-left: 0;
+      margin-right: 0;
+      float: none;
+    }
+    /* Left column: social icons (whatever they render) */
+    .announcement__bar-section #upper-content > *:not(.announcement_swiper):not(.cart-links__wrapper) {
+      grid-column: 1;
+      grid-row: 1;
+    }
+    /* Middle column: announcement */
+    .announcement__bar-section #upper-content > .announcement_swiper {
+      grid-column: 2;
+      grid-row: 1;
+      min-width: 0;
+    }
+    /* Right column: language / currency */
+    .announcement__bar-section #upper-content > .cart-links__wrapper {
+      grid-column: 3;
+      grid-row: 1;
+      justify-self: end;
+    }
+  }
+
+ @media (max-width: 740px) {
+  :root {
+    --announcement-text-size: calc({{ section.settings.announcement_text_size }}px - ({{ section.settings.announcement_text_size }}px * 0.15));
+  }
+
+  .announcement__bar-section .gridlock-fluid {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .announcement__bar-section #upper-content {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* hide everything except the announcement on mobile */
+  .announcement__bar-section #upper-content > *:not(.announcement_swiper) {
+    display: none !important;
+  }
+
+  .announcement__bar-section .announcement_swiper {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    float: none !important;
+    overflow: hidden;
+  }
+
+  .announcement__bar-section .swiper-wrapper {
+    width: 100%;
+  }
+
+  .announcement__bar-section .swiper-slide {
+    width: 100% !important;
+    box-sizing: border-box;
+    padding: 0 12px !important;
+    margin-left: 0 !important;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .announcement__bar-section .swiper-slide p {
+    margin: 0 !important;
+    text-align: center;
+  }
+}
+</style>
+
+
+</header>
+
+
+{% schema %}
+{
+  "name": "Announcement bar",
+  "class": "js-site-announcement-bar",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "full_width_header",
+      "label": "Full width"
+    },
+    {
+      "type": "header",
+      "content": "Announcement Bar"
+    },
+    {
+      "type": "richtext",
+      "id": "announcement_text",
+      "label": "Announcement text",
+      "default": "<p>Share a shop announcement or message</p>"
+    },
+    {
+      "type": "richtext",
+      "id": "announcement_text_2",
+      "label": "Announcement text",
+      "default": "<p>Share a shop announcement or message</p>"
+    },
+    {
+      "type": "richtext",
+      "id": "announcement_text_3",
+      "label": "Announcement text",
+      "default": "<p>Share a shop announcement or message</p>"
+    },
+    {
+      "type": "range",
+      "id": "announcement_text_size",
+      "min": 12,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "label": "Text size",
+      "default": 13
+    },
+    {
+      "type": "header",
+      "content": "Language Selector",
+      "info": "To add a language, go to your [language settings.](/admin/settings/languages)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_locale_selector",
+      "label": "Show language selector",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Country/Region Selector",
+      "info": "To add a currency, go to your [payment settings.](/admin/settings/payments)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_country_selector",
+      "label": "Show country/region selector",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_flag",
+      "label": "Show selected country flag",
+      "default": true
+    }
+  ],
+  "blocks": []
+}
+{% endschema %}

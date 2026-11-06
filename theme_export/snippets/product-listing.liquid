@@ -1,0 +1,178 @@
+{%- liquid
+
+  case settings.product_image_size
+    when 'natural'
+      assign aspect_ratio = 'natural'
+    when 'square'
+      assign aspect_ratio = 'square'
+    when 'landscape'
+      assign aspect_ratio = 'landscape'
+    when 'portrait'
+      assign aspect_ratio = 'portrait'
+  endcase
+
+-%}
+
+
+<div class="js-product-image animated prod-image image_{{ aspect_ratio }}">
+  <a href="{{ product.url }}" title="{{ product.title | escape }}">
+    <div class="reveal">
+      {%- if product.media.size < 1 -%}
+        <div class="box-ratio" style="padding-bottom: 100%;">
+          {% capture current %}{% cycle 1, 2, 3, 4, 5, 6 %}{% endcapture %}
+          {{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg' }}
+        </div>
+      {% else %}
+        {%- assign preview_image = product.featured_media.preview_image -%}
+        {%- assign second_image = product.media[1] -%}
+        {%- if settings.switch_image and product.media.size > 1 -%}
+          {% assign is_first = 'first-image' %}
+        {%- endif -%}
+
+        {%
+          render 'basic-responsive-image',
+          type: product.featured_media.preview_image,
+          width: 1200,
+          loading: loading,
+          fetchpriority: fetchpriority
+        %}
+        {% if settings.switch_image and product.media.size > 1 and second_image.media_type == 'image' %}
+          <div class="hidden">
+            {% if
+              product.featured_media.media_type == 'video' or
+              product.featured_media.media_type == 'external_video'
+            %}
+            {% render 'product-loop-video', product: product %}
+            {% endif %}
+            {%
+              render 'basic-responsive-image',
+              type: product.media[1],
+              width: 1200,
+              loading: loading,
+              fetchpriority: fetchpriority
+            %}
+          </div>
+        {% elsif settings.switch_image and product.media.size > 1 and second_image.media_type != 'image' %}
+          <div class="hidden">
+            {% if
+              product.featured_media.media_type == 'video' or
+              product.featured_media.media_type == 'external_video'
+            %}
+            {% render 'product-loop-video', product: product %}
+            {% endif %}
+            {%
+              render 'basic-responsive-image',
+              type: product.media[1].preview_image,
+              width: 1200,
+              loading: 'lazy',
+              fetchpriority: 'auto'
+            %}
+          </div>
+        {% endif %}
+      {%- endif -%}
+    </div>
+  </a>
+
+
+  {% if settings.quickview_type != 'none' and hide_quick != true %}
+
+    {%- liquid
+
+      if settings.quickview_type == 'modal'
+        assign quickview_classes = 'js-modal-open'
+        assign quickview_settings = 'data-wau-modal-target="quickview"'
+      else
+        assign quickview_classes = 'js-slideout-open'
+        assign quickview_settings = 'data-wau-slideout-target="quickview" data-slideout-direction="right"'
+      endif
+
+    -%}
+
+    <button class="quick-view-{{ product.id }} product-listing__quickview-trigger {{ quickview_classes }} js-quickview-trigger"
+    type="button" name="button"
+    {{ quickview_settings }}
+    data-product-url="{{ product.url }}?view=quick">{{ 'products.general.quick_view' | t }}</button>
+  {% endif %}
+
+  {% if settings.show_sizes != 'hidden' and product.variants.size >= 1 and hide_quick != true %}
+    {% render 'product-listing-sizes' product: product %}
+  {% endif %}
+
+</div>
+
+<div class="product-info cc" style="text-align: left; padding-top: 16px;">
+  <div class="product-info-inner">
+    <a href="{{ product.url }}" style="text-decoration: none;">
+      <div class="prod-title" style="color: #0D1117; font-weight: 700; font-size: 16px; line-height: 1.2; margin-bottom: 4px;">{{ product.title }}</div>
+      
+      <div class="prod-meta" style="color: #5C6874; font-size: 13px; line-height: 1.4; margin-bottom: 12px;">
+        {% assign subtitle = product.metafields.custom.subtitle | default: product.type %}
+        {% if subtitle == blank %}{% assign subtitle = "Premium blend" %}{% endif %}
+        <span>{{ subtitle }}</span> &middot; <span>{{ product.price | money }}</span>
+      </div>
+    </a>
+
+    <div class="product-actions" style="display: flex; align-items: center; gap: 16px; margin-top: 8px;">
+      {% form 'product', product, data-product-form: product_form_config %}
+        <input type="hidden" id="{{ variant.id }}" name="id" value="{{ product.variants.first.id }}"/>
+        <button type="submit" name="add" class="button add-to-bag-btn" style="background-color: #D92231; color: #ffffff; border: none; border-radius: 100px; padding: 6px 16px; font-size: 12px; font-weight: 600; cursor: pointer; line-height: 1.2;">
+          Add to bag
+        </button>
+      {% endform %}
+
+      {% if settings.quickview_type != 'none' and hide_quick != true %}
+        {%- liquid
+          if settings.quickview_type == 'modal'
+            assign quickview_classes = 'js-modal-open'
+            assign quickview_settings = 'data-wau-modal-target="quickview"'
+          else
+            assign quickview_classes = 'js-slideout-open'
+            assign quickview_settings = 'data-wau-slideout-target="quickview" data-slideout-direction="right"'
+          endif
+        -%}
+        <button class="quick-view-{{ product.id }} js-quickview-trigger" type="button" {{ quickview_settings }} data-product-url="{{ product.url }}?view=quick" style="background: none; border: none; color: #0D1117; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0;">
+          Quick view
+        </button>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<div class="product-index-inner">
+  {% if product.available %}
+    {% for col in product.collections %}
+      {% if col.handle == 'new' %}
+        <div class="new icn {{ settings.icon_style }}">{{ 'products.general.new' | t }}</div>
+      {% endif %}
+    {% endfor %}
+    {% if product.price < product.compare_at_price %}
+      <div class="sale-item sale-item--{{ settings.sale_items }} icn {{ settings.icon_style }}">
+        {% case settings.sale_items %}
+          {% when 'percentage' %}
+            {% if product.price_varies or product.compare_at_price_varies %}
+              {{ 'products.general.sale' | t }}
+            {% else %}
+              {% assign discount = product.compare_at_price | minus: product.price | times: 100.0 | divided_by: product.compare_at_price %}
+              {% assign discount = discount | round | append: '%' %}
+              {{ 'products.general.savings' | t: savings: discount }}
+            {% endif %}
+          {% when 'amount' %}
+            {% if product.price_varies or product.compare_at_price_varies %}
+              {{ 'products.general.sale' | t }}
+            {% else %}
+              {% assign discount = product.compare_at_price | minus: product.price | money %}
+              {{ 'products.general.savings' | t: savings: discount }}
+            {% endif %}
+          {% when 'icon' %}
+            {{ 'products.general.sale' | t }}
+        {% endcase %}
+      </div><!-- /.sale-item -->
+    {% endif %}
+    {% if product.template_suffix == 'pre-order' %}
+      <div class="pre-order icn {{ settings.icon_style }}">{{ 'products.product.pre_order' | t }}</div>
+    {% endif %}
+  {% else %}
+    <div class="so icn {{ settings.icon_style }}">{{ 'products.general.sold' | t }}</div>
+  {% endif %}
+</div>

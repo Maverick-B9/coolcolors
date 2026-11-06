@@ -1,0 +1,76 @@
+{%- liquid
+
+  assign section_banner = false
+
+  if section.settings.image != blank
+    assign section_banner = true
+  endif
+
+-%}
+
+{%- if section_banner -%}
+  <section class="collection__section--banner collection__banner-{{ section.id }}"
+  data-aos="fade"
+  data-section-id="{{ section.id }}" >
+      <div class="collection__banner-image">
+      {%- if section.settings.image != blank -%}
+        {% liquid
+          if section.index == 1
+            assign loading = 'eager'
+            assign fetch_priority = 'high'
+          endif
+         %}
+        {%
+          render 'basic-responsive-image',
+          type: section.settings.image,
+          width: 2000,
+          loading: loading,
+          fetchpriority: fetch_priority
+        %}
+      {% endif %}
+    </div>
+    <style>
+      @media screen and (min-width: 741px) {
+        .collection__section--banner,
+        .collection__banner-image {
+          height: {{ section.settings.banner_height }}px;
+          overflow: hidden;
+        }
+        .collection__section--banner .box-ratio {
+          padding-bottom: {{ section.settings.banner_height }}px !important;
+        }
+        .collection__section--banner img {
+          object-fit: cover;
+          object-position: center center;
+          height: {{ section.settings.banner_height }}px;
+        }
+      }
+    </style>
+  </section>
+  <div class="clear"></div>
+{%- endif -%}
+
+
+{% schema %}
+{
+  "name": "Banner image",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "1920px x 600px recommended"
+    },
+    {
+      "type": "range",
+      "id": "banner_height",
+      "min": 200,
+      "max": 600,
+      "step": 50,
+      "unit": "px",
+      "label": "Image height",
+      "default": 400
+    }
+  ]
+}
+{% endschema %}

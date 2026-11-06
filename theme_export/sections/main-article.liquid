@@ -1,0 +1,317 @@
+{%- liquid
+
+  assign number_of_comments = article.comments_count
+  if comment and comment.created_at
+    assign number_of_comments = article.comments_count | plus: 1
+  endif
+
+  assign published_at = article.published_at | date: format: 'month_date_year'
+
+-%}
+
+<section class="article__section main__section" data-section-id="{{ section.id }}" data-section-type="article-section">
+<div class="row">
+  {% paginate article.comments by 20 %}
+
+  <div class="article__section-container">
+    <div class="article__section-body">
+
+      {% for block in section.blocks %}
+      {%- case block.type -%}
+
+        {%- when 'article_header' -%}
+          <h1 class="page-title article__section-title">{{ article.title }}</h1>
+
+        {%- when 'article_image' -%}
+          {% if article.image %}
+            {% liquid
+              if section.index == 1 and forloop.first
+                assign loading = 'eager'
+                assign fetch_priority = 'high'
+              endif
+             %}
+            <div class="article__section-image">
+              {%
+                render 'basic-responsive-image',
+                type: article.image,
+                width: 1200,
+                loading: loading,
+                fetchpriority: fetch_priority
+              %}
+            </div>
+          {% endif %}
+
+        {%- when 'article_content' -%}
+          <div class="article__section-details rte">
+            {{ article.content }}
+          </div>
+
+        {%- when 'article_info' -%}
+
+        {%- liquid
+
+            if block.settings.show_author
+              assign show_author = true
+            endif
+
+            if block.settings.show_date
+              assign show_date = true
+            endif
+
+            if block.settings.center_align
+              assign center_align = true
+            endif
+
+        -%}
+          <div class="article__page-info{% if center_align %} center{% endif %}">
+            {% if show_author %}
+              <span class="posted article__section-author">{{ article.author }}</span>
+            {% endif %}
+            {%- if show_author and show_date -%}
+              <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
+            {%- endif -%}
+            {% if show_date %}
+              <span class="posted article__section-date">{{ 'blogs.article.posted_on_date_html' | t: date: published_at }}</span>
+            {% endif %}
+          </div>
+
+        {%- when 'social_sharing' -%}
+          {%- liquid
+
+            if block.settings.show_twitter
+              assign show_twitter = true
+            endif
+            if block.settings.show_facebook
+              assign show_facebook = true
+            endif
+            if block.settings.show_pinterest
+              assign show_pinterest = true
+            endif
+
+            if block.settings.center_align
+              assign center_align = true
+            endif
+
+          -%}
+          <div class="{% if center_align %}center{% endif %}">
+            {% render 'social' with article,
+              show_facebook: show_facebook,
+              show_twitter: show_twitter,
+              show_pinterest: show_pinterest
+             %}
+          </div>
+      {% endcase %}
+      {% endfor %}
+
+    </div>
+
+    <div id="product-navigation" class="more__articles desktop-12 tablet-6 mobile-3">
+      <div class="section-title {% if settings.section_titles == 'lines' %}lines {% elsif settings.section_titles == 'btm_border' %}btm_border {% endif %}"><h3>{{ 'blogs.article.more_posts' | t }}</h3></div>
+      <div
+        id="back-forth"
+        data-blog-url="{{ blog.url }}"
+        data-article-url="{{ article.url }}"
+        data-shop-url="{{ shop.url }}"
+        data-older-post-text="{{ 'blogs.article.older_post' | t }}"
+        data-newer-post-text="{{ 'blogs.article.newer_post' | t }}">
+        {% if blog.previous_article %}
+          <span class="prev-prod">
+            &larr; {{ 'blogs.article.older_post' | t | link_to: blog.previous_article }}
+          </span>
+        {% endif %}
+        {% if blog.next_article %}
+          <span class="next-prod">
+            {{ 'blogs.article.newer_post' | t | link_to: blog.next_article }} &rarr;
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if blog.comments_enabled? %}
+      <div id="article__section-comments">
+        <div class="section-title {% if settings.section_titles == 'lines' %}lines {% elsif settings.section_titles == 'btm_border' %}btm_border {% endif %}">
+          <h3>{{ 'blogs.comments.comments_with_count' | t: count: number_of_comments }}</h3>
+        </div>
+        <div class="clear"></div>
+        <div class="article__section-commentContainer">
+          <ul class="article__section-commentList">
+          {% for comment in article.comments %}
+            <li class="article__section-comment">
+              <div class="gravatar article__section-avatar">
+                <img src="//www.gravatar.com/avatar/{{ comment.email | remove: ' ' | strip_newlines | downcase | md5 }}" alt="Author image"/>
+              </div>
+              <div class="article__comment-author">
+                {{ comment.author }}: {{ comment.created_at | date: "%B %d, %Y" }}
+              </div>
+              <div class="article__section-commentContent">
+                {{ comment.content }}
+              </div>
+            </li>
+          {% endfor %}
+            <div id="pagination">
+              {% if paginate.previous %}
+              {{ '<' | link_to: paginate.previous.url }}
+              {% endif %}
+              {% for part in paginate.parts %}
+              {% if part.is_link %}
+                {{ part.title | link_to: part.url }}
+              {% else %}
+                {% if part.title == '&hellip;' %}
+                  {{ part.title }}
+                {% else %}
+                  <span class="current">{{ part.title }}</span>
+                {% endif %}
+              {% endif %}
+              {% endfor %}
+              {% if paginate.next %}
+              {{ '>' | link_to: paginate.next.url }}
+              {% endif %}
+            </div>
+          </ul>
+
+          <div id="article__section-commentForm">
+            {% form article %}
+              <h5>{{ 'blogs.comments.title' | t }}</h5>
+              <!-- Check if a comment has been submitted in the last request, and if yes display an appropriate message -->
+              {% if form.posted_successfully? %}
+                {% if blog.moderated? %}
+                  <div class="notice">
+                    {{ 'blogs.comments.success_moderated' | t }}
+                  </div>
+                {% else %}
+                  <div class="notice">{{ 'blogs.comments.success' | t }}</div>
+                {% endif %}
+              {% endif %}
+
+              {% if form.errors %}
+                <div class="notice error">{{ 'general.forms.post_error' | t }}</div>
+              {% endif %}
+              <dl>
+                <dt class="{% if form.errors contains 'author' %}error{% endif %}"><label for="comment_author">{{ 'blogs.comments.your_name' | t }}</label></dt>
+                <dd><input type="text" id="comment_author" name="comment[author]" size="40" value="{{form.author}}" class="{% if form.errors contains 'author' %}input-error{% endif %}" /></dd>
+                <dt class="{% if form.errors contains 'email' %}error{% endif %}"><label for="comment_email">{{ 'blogs.comments.your_email' | t }}</label></dt>
+                <dd><input type="text" id="comment_email" name="comment[email]" size="40" value="{{form.email}}" class="{% if form.errors contains 'email' %}input-error{% endif %}" /></dd>
+                <dt class="{% if form.errors contains 'body' %}error{% endif %}"><label for="comment_body">{{ 'blogs.comments.your_comment' | t }}</label></dt>
+                <dd><textarea id="comment_body" name="comment[body]" cols="40" rows="5" class="{% if form.errors contains 'body' %}input-error{% endif %}">{{form.body}}</textarea></dd>
+              </dl>
+              {% if blog.moderated? %}
+                <p class="hint">{{ 'blogs.comments.moderated' | t }}</p>
+              {% endif %}
+              <input type="submit" value="{{ 'blogs.comments.post' | t }}" />
+            {% endform %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+  {% endpaginate %}
+</div>
+  <style>
+    @media screen and (min-width:741px) {
+      .article__section-container {
+        max-width: {{ section.settings.page_width }}%;
+        margin: 0 auto;
+      }
+    }
+  </style>
+</section>
+
+
+{% schema %}
+{
+  "name": "Blog post",
+  "settings": [
+    {
+      "type": "range",
+      "id": "page_width",
+      "label": "Page content width",
+      "unit": "%",
+      "min": 50,
+      "max": 100,
+      "step": 10,
+      "default": 100,
+      "info": "Set the content width for your pages, mobile will show at full page width"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "article_header",
+      "name": "Article header",
+      "limit": 1,
+      "settings": []
+    },
+    {
+      "type": "article_image",
+      "name": "Article image",
+      "limit": 1,
+      "settings": []
+    },
+    {
+      "type": "article_content",
+      "name": "Article content",
+      "limit": 1,
+      "settings": []
+    },
+    {
+      "type": "article_info",
+      "name": "Article info",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "center_align",
+          "label": "Center align",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_date",
+          "label": "Show published date",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_author",
+          "label": "Show author",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "social_sharing",
+      "name": "Social sharing",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Allow customers to share links to your products on their social networks"
+        },
+        {
+          "type": "checkbox",
+          "id": "center_align",
+          "label": "Center align",
+          "default": true
+        },
+        {
+          "id":"show_twitter",
+          "label":"Show Twitter",
+          "type":"checkbox",
+          "default": true
+        },
+        {
+          "id":"show_facebook",
+          "label":"Show Facebook",
+          "type":"checkbox",
+          "default": true
+        },
+        {
+          "id":"show_pinterest",
+          "label":"Show Pinterest",
+          "type":"checkbox",
+          "default": true
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,178 @@
+{% comment %}
+snippets/slide.liquid
+
+Renders a slide in the slideshow section.
+
+Accepts:
+
+- block:     {Object} Section block object (required).
+
+Usage:
+
+{% render 'slide' for section.blocks as block, is_fixed: is_fixed %}
+
+{% endcomment %}
+<div id="slide--{{ block.id }}" data-block-id="{{ block.id }}" class="slide--{{ block.id }} slideshow__slide{% if block.settings.image == blank %} slideshow__slide-onboard{% endif %}" data-slider-index="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
+
+  {%- liquid
+
+    assign image_is_link = false
+    assign button_is_link = false
+    assign has_image = false
+    assign hide_caption = false
+    assign overlay = false
+    assign has_button = false
+    assign has_second_button = false
+    assign loading = 'lazy'
+
+    assign heading = block.settings.heading
+    assign subheading = block.settings.subheading
+    assign button_text = block.settings.button_text
+    assign second_button_text = block.settings.second_button_text
+    assign link = block.settings.link
+    assign second_link = block.settings.second_link
+
+    if block.settings.link != blank and block.settings.button_text == blank
+      assign image_is_link = true
+    endif
+
+    if block.settings.link != blank and block.settings.button_text != blank
+      assign button_is_link = true
+    endif
+
+    if block.settings.image != blank
+      assign has_image = true
+    endif
+
+    if block.settings.overlay
+      assign overlay = true
+    endif
+
+    if heading == blank and subheading == blank and button_text == blank and second_button_text == blank
+      assign hide_caption = true
+    endif
+
+    if heading != blank
+      assign has_heading = true
+    endif
+
+    if subheading != blank
+      assign has_subheading = true
+    endif
+
+    if button_text != blank and link != blank
+      assign has_button = true
+    endif
+
+    if second_button_text != blank and second_link != blank
+      assign has_second_button = true
+    endif
+
+    # Determine fetch priority for LCP
+    assign loading = 'lazy'
+    assign fetch_priority = 'auto'
+    if section.index == 1 and forloop.first
+      assign loading = 'eager'
+      assign fetch_priority = 'high'
+    endif
+    if forloop.first
+      assign loading = 'eager'
+    endif
+
+  -%}
+
+  {% if image_is_link %}<a href="{{ link }}">{% endif %}
+  {% if has_image %}
+    <div class="slideshow__slide-desktop{% if overlay %} overlay{% endif %}">
+      <div class="desktop">
+        {%
+          render 'basic-responsive-image',
+          type: block.settings.image,
+          width: 3000,
+          loading: loading,
+          fetchpriority: fetch_priority
+        %}
+      </div>
+      <div class="mobile">
+        {% unless block.settings.mobile_image == blank %}
+          {%
+            render 'basic-responsive-image',
+            type: block.settings.mobile_image,
+            width: 3000,
+            loading: loading,
+            class: 'mobile-image',
+            fetchpriority: fetch_priority
+          %}
+        {% else %}
+          {%
+            render 'basic-responsive-image',
+            type: block.settings.image,
+            width: 3000,
+            loading: loading,
+            class: 'desktop-image',
+            fetchpriority: fetch_priority
+          %}
+        {% endunless %}
+      </div>
+    </div>
+  {% endif %}
+  {% if image_is_link %}</a>{% endif %}
+  {% unless has_image %}
+    {% capture current %}{% cycle 1, 2 %}{% endcapture %}
+    {%- assign placeholder = 'lifestyle-' | append: current -%}
+    <div class="onboard">
+      {{ placeholder | placeholder_svg_tag: 'placeholder-svg' }}
+    </div>
+  {% endunless %}
+  {% unless hide_caption %}
+    <div class="slideshow__caption {% if block.settings.caption_below %}slideshow__caption--below{% endif %} {% if block.settings.hide_caption_background %}slideshow__caption--hide-background{% endif %} slide-{{ block.id }}">
+      <div class="slideshow__caption-wrapper">
+        {% if has_heading %}
+        <h2 class="slideshow__title">{{ heading | escape }}</h2>
+        {% endif %}
+        {% if has_subheading %}
+        <div class="rte">
+          {{ subheading }}
+        </div>
+        {% endif %}
+        {% if has_button %}
+        <div class="slideshow__btn-wrapper">
+          <a href="{{ link }}">{{ button_text | escape }}</a>
+        </div>
+        {% endif %}
+        {% if has_second_button %}
+        <div class="slideshow__btn-wrapper">
+          <a href="{{ second_link }}">{{ second_button_text | escape }}</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  {% endunless %}
+  <style>
+    {%- liquid
+
+      assign bg_color = block.settings.caption_background
+      assign number = block.settings.caption_background_opacity
+      assign caption_background_opacity = number | divided_by: 100.0
+      assign is_transparent_background = false
+      assign background = nil
+      if block.settings.caption_background contains 'rgba(0,0,0,0)' or block.settings.caption_background contains 'transparent'
+        assign is_transparent_background = true
+        assign background = 'transparent'
+      else
+        assign background = bg_color | color_modify: 'alpha', caption_background_opacity
+      endif
+
+
+    -%}
+    .slideshow__caption.slide-{{ block.id }} {
+      --caption-background: {{ background }};
+      --caption-text-align: {{ block.settings.text_align }};
+      --slide-text-color: {{ block.settings.slide_text_color }};
+      --cta-color: {{ block.settings.cta_color }};
+      --cta-background: {{ block.settings.cta_background }};
+      --caption-vertical: {{ block.settings.caption_vertical }}%;
+      --caption-horizontal: {{ block.settings.caption_horizontal }}%;
+    }
+  </style>
+</div>

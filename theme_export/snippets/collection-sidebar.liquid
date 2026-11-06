@@ -1,0 +1,359 @@
+<a class="collection__sidebar-mobile-trigger js-collection-side-toggle" href="#" title="Click to toggle sidebar">
+  {% render 'snip-icons',
+     wrapper: '.slideout__trigger-mobile-menu',
+     type: 'testament-theme',
+     icon: 'menu-bars',
+     classes: 'slideout__trigger-mobile-menu--icon vib-center',
+     size: '10px',
+     fill: 'var(--text-color)',
+     hover: 'var(--text-color)' %}
+  <span class="vib-center">{{ 'collections.filters.refine' | t }}</span>
+</a>
+<div class="collection__page-sidebar" id="sidebar">
+
+  {% for block in section.blocks %}
+      {% if block.type == 'menu' %}
+        <h4>{{ block.settings.title | escape }}</h4>
+        <ul class="collection__sidebar-menu" {{ block.shopify_attributes }}>
+          {% for link in linklists[block.settings.side_nav].links %}
+            {% if link.links != blank %}
+              <li class="js-parent-menu{% if link.current %} open{% endif %}">
+                <span class="parent_item">
+                  <a href="{{ link.url }}" class="js-collection-sidemenu-toggle" aria-expanded="{% if link.current %}true{% else %}false{% endif %}">{{ link.title }}</a>
+                  {% render 'snip-icons',
+                    type: 'apollo',
+                    wrapper: '.js-parent-menu',
+                    icon: 'down-carrot',
+                    size: '6px',
+                    fill: 'var(--text-color)' %}
+                </span>
+                <ul class="nested{% if link.current %} open{% endif %}">
+                  {% for sub_link in link.links %}
+                    {% if sub_link.links != blank %}
+                      <li class="js-parent-menu{% if sub_link.current %} open{% endif %}">
+                        <span class="parent_item">
+                          <a href="{{ sub_link.url }}" class="js-collection-sidemenu-toggle" aria-expanded="{% if sub_link.current %}true{% else %}false{% endif %}">{{ sub_link.title }}</a>
+                          {% render 'snip-icons',
+                            type: 'apollo',
+                            wrapper: '.js-parent-menu',
+                            icon: 'down-carrot',
+                            size: '6px',
+                            fill: 'var(--text-color)' %}
+                          </span>
+                        <ul class="nested{% if sub_link.current %} open{% endif %}">
+                          {% for sub_sub_link in sub_link.links %}
+                            <li><a href="{{ sub_sub_link.url }}" {% if sub_sub_link.current %} class="current"{% endif %}>{{ sub_sub_link.title }}</a></li>
+                          {% endfor %}
+                        </ul>
+                      </li>
+                    {% else %}
+                      <li><a href="{{ sub_link.url }}" {% if sub_link.current %} class="current"{% endif %}>{{ sub_link.title }}</a></li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+              </li>
+            {% else %}
+              <li><a href="{{ link.url }}" {% if link.current %} class="current"{% endif %}>{{ link.title }}</a></li>
+            {% endif %}
+          {% endfor %}
+        </ul> 
+      {% elsif block.type == 'text' %}
+        <h4>{{ block.settings.title | escape }}</h4>
+        <div class="clearfix filter">
+          <div class="rte">
+            {{ block.settings.sidebar_text }}
+          </div>
+        </div>
+      {% elsif block.type == 'image' %}
+        {% if block.settings.image != blank %}
+          <div class="clearfix filter">
+            {% if block.settings.link != blank %}<a href="{{ block.settings.link }}">{% endif %}
+              {% liquid
+                assign loading = 'lazy'
+                assign fetch_priority = 'auto'
+                if section.index == 1 and forloop.first
+                  assign loading = 'eager'
+                  assign fetch_priority = 'high'
+                endif
+               %}
+              {%
+                render 'basic-responsive-image',
+                type: block.settings.image,
+                width: 1200,
+                loading: loading,
+                fetchpriority: fetch_priority
+              %}
+            {% if block.settings.link != blank %}</a>{% endif %}
+          </div>
+        {% endif %}
+      {% elsif block.type == 'side_filter' %}
+      {% assign show_filter_swatches = block.settings.show_filter_swatches %}
+        {%- for filter in collection.filters -%}
+          {%- assign total_active_values = total_active_values | plus: filter.active_values.size -%}
+            {% case filter.type %}
+              {% when 'list' %}
+                {%- liquid
+
+                  assign is_size_filter = false
+                  assign is_color_filter = false
+                  assign filter_label_to_lowercase = filter.label | downcase
+
+                  if filter_label_to_lowercase contains "color"
+                    assign is_color_filter = true
+                  elsif filter_label_to_lowercase contains "colour"
+                    assign is_color_filter = true
+                  elsif filter_label_to_lowercase contains "farbe"
+                    assign is_color_filter = true
+                  elsif filter_label_to_lowercase contains "couleur"
+                    assign is_color_filter = true
+                  elsif filter_label_to_lowercase contains "colore"
+                    assign is_color_filter = true
+                  elsif filter_label_to_lowercase contains "cor"
+                    assign is_color_filter = true
+                  elsif filter_label_to_lowercase contains "swatch"
+                    assign is_color_filter = true
+                  elsif filter_label_to_lowercase contains "amostra"
+                    assign is_color_filter = true
+                  elsif filter_label_to_lowercase contains "échantillon"
+                    assign is_color_filter = true
+                  elsif filter_label_to_lowercase contains "muster"
+                    assign is_color_filter = true
+                  elsif filter_label_to_lowercase contains "size"
+                    assign is_size_filter = true
+                  elsif filter_label_to_lowercase contains "talla"
+                    assign is_size_filter = true
+                  elsif filter_label_to_lowercase contains "taglia"
+                    assign is_size_filter = true
+                  elsif filter_label_to_lowercase contains "taille"
+                    assign is_size_filter = true
+                  elsif filter_label_to_lowercase contains "tamanho"
+                    assign is_size_filter = true
+                  elsif filter_label_to_lowercase contains "grosse"
+                    assign is_size_filter = true
+                  endif
+
+                  if is_color_filter
+                    assign filter_type = 'color'
+                  elsif is_size_filter
+                    assign filter_type = 'size'
+                  else
+                    assign filter_type = 'regular'
+                  endif
+
+                -%}
+                <div class="clearfix filter filter--{{ filter_type }}" {{ block.shopify_attributes}}>
+                  <h4>{{ filter.label | escape }}{% if filter.operator == 'AND' %}<small>({{ 'collections.filters.match_all' | t }})</small>{% endif %}</h4>
+                  <ul>
+                    {% liquid
+                      if filter.operator == 'AND'
+                        assign active_values = filter.values | where: 'active', true
+                        assign inactive_values = filter.values | where: 'active', false
+                        assign sorted_values = active_values | concat: inactive_values
+                      else
+                        assign sorted_values = filter.values
+                      endif
+                     %}
+                    {% for value in sorted_values %}
+
+                      {%- liquid
+
+                        assign swatch_color_name = value.label | handleize | downcase | append: '.png'
+                        assign swatch_image_url = swatch_color_name | file_url
+                        assign css_color = value.label | split: ' ' | last | downcase
+ 
+                        if images[swatch_color_name] != blank
+                          assign bg_img = 'background-image:url(' | append:  swatch_image_url | append: ');'
+                        else
+                          assign bg_img = ''
+                        endif
+                        assign bg_color = 'background-color:' | append:  css_color | append: ';'
+
+                        if value.active
+                          assign status = 'current'
+                          assign url = value.url_to_remove
+                        elsif value.count == 0 and value.active == false
+                          assign status = 'disabled'
+                          assign url = ''
+                        else
+                          assign status = ''
+                          assign url = value.url_to_add
+                        endif
+                      -%}
+
+                      {% liquid
+                        assign size_limit = value.display.value.size | at_most: 4
+                        assign rotation = '0deg'
+                        if size_limit == 2
+                          assign rotation = '45deg'
+                        endif
+
+                        assign angle_increment = 360 | divided_by: size_limit
+                        assign angle = 0
+                      %}
+                      {%- capture conic_gradient -%}
+                        {%- for color in value.display.value limit: size_limit -%}
+                          {{ color }} {{ angle }}deg{%- assign angle = angle | plus: angle_increment %} {{ angle }}deg{%- unless forloop.last %}, {%- endunless -%}
+                        {%- endfor -%}
+                      {%- endcapture -%}
+
+                      <li class="{{ status }}">
+                        {% if is_color_filter %}
+                          <a class="js-collection-side-filter {{ status }} checkbox-wrapper" href="{{ url }}" title="{{ value.label }}">
+                            <input type="checkbox"
+                               name="{{ value.param_name }}"
+                               value="{{ value.value }}"
+                               id="{{ filter.label | handle }}--{{ value.value }}--{{ block.id }}"
+                               {% if value.active %}checked{% endif %}
+                               {% if value.count == 0 and value.active == false %}disabled{% endif%} >
+                            {% unless show_filter_swatches %}<div class="checkbox-indicator"></div>{% endunless %}
+                            {% if show_filter_swatches %}
+                              {% if filter.presentation == 'swatch' %}
+                                {% comment %}
+                                We capture the classes out here so that we can pass it into the image_tag filter.
+                                {% endcomment %}
+                                {%- capture classes -%}
+                                  color-filter color-filter--rounded color-filter--{{- status -}} {{- status -}}
+                                {%- endcapture -%}
+                                {% case value.display.type %}
+                                  {% when 'colors' %}
+                                    <div class="{{- classes -}}" style="background: conic-gradient({{ conic_gradient }}); transform: rotateZ({{ rotation }});"></div>
+                                  {% when 'image' %}
+                                    {{ value.display.value | image_url: width: 300 | image_tag: alt: value.display.value.alt, class: classes }}
+                                {% endcase %}
+                              {% else %}
+                                <span class="color-filter color-filter--rounded color-filter--{{ status }} {{ status }}" style="{{ bg_color }}{{ bg_img }}"></span>
+                              {% endif %}
+                            {% endif %}
+                            <label class="color-filter--label" for="{{ filter.label | handle }}--{{ value.value }}--{{ block.id }}">{{ value.label | escape }}</span> <span class="filter__count">({{ value.count }})</label>
+                          </a>
+                        {% else %}
+                          <a class="js-collection-side-filter {{ status }} checkbox-wrapper" data-tag="{{ url }}" href="{{ url }}">
+                            <input type="checkbox"
+                               name="{{ value.param_name }}"
+                               value="{{ value.value }}"
+                               id="{{ filter.label | handle }}--{{ value.value }}--{{ block.id }}"
+                               {% if value.active %}checked{% endif %}
+                               {% if value.count == 0 and value.active == false %}disabled{% endif%} >
+                            <div class="checkbox-indicator"></div>
+                            <label for="{{ filter.label | handle }}--{{ value.value }}--{{ block.id }}">
+                            {{ value.label | escape }} <span class="filter__count">({{ value.count }})</span>
+                            </label>
+                          </a>
+                        {% endif %}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% when 'price_range' %}
+                {%- liquid
+                  assign currencies_using_comma_decimals = "ANG,ARS,BRL,BYN,BYR,CLF,CLP,COP,CRC,CZK,DKK,EUR,HRK,HUF,IDR,ISK,MZN,NOK,PLN,RON,RUB,SEK,TRY,UYU,VES,VND" | split: ','
+                  assign uses_comma_decimals = false
+
+                  if currencies_using_comma_decimals contains cart.currency.iso_code
+                    assign uses_comma_decimals = true
+                  endif
+                -%}
+
+                <div class="sidebar-filter filter--price-range" data-collection-filters-price-range>
+                  <h4>{{ filter.label | escape }}</h4>
+                  <div class="filter-range__boxes js-price-range">
+                    <div class="filter-range__field">
+                      <label class="filter-range__field__label visually-hidden" for="Filter-{{ filter.label | escape }}-{{ forloop.index }}--from">{{ 'collections.filters.from' | t }}</label>
+                      <span class="filter-range__field__currency">{{ cart.currency.symbol }}</span>
+                      <input class="filter-range__field__input js-filter-range-input js-price-min-output"
+                        name="{{ filter.min_value.param_name }}"
+                        id="Filter-{{ filter.label | escape }}-{{ forloop.index }}--from"
+                        {%- if filter.min_value.value -%}
+                          {%- if uses_comma_decimals -%}
+                            value="{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                          {%- else -%}
+                            value="{{ filter.min_value.value | money_without_currency | replace: ',', '' | round }}"
+                          {% endif %}
+                        {%- endif -%}
+                        type="number"
+                        placeholder="0"
+                        min="0"
+                        {%- if uses_comma_decimals -%}
+                          max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                        {%- else -%}
+                          max="{{ filter.range_max | money_without_currency | replace: ',', '' | round }}"
+                        {% endif %}
+                        >
+                      </input>
+                    </div>
+                    <div class="filter-range__field">
+                      <label class="filter-range__field__label visually-hidden" for="Filter-{{ filter.label | escape }}-{{ forloop.index }}--to">{{ 'collections.filters.to' | t }}</label>
+                      <span class="filter-range__field__currency">{{ cart.currency.symbol }}</span>
+                      <input class="filter-range__field__input js-filter-range-input js-price-max-output"
+                        name="{{ filter.max_value.param_name }}"
+                        id="Filter-{{ filter.label | escape }}-{{ forloop.index }}--to"
+                        {%- if filter.max_value.value -%}
+                          {%- if uses_comma_decimals -%}
+                            value="{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                          {%- else -%}
+                            value="{{ filter.max_value.value | money_without_currency | replace: ',', '' | round }}"
+                          {% endif %}
+                        {%- endif -%}
+                        type="number"
+                        placeholder="{{ 'collections.filters.to' | t }}"
+                        min="0"
+                        {%- if uses_comma_decimals -%}
+                          placeholder="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                          max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                        {%- else -%}
+                          placeholder="{{ filter.range_max | money_without_currency | replace: ',', '' | round }}"
+                          max="{{ filter.range_max | money_without_currency | replace: ',', '' | round}}"
+                        {% endif %}
+                        >
+                      </input>
+                    </div>
+
+                    <div class="filter-range__slider--wrapper span-2 auto">
+                      <input class="filter-range__slider--input"
+                        {%- if filter.min_value.value -%}
+                          {%- if uses_comma_decimals -%}
+                            value="{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                          {%- else -%}
+                            value="{{ filter.min_value.value | money_without_currency | replace: ',', '' | round }}"
+                          {% endif %}
+                        {%- else -%}
+                          value="0"
+                        {%- endif -%}
+                        min="0"
+                        {%- if uses_comma_decimals -%}
+                          max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                        {%- else -%}
+                          max="{{ filter.range_max | money_without_currency | replace: ',', '' | round }}"
+                        {% endif %}
+                        step="1"
+                        type="range"/>
+                      <input class="filter-range__slider--input"
+                        {%- if filter.max_value.value -%}
+                          {%- if uses_comma_decimals -%}
+                            value="{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                          {%- else -%}
+                            value="{{ filter.max_value.value | money_without_currency | replace: ',', '' | round }}"
+                          {% endif %}
+                        {%- else -%}
+                          {%- if uses_comma_decimals -%}
+                            value="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                          {%- else -%}
+                            value="{{ filter.range_max | money_without_currency | replace: ',', '' | round }}"
+                          {% endif %}
+                        {%- endif -%}
+                        min="0"
+                        {%- if uses_comma_decimals -%}
+                          max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                        {%- else -%}
+                          max="{{ filter.range_max | money_without_currency | replace: ',', '' | round }}"
+                        {% endif %}
+                        step="1"
+                        type="range"/>
+                    </div>
+                  </div>
+                </div>
+              {% endcase %}
+        {% endfor %}
+    {% endif %}
+  {% endfor %}
+</div>

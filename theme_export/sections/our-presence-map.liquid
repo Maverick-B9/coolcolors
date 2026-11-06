@@ -1,0 +1,195 @@
+<section class="lm" id="lm-{{ section.id }}" style="--lm-bg:{{ section.settings.bg }}">
+  <div class="lm__main">
+  {%- if section.blocks.size == 0 -%}
+    {%- if request.design_mode -%}<p style="text-align:center;color:#8a8a8a;margin:0">Locations map: add a "Location" block to get started.</p>{%- endif -%}
+  {%- else -%}
+  <div class="lm__wrap">
+    <div class="lm__side">
+      {%- if section.settings.map_title != blank -%}<p class="lm__title">{{ section.settings.map_title }}</p>{%- endif -%}
+      <div class="lm__chips">
+        <button type="button" class="lm__chip" data-kind="office"><i></i>{{ section.settings.label_office }}</button>
+        <button type="button" class="lm__chip" data-kind="manufacturing"><i></i>{{ section.settings.label_mfg }}</button>
+      </div>
+      <div class="lm__info" aria-live="polite">
+        <h3 data-name></h3>
+        <p data-addr></p>
+        <a class="lm__gm" data-gm href="#" target="_blank" rel="noopener">Open in Google Maps &#8599;</a>
+      </div>
+    </div>
+    <div class="lm__map">
+      <img src="{{ section.settings.map_file | asset_url }}" alt="Map of India" width="405" height="455" loading="lazy">
+      {%- for block in section.blocks -%}
+        {%- assign parts = block.settings.coordinates | split: ',' -%}
+        {%- assign lat = parts[0] | strip -%}
+        {%- assign lon = parts[1] | strip -%}
+        {%- if lat != blank and lon != blank -%}
+          {%- assign px = lon | times: 3.0753 | minus: 206.58 | round: 2 -%}
+          {%- assign ty = lat | times: 3.1938 -%}
+          {%- assign py = 124.64 | minus: ty | round: 2 -%}
+          {%- assign gm = block.settings.maps_url -%}
+          {%- if gm == blank -%}{%- assign gm = 'https://www.google.com/maps/search/?api=1&query=' | append: lat | append: ',' | append: lon -%}{%- endif -%}
+          <button type="button" class="lm__pin lm__pin--{{ block.settings.kind }}" style="left:{{ px }}%;top:{{ py }}%" data-kind="{{ block.settings.kind }}" data-name="{{ block.settings.name | escape }}" data-addr="{{ block.settings.address | escape }}" data-url="{{ gm | escape }}" aria-label="{{ block.settings.name | escape }}" {{ block.shopify_attributes }}></button>
+          {%- assign tipx = 'c' -%}{%- if px < 30 -%}{%- assign tipx = 'l' -%}{%- elsif px > 70 -%}{%- assign tipx = 'r' -%}{%- endif -%}
+          {%- assign tipy = 'top' -%}{%- if py < 24 -%}{%- assign tipy = 'bot' -%}{%- endif -%}
+          <span class="lm__tip lm__tip--{{ tipx }} lm__tip--{{ tipy }}" style="left:{{ px }}%;top:{{ py }}%" aria-hidden="true">
+            <small>{% if block.settings.kind == 'manufacturing' %}{{ section.settings.label_mfg }}{% else %}{{ section.settings.label_office }}{% endif %}</small>
+            <strong>{{ block.settings.name }}</strong>
+            {%- if block.settings.address != blank -%}<em>{{ block.settings.address }}</em>{%- endif -%}
+          </span>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+  {%- endif -%}
+  </div>
+  <div class="lm__news">
+    <div class="lm__newsin">
+      <div class="lm__newstxt">
+        <h2>{{ section.settings.heading }}</h2>
+        <p>{{ section.settings.text }}</p>
+      </div>
+      {%- form 'customer', class: 'lm__form' -%}
+        {%- if form.posted_successfully? -%}
+          <p class="lm__ok">Thanks for subscribing!</p>
+        {%- else -%}
+          {%- if form.errors -%}<div class="lm__err">{{ form.errors | default_errors }}</div>{%- endif -%}
+          <div class="lm__row">
+            <input type="hidden" name="contact[tags]" value="newsletter">
+            <input type="email" name="contact[email]" placeholder="Enter your email" required aria-label="Email">
+            <button type="submit">Subscribe</button>
+          </div>
+        {%- endif -%}
+      {%- endform -%}
+    </div>
+  </div>
+
+</section>
+
+<style>
+  .lm{ background:var(--lm-bg,#000); color:#fff; padding:64px 32px 48px; }
+  .lm, .lm *{ box-sizing:border-box; }
+  .lm__main{ max-width:1000px; margin:0 auto; }
+  .lm__wrap{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,420px); gap:48px; align-items:center; }
+  .lm__title{ margin:0 0 18px; font-size:12px; font-weight:700; letter-spacing:.22em; text-transform:uppercase; color:#fff; display:flex; align-items:center; gap:10px; }
+  .lm__title::before{ content:''; width:22px; height:2px; background:#D92231; }
+  .lm__news{ max-width:1000px; margin:48px auto 0; background:#111; border:1px solid #2c2c2c; border-radius:20px; padding:24px 32px; }
+  .lm__newsin{ display:flex; align-items:center; justify-content:space-between; gap:28px; flex-wrap:wrap; }
+  .lm__newstxt h2{ margin:0 0 4px; font-size:22px; font-weight:600; line-height:1.2; letter-spacing:-.01em; color:#fff; }
+  .lm__newstxt p{ margin:0; font-size:14px; line-height:1.5; color:#8a8a8a; max-width:420px; }
+  .lm__form{ flex:1 1 340px; max-width:460px; margin:0; }
+  .lm__row{ display:flex; gap:10px; }
+  .lm__row input[type=email]{ flex:1 1 0 !important; width:auto !important; min-width:0; height:auto !important; margin:0 !important; box-shadow:none; border:1px solid #2c2c2c; background:#1c1c1c; color:#fff; border-radius:100px; padding:14px 20px; font-size:14px; }
+  .lm__row button{ flex:0 0 auto; width:auto !important; min-width:0; height:auto !important; margin:0 !important; padding:14px 26px !important; border:0 !important; background:#D92231; color:#fff; border-radius:100px; font-weight:600; font-size:14px; cursor:pointer; }
+  .lm__row button:hover{ background:#B81C29; }
+  .lm__form .lm__ok{ margin:0; color:#fff; font-weight:600; }
+  .lm__form .lm__err{ color:#ff6b73; font-size:13px; margin:0 0 10px; }
+  .lm__chips{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+  .lm .lm__chip{ touch-action:manipulation; display:flex; align-items:center; gap:10px; width:auto; min-height:0; margin:0; padding:13px 20px; border-radius:12px; border:1px solid #2c2c2c; background:#1c1c1c; color:#8a8a8a; font-family:inherit; font-size:15px; font-weight:500; line-height:1.2; cursor:pointer; }
+  .lm__chip i{ width:10px; height:10px; border-radius:50%; display:block; }
+  .lm__chip[data-kind=office] i{ background:#ff4d4f; } .lm__chip[data-kind=manufacturing] i{ background:#2f95ff; }
+  .lm .lm__chip.is-on{ background:#000; border-color:#fff; color:#fff; }
+  .lm__info{ background:#1c1c1c; border-radius:16px; border-left:5px solid #3a3a3a; padding:26px 28px; min-height:150px; transition:opacity .15s; }
+  .lm__info.is-sw{ opacity:0; }
+  .lm__info h3{ margin:0 0 12px; font-size:19px; font-weight:600; line-height:1.3; color:#fff; }
+  .lm__info p{ margin:0; color:#8a8a8a; font-size:16px; line-height:1.5; }
+  .lm .lm__gm{ display:inline-flex; align-items:center; gap:8px; margin-top:18px; padding:11px 18px; border-radius:10px; background:#fff; color:#000; font-size:14px; font-weight:500; text-decoration:none; }
+  .lm .lm__gm:hover{ background:#e9e9e9; }
+  .lm__map{ position:relative; width:min(100%,420px); aspect-ratio:405/455; margin:0 auto; }
+  .lm__map img{ width:100%; height:100%; display:block; opacity:.85; }
+  .lm .lm__pin{ position:absolute; width:14px !important; height:14px !important; min-width:0 !important; min-height:0 !important; padding:0 !important; margin:0; transform:translate(-50%,-50%); border-radius:50%; border:2px solid #fff !important; cursor:pointer; transition:opacity .2s,transform .2s; appearance:none; -webkit-appearance:none; }
+  .lm__pin::before{ content:''; position:absolute; inset:-12px; border-radius:50%; }
+  .lm__pin--office{ background:#ff4d4f !important; color:#ff4d4f; } .lm__pin--manufacturing{ background:#2f95ff !important; color:#2f95ff; }
+  .lm .lm__pin.is-dim{ opacity:.4; }
+  .lm .lm__pin.is-dim:hover{ opacity:1; }
+  .lm .lm__pin.is-sel{ transform:translate(-50%,-50%) scale(1.25); z-index:2; }
+  .lm__pin.is-sel::after{ content:''; position:absolute; inset:-9px; border-radius:50%; border:2px solid currentColor; opacity:.55; animation:lmp 1.6s ease-out infinite; }
+  @keyframes lmp{ from{ transform:scale(.6); opacity:.8; } to{ transform:scale(1.5); opacity:0; } }
+  .lm__tip{ display:none; }
+  @media (hover:hover) and (pointer:fine){
+    .lm__tip{ display:block; position:absolute; z-index:30; width:230px; padding:12px 14px; border-radius:12px; background:#fff; color:#0D1117; box-shadow:0 12px 28px rgba(0,0,0,.45); opacity:0; visibility:hidden; pointer-events:none; transition:opacity .15s; text-align:left; --tx:-50%; --ty:calc(-100% - 14px); transform:translate(var(--tx),var(--ty)); }
+    .lm__tip--l{ --tx:-14px; } .lm__tip--r{ --tx:calc(-100% + 14px); } .lm__tip--bot{ --ty:14px; }
+    .lm__tip small{ display:block; margin-bottom:4px; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#8B96A1; }
+    .lm__tip strong{ display:block; margin-bottom:3px; font-size:14px; line-height:1.25; font-weight:600; color:#0D1117; }
+    .lm__tip em{ display:block; font-style:normal; font-size:12px; line-height:1.4; color:#5C6874; }
+    .lm__pin:hover + .lm__tip, .lm__pin:focus-visible + .lm__tip{ opacity:1; visibility:visible; }
+  }
+  @media(prefers-reduced-motion:reduce){ .lm__pin.is-sel::after{ animation:none; } }
+  @media(max-width:900px){
+    .lm{ padding:36px max(20px,env(safe-area-inset-right)) 32px max(20px,env(safe-area-inset-left)); }
+    .lm__wrap{ grid-template-columns:1fr; gap:22px; }
+    .lm__map{ margin:-18px auto -10px; }
+    .lm__news{ margin-top:26px; padding:22px 20px; }
+    .lm__newsin{ flex-direction:column; align-items:stretch; gap:18px; } .lm__form{ max-width:none; flex:none; }
+  }
+  @media(max-width:600px){
+    .lm__title{ margin-bottom:14px; }
+    .lm__chips{ gap:10px; margin-bottom:14px; }
+    .lm .lm__chip{ flex:1 1 0; justify-content:center; text-align:center; gap:8px; padding:12px 10px; font-size:13.5px; }
+    .lm__info{ padding:20px; min-height:136px; }
+    .lm__info h3{ font-size:17px; margin-bottom:8px; } .lm__info p{ font-size:14.5px; }
+    .lm .lm__gm{ width:100%; justify-content:center; margin-top:14px; }
+    .lm .lm__pin{ width:12px !important; height:12px !important; }
+    .lm__pin::before{ inset:-14px; }
+    .lm__newstxt h2{ font-size:20px; }
+    .lm__row{ flex-direction:column; }
+    .lm__row input[type=email]{ font-size:16px; padding:15px 20px; } .lm__row button{ padding:15px !important; }
+  }
+</style>
+
+<script>
+(function(){
+  var root = document.getElementById('lm-{{ section.id }}'); if(!root) return;
+  var pins = [].slice.call(root.querySelectorAll('.lm__pin')), chips = [].slice.call(root.querySelectorAll('.lm__chip'));
+  var info = root.querySelector('.lm__info'); if(!info || !pins.length) return;
+  var nameEl = info.querySelector('[data-name]'), addrEl = info.querySelector('[data-addr]'), gm = info.querySelector('[data-gm]');
+  var kind = null;
+  chips.forEach(function(c){ if(!pins.some(function(p){ return p.dataset.kind === c.dataset.kind; })) c.style.display = 'none'; });
+  function select(pin, user){
+    kind = pin.dataset.kind;
+    info.classList.add('is-sw');
+    setTimeout(function(){ nameEl.textContent = pin.dataset.name; addrEl.textContent = pin.dataset.addr; gm.href = pin.dataset.url; info.classList.remove('is-sw'); }, 120);
+    pins.forEach(function(p){ p.classList.toggle('is-sel', p === pin); p.classList.toggle('is-dim', p.dataset.kind !== kind); p.setAttribute('aria-pressed', p === pin ? 'true' : 'false'); });
+    chips.forEach(function(c){ c.classList.toggle('is-on', c.dataset.kind === kind); });
+    if(user && window.matchMedia('(max-width:900px)').matches && info.getBoundingClientRect().top < 0){ info.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth', block:'nearest' }); }
+  }
+  pins.forEach(function(p){ p.addEventListener('click', function(){ select(p, true); }); });
+  chips.forEach(function(c){ c.addEventListener('click', function(){ var f = pins.filter(function(p){ return p.dataset.kind === c.dataset.kind; })[0]; if(f) select(f, true); }); });
+  var first = chips.filter(function(c){ return c.style.display !== 'none'; })[0];
+  select(first ? pins.filter(function(p){ return p.dataset.kind === first.dataset.kind; })[0] : pins[0]);
+  document.addEventListener('shopify:block:select', function(e){ if(root.contains(e.target)) select(e.target); });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Newsletter + Locations",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Newsletter heading", "default": "Keep Dreaming. Get Updates." },
+    { "type": "textarea", "id": "text", "label": "Newsletter text", "default": "Join the list for new drops, editorial stories, and early access to premium Indian menswear." },
+    { "type": "text", "id": "map_title", "label": "Map title", "default": "OUR PRESENCE" },
+    { "type": "text", "id": "label_office", "label": "Filter 1 label (red pins)", "default": "Office" },
+    { "type": "text", "id": "label_mfg", "label": "Filter 2 label (blue pins)", "default": "Manufacturing Units" },
+    { "type": "text", "id": "map_file", "label": "Map SVG file name", "default": "india-dot-matrix.svg", "info": "Upload your SVG under Edit code > Assets with exactly this name." },
+    { "type": "color", "id": "bg", "label": "Map panel background", "default": "#000000" }
+  ],
+  "blocks": [
+    {
+      "type": "location",
+      "name": "Location",
+      "settings": [
+        { "type": "text", "id": "name", "label": "Name", "default": "Norwell Jodhpur Office" },
+        { "type": "select", "id": "kind", "label": "Type", "default": "office", "options": [
+          { "value": "office", "label": "Filter 1 (red pin)" },
+          { "value": "manufacturing", "label": "Filter 2 (blue pin)" }
+        ] },
+        { "type": "textarea", "id": "address", "label": "Address", "default": "Near Industrial Area, Jodhpur, Rajasthan" },
+        { "type": "text", "id": "coordinates", "label": "Coordinates", "default": "26.2389, 73.0243", "info": "In Google Maps, right-click the spot and click the numbers to copy them, then paste here." },
+        { "type": "url", "id": "maps_url", "label": "Google Maps link (optional)", "info": "Leave blank to open the coordinates above." }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "Newsletter + Locations", "blocks": [ { "type": "location" } ] }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,46 @@
+{%- comment -%}
+  Renders one product card. Used for the server-rendered fallback grid
+  (before filter.js hydrates) and mirrored 1:1 by renderCard() in
+  filter.js so both markups share the same pf- classes/CSS.
+  Accepts: product
+{%- endcomment -%}
+
+<div class="pf-card" data-pf-card>
+  <a href="{{ product.url }}" class="pf-card__image-link">
+    {%- assign thirty_days_ago = 'now' | date: '%s' | minus: 2592000 -%}
+    {%- assign created_ts = product.created_at | date: '%s' | plus: 0 -%}
+    {%- if created_ts > thirty_days_ago -%}
+      <span class="pf-badge">New</span>
+    {%- endif -%}
+    {%- if product.featured_image -%}
+      <img
+        class="pf-card__image"
+        src="{{ product.featured_image | image_url: width: 600 }}"
+        alt="{{ product.featured_image.alt | escape | default: product.title | escape }}"
+        loading="lazy"
+        width="600"
+        height="600"
+      >
+    {%- else -%}
+      <div class="pf-card__image pf-card__image--placeholder"></div>
+    {%- endif -%}
+  </a>
+
+  <button type="button" class="pf-card__wishlist pf-badge-save" data-pf-wishlist aria-label="Save" aria-pressed="false">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="color: #D92231; fill: #D92231;">
+      <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path>
+    </svg>
+    Save
+  </button>
+
+  <div class="pf-card__body" style="padding-top: 12px;">
+    <a href="{{ product.url }}" class="pf-card__title" style="color: #0D1117; font-weight: 700; font-size: 14px; text-decoration: none; display: block; margin-bottom: 2px;">{{ product.title }}</a>
+    <div class="pf-card__type" style="color: #5C6874; font-size: 12px; margin-bottom: 4px;">{{ product.type | default: 'Premium apparel' }}</div>
+    <div class="pf-card__price-row" style="color: #0D1117; font-weight: 700; font-size: 14px;">
+      <span class="pf-price">{{ product.price | money }}</span>
+      {%- if product.compare_at_price > product.price -%}
+        <span class="pf-price pf-price--compare" style="text-decoration: line-through; color: #5C6874; margin-left: 8px;">{{ product.compare_at_price | money }}</span>
+      {%- endif -%}
+    </div>
+  </div>
+</div>

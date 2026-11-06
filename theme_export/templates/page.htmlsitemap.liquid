@@ -1,0 +1,67 @@
+{%- comment -%} Start of HTML SiteMap code {%- endcomment -%}
+<div class="sitemap-header text-center">
+        <h1>SITEMAP</h1>
+      </div>
+<div class="sitemap-sec">
+<div class="row_sitemap">
+  <div class="col_sitemap">
+   <h2>Collections</h2>
+    <div class="clp-section">
+     
+        <ul class="list-sec">
+            {% for c in collections %}
+                <li>
+                    <a href="{{ c.url }}">{{ c.title }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+  </div>
+    
+      <div class="col_sitemap">
+      <h2>Products</h2>
+       <div class="clp-section2">
+        <ul class="list-sec">
+ 
+            {% paginate collections.all.products by 1000 %}
+                {% for product in collections.all.products %}
+                    <li>
+                        <a href="{{ product.url }}">{{ product.title }}</a>
+                    </li>
+                {% endfor %}
+            {% endpaginate %}
+ 
+        </ul>
+     
+  </div>
+      </div>
+    </div
+   {%- comment -%}  <div class="col-md-3">
+   <h2>Blog Posts</h2>  
+   <ul>  
+      {% assign blog_handles = "news" | split: "," %}
+ 
+         {% for handle in blog_handles %}
+ 
+         {% for article in blogs[handle].articles %}
+            <li>
+               <a href="{{ article.url }}">{{ article.title }}</a>
+            </li>
+            {% endfor %}
+ 
+      {% endfor %}
+   </ul>  
+    </div>
+</div></div>
+    End of HTML SiteMap code {%- endcomment -%}
+
+.col_sitemap {
+    display: inline-block;
+    padding-left: 50px;
+    vertical-align: top;
+}
+
+.sitemap-header.text-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;

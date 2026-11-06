@@ -1,0 +1,105 @@
+{%- liquid
+
+  case settings.collection_image_size
+    when 'natural'
+      assign aspect_ratio = 'natural'
+    when 'square'
+      assign aspect_ratio = 'square'
+    when 'landscape'
+      assign aspect_ratio = 'landscape'
+    when 'portrait'
+      assign aspect_ratio = 'portrait'
+  endcase
+
+  case section.settings.grid
+    when 2
+      assign prod_grid = 'span-6'
+    when 3
+      assign prod_grid = 'span-4'
+    when 4
+      assign prod_grid = 'span-3'
+    when 5
+      assign prod_grid = 'span-one-fifth'
+    when 6
+      assign prod_grid = 'span-2'
+  endcase
+
+  if settings.title_position == 'floating'
+    assign is_floating = true
+  endif
+
+  assign mobile_1pr = false
+  if section.settings.mobile_1pr
+    assign mobile_1pr = true
+  endif
+
+  assign bold_collection_title = false
+  if settings.bold_collection_title
+    assign bold_collection_title = true
+  endif
+
+-%}
+
+<section class="collection__list-section main__section" data-section-id="{{ section.id }}" data-section-type="collection-list">
+
+  <div class="collection__list-container">
+    {% paginate collections by 48 %}
+      {% if collections.size > 0 %}
+        <div class="collection__list-loop grid__wrapper row{% if section.settings.grid == 5 %} five--columns{% endif %}">
+          {% for collection in collections %}
+          <div class="collection__list-item{% if is_floating %} floating__title{% endif %} {{ prod_grid }}{% if mobile_1pr %} sm-span-12{% else %} sm-span-6{% endif %} auto" data-alpha="{{ collection.title }}">
+            {% liquid
+              assign loading = 'lazy'
+              assign fetch_priority = 'auto'
+              if section.index == 1 and forloop.index <= section.settings.grid
+                assign loading = 'eager'
+                assign fetch_priority = 'high'
+              endif
+             %}
+            {% render 'collection-grid-item',
+              collection: collection,
+              aspect_ratio: aspect_ratio,
+              bold_collection_title: bold_collection_title,
+              loading: loading,
+              fetchpriority: fetch_priority
+            %}
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>{{ 'collections.general.no_matches' | t }}</p>
+      {% endif %}
+      {% if collections.size > 48 %}
+        {% render 'pagination', paginate: paginate %}
+      {% endif %}
+    {% endpaginate %}
+  </div>
+
+</section>
+
+{% schema %}
+{
+  "name": "All Collections",
+  "settings": [
+    {
+      "type": "range",
+      "id": "grid",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "label": "Collections per row",
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_1pr",
+      "label": "1 per row on mobile",
+      "default":false
+    },
+    {
+      "type": "paragraph",
+      "content": "Choose a collection list section to select specific collections in a preferred order"
+    }
+  ]
+}
+{% endschema %}

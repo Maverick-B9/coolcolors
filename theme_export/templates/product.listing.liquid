@@ -1,0 +1,134 @@
+{% comment %}
+templates/product.listing.liquid
+{% endcomment %}
+{% layout none %}
+
+
+{%- liquid
+
+  case settings.product_image_size
+    when 'natural'
+      assign aspect_ratio = 'natural'
+    when 'square'
+      assign aspect_ratio = 'square'
+    when 'landscape'
+      assign aspect_ratio = 'landscape'
+    when 'portrait'
+      assign aspect_ratio = 'portrait'
+  endcase
+
+-%}
+
+
+<template data-html="listing">
+
+  <div class="product-index-inner">
+    {% if product.available %}
+      {% for col in product.collections %}
+        {% if col.handle == 'new' %}
+          <div class="new icn {{ settings.icon_style }}">{{ 'products.general.new' | t }}</div><!-- /.new.icn -->
+        {% endif %}
+      {% endfor %}
+      {% if product.price < product.compare_at_price %}
+        <div class="sale-item sale-item--{{ settings.sale_items }} icn {{ settings.icon_style }}">
+          {% case settings.sale_items %}
+            {% when 'percentage' %}
+              {% assign discount = product.compare_at_price | minus: product.price | times: 100.0 | divided_by: product.compare_at_price %}
+              {% assign discount = discount | round | append: '%' %}
+              {{ 'products.general.savings' | t: savings: discount }}
+            {% when 'amount' %}
+              {% assign discount = product.compare_at_price | minus: product.price | money %}
+              {{ 'products.general.savings' | t: savings: discount }}
+            {% when 'icon' %}
+              {{ 'products.general.sale' | t }}
+          {% endcase %}
+        </div><!-- /.sale-item.icn -->
+      {% endif %}
+      {% if product.template_suffix == 'pre-order' %}
+        <div class="pre-order icn {{ settings.icon_style }}">{{ 'products.product.pre_order' | t }}</div>
+      {% endif %}
+    {% else %}
+      <div class="so icn {{ settings.icon_style }}">{{ 'products.general.sold' | t }}</div><!-- /.so.icn -->
+    {% endif %}
+  </div><!-- /.product-index-inner -->
+
+  <div class="js-product-image animated prod-image image_{{ aspect_ratio }}">
+    <a href="{{ product.url }}" title="{{ product.title | escape }}">
+      <div class="reveal">
+        {%- if product.media.size < 1 -%}
+          {{ 'product-1' | placeholder_svg_tag }}
+        {% else %}
+          {%- assign second_image = product.media[1] -%}
+          {% assign is_first = blank %}
+          {%- if settings.switch_image and product.media.size > 1 -%}
+            {% assign is_first = 'first-image' %}
+          {%- endif -%}
+
+          {%
+            render 'basic-responsive-image',
+            type: product.featured_media.preview_image,
+            width: 1200,
+            img_class: is_first,
+            loading: 'eager'
+          %}
+          {% if settings.switch_image and product.media.size > 1 and second_image.media_type == 'image' %}
+            <div class="hidden">
+              {%
+                render 'basic-responsive-image',
+                type: product.media[1],
+                width: 1200
+              %}
+            </div>
+          {% elsif settings.switch_image and product.media.size > 1 and second_image.media_type != 'image' %}
+            <div class="hidden">
+              {%
+                render 'basic-responsive-image',
+                type: product.media[1].preview_image,
+                width: 1200
+              %}
+            </div>
+          {% endif %}
+        {%- endif -%}
+      </div>
+    </a>
+
+    {% if settings.quickview_type != 'none' %}
+
+      {%- liquid
+
+        if settings.quickview_type == 'modal'
+          assign quickview_classes = 'js-modal-open'
+          assign quickview_settings = 'data-wau-modal-target="quickview"'
+        else
+          assign quickview_classes = 'js-slideout-open'
+          assign quickview_settings = 'data-wau-slideout-target="quickview" data-slideout-direction="right"'
+        endif
+
+      -%}
+
+      <button class="quick-view-{{ product.id }} product-listing__quickview-trigger {{ quickview_classes }} js-quickview-trigger"
+      type="button" name="button"
+      {{ quickview_settings }}
+      data-product-url="{{ product.url }}?view=quick">{{ 'products.general.quick_view' | t }}</button>
+    {% endif %}
+
+  </div><!-- /.js-product-image -->
+
+  <div class="product-info">
+    <div class="product-info-inner">
+      <a href="{{ product.url }}">
+        {% if settings.vendor %}<span class="prod-vendor">{{ product.vendor }}</span>{% endif %}
+        <span class="prod-title">{{ product.title }}</span>
+      </a>
+
+      {% render 'product-price-listing', product: product %}
+
+      {% if settings.alternate_colors and product.media.size > 1 %}
+        <div class="prod-colors">
+          {% render 'product-listing-swatches', product: product %}
+        </div><!-- /.prod-colors -->
+      {% endif %}
+    </div><!-- /.product-info-inner -->
+  </div><!-- /.product-info -->
+
+</template>

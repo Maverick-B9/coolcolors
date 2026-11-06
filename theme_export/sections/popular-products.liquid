@@ -1,0 +1,330 @@
+{% comment %}
+  Popular Products - Multi Collection Filter
+{% endcomment %}
+
+{%- liquid
+  assign prod_limit = section.settings.limit
+-%}
+
+<section class="featured-collection {{ section.settings.custom_css }} global__section mt0 pb0 home-feature-collection">
+
+  {% if section.settings.title != blank %}
+    <h2 class="section-title text-center">{{ section.settings.title }}</h2>
+  {% endif %}
+
+  {% if section.settings.filter and section.blocks.size > 1 %}
+    <div class="filters-wrapper">
+      <button class="filter-btn active" data-collection="all">All</button>
+
+      {% for block in section.blocks %}
+        {% assign col = block.settings.collection %}
+        {% if col != blank %}
+          <button
+            class="filter-btn"
+            data-collection="{{ col.handle }}"
+          >
+            {{ col.title }}
+          </button>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="product-grid">
+    {% assign rendered_products = '' %}
+
+    {% for block in section.blocks %}
+      {% assign collection = block.settings.collection %}
+
+      {% if collection != blank %}
+        {% for product in collection.products limit: prod_limit %}
+          {% unless rendered_products contains product.handle %}
+            {% assign rendered_products = rendered_products | append: product.handle | append: ',' %}
+
+            <div
+              class="product-item filter-item"
+              data-collection="{{ collection.handle }}"
+            >
+              {% render 'product-listing',
+                product: product,
+                collection: collection
+              %}
+
+              {% if product.tags contains 'Sale' %}
+                <span class="badge-sale">Sale</span>
+              {% endif %}
+            </div>
+          {% endunless %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+  </div>
+
+{% if section.settings.show_view_all and section.blocks.size > 0 %}
+  <div class="text-center mt-20">
+    <a
+      href="/collections/all"
+      class="button view-all-btn"
+      data-default-url="/collections/all"
+    >
+      View All
+    </a>
+  </div>
+{% endif %}
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const sectionEl = document.querySelector('.home-feature-collection');
+  if (!sectionEl) return;
+
+  const buttons = sectionEl.querySelectorAll('.filter-btn');
+  const products = sectionEl.querySelectorAll('.filter-item');
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', function () {
+      const selected = this.dataset.collection;
+
+      buttons.forEach((b) => b.classList.remove('active'));
+      this.classList.add('active');
+
+      products.forEach((product) => {
+        if (
+          selected === 'all' ||
+          product.dataset.collection === selected
+        ) {
+          product.style.display = 'block';
+        } else {
+          product.style.display = 'none';
+        }
+      });
+    });
+  });
+});
+document.addEventListener('DOMContentLoaded', function () {
+  const sectionEl = document.querySelector('.home-feature-collection');
+  if (!sectionEl) return;
+
+  const buttons = sectionEl.querySelectorAll('.filter-btn');
+  const products = sectionEl.querySelectorAll('.filter-item');
+  const viewAllBtn = sectionEl.querySelector('.view-all-btn');
+
+  const collectionUrls = {
+    all: '/collections/all'
+    {% for block in section.blocks %}
+      {% assign collection = block.settings.collection %}
+      {% if collection %}
+        ,"{{ collection.handle }}": "{{ collection.url }}"
+      {% endif %}
+    {% endfor %}
+  };
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', function () {
+      const selected = this.dataset.collection;
+
+      buttons.forEach((b) => b.classList.remove('active'));
+      this.classList.add('active');
+
+      products.forEach((product) => {
+        if (
+          selected === 'all' ||
+          product.dataset.collection === selected
+        ) {
+          product.style.display = 'block';
+        } else {
+          product.style.display = 'none';
+        }
+      });
+
+      if (viewAllBtn) {
+        viewAllBtn.href = collectionUrls[selected] || '/collections/all';
+      }
+    });
+  });
+});
+</script>
+
+<style>
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .product-item {
+    width: 100%;
+    max-width: 100%;
+    position: relative;
+  }
+
+  @media (max-width: 1024px) {
+    .product-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .product-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      padding: 0 15px;
+    }
+
+    .product-item {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .prod-title,
+    .price {
+      font-size: 12px;
+    }
+  }
+
+  .filters-wrapper {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 20px 0;
+  }
+
+  .filter-btn {
+    padding: 6px 14px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    background: white;
+    color: #000;
+    width: fit-content;
+  }
+
+  .filter-btn.active {
+    background: black;
+    color: white;
+  }
+
+  .badge-sale {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: red;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 12px;
+    z-index: 2;
+  }
+
+  .pr-list-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: start;
+    margin-bottom: 8px;
+  }
+
+  .prod-title {
+    font-size: 14px;
+    line-height: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    margin: 0;
+    padding: 0 10px 0 0;
+  }
+
+  .price {
+    align-items: start;
+    font-size: 14px;
+    line-height: 16px;
+  }
+
+  .icn.rectangle_icon.sale-item,
+  .so {
+    left: auto;
+  }
+
+  .icn.rectangle_icon {
+    top: auto;
+  }
+
+  .product-index-inner .sale-item.sale-item--percentage.icn.rectangle_icon {
+    display: none !important;
+  }
+
+  .product-info a {
+    text-decoration: none !important;
+    width: 90%;
+  }
+
+  @media (max-width: 768px) {
+    .filters-wrapper {
+      gap: 14px;
+      overflow-x: scroll !important;
+      white-space: nowrap !important;
+      display: flex !important;
+      flex-wrap: nowrap;
+      scrollbar-width: none !important;
+      justify-content: flex-start;
+      padding: 0 20px;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Popular Collection",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Featured Products"
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "label": "Products per collection",
+      "min": 4,
+      "max": 20,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "type": "checkbox",
+      "id": "filter",
+      "label": "Enable filter",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show View All button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "custom_css",
+      "label": "Custom CSS"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Select Collection"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 10,
+  "presets": [
+    {
+      "name": "Popular Collection"
+    }
+  ]
+}
+{% endschema %}

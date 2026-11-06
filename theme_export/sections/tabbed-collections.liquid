@@ -1,0 +1,299 @@
+{%- liquid
+
+  assign section_space = section.settings.section_space
+  assign section_space_class = ''
+
+  if section_space == 'top'
+    assign section_space_class = ' pb0'
+  elsif section_space == 'bottom'
+    assign section_space_class = ' mt0'
+  elsif section_space == 'none'
+    assign section_space_class = ' mt0 pb0'
+  endif
+
+  assign section_heading_classes = ''
+  if settings.section_titles == 'lines'
+    assign section_heading_classes = 'lines'
+  elsif settings.section_titles == 'btm_border'
+    assign section_heading_classes = 'btm_border'
+  endif
+
+  assign full_width = false
+  if section.settings.full_width
+    assign full_width = true
+  endif
+
+  assign cell_align = section.settings.cell_align
+
+-%}
+
+<section class="global__section tabbed-collections tabbed--collection_{{ section.id }} {{ section_padding }}"
+  data-section-id="{{ section.id }}"
+  data-section-type="featured-collection"
+  data-aos="fade">
+
+    {% if section.settings.title != blank %}
+      <div class="grid__wrapper row rg0">
+        <div class="section-title {{ section_heading_classes }} span-12 auto">
+          <h2>{{ section.settings.title | escape }}</h2>
+        </div><!-- /.section-title -->
+      </div>
+    {% endif %}
+    {% if section.blocks.size == 0 %}
+      {% render 'no-blocks' %}
+    {% else %}
+      <div class="tabbed__collections-{{ section.id }} js-tabbed-collection-container grid__wrapper{% if full_width %} edge{% endif %}">
+        {% if section.blocks.size > 1 %}
+        <ul class="tabbed__collection-tabs span-12 auto" id="tabbed-collections-{{ section.id }}">
+          {% for block in section.blocks %}
+            {%- assign collection = collections[block.settings.collection] -%}
+            {% if collection != blank %}
+              <li{{ block.shopify_attributes }} data-tab-index="{{ forloop.index0 }}"><a class="js-tab-trigger" data-content="{{ block.id }}-tab-{{ forloop.index }}" href="#{{ block.id }}-tab-{{ forloop.index }}">{{ collection.title }}</a></li>
+            {% else %}
+              <li{{ block.shopify_attributes }} data-tab-index="{{ forloop.index0 }}">
+                <a class="js-tab-trigger" data-content="{{ block.id }}-tab-{{ forloop.index }}" href="#{{ block.id }}-tab-{{ forloop.index }}">
+                  {{ 'collection' }}
+                </a>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+        {% endif %}
+        {% for block in section.blocks %}
+
+          {%- liquid
+            assign prod_limit = block.settings.limit
+            assign grid = block.settings.grid
+            assign collection = collections[block.settings.collection]
+            assign enough_to_wrap = true
+            assign is_carousel = true
+
+            if collection != blank
+              if collection.products.size <= grid
+                assign enough_to_wrap = false
+                assign is_carousel = false
+              endif
+
+              if prod_limit <= grid
+                assign enough_to_wrap = false
+                assign is_carousel = false
+              endif
+            endif
+
+            case block.settings.grid
+            when 2
+              assign prod_grid = 50
+              assign span = 'span-6 sm-span-6 auto'
+            when 3
+              assign prod_grid = 33.333
+              assign span = 'span-4 sm-span-6 auto'
+            when 4
+              assign prod_grid = 25
+              assign span = 'span-3 auto sm-span-6 auto'
+            when 5
+              assign prod_grid = 20
+              assign span = 'span-one-fifth sm-span-6 auto'
+              assign wrapper_span = 'five--columns'
+            endcase
+
+            assign margin_offset = grid | minus: 1 | times: 20
+
+            assign cell_align = section.settings.cell_align
+
+          -%}
+
+          {% capture slideshow_config %}{
+              "wrapAround":{{ enough_to_wrap }},
+              "imagesLoaded": true,
+              "cellAlign": "{{ cell_align }}",
+              "contain": {{ enough_to_wrap }},
+              "dragThreshold":{{ enough_to_wrap }},
+              "pauseAutoPlayOnHover":false,
+              "prevNextButtons":{{ enough_to_wrap }},
+              "pageDots": {{ enough_to_wrap }}
+          }{% endcapture %}
+
+          <div class="tabbed__collection-content tabbed__collection-{{ block.id }} js-tab-collection-content span-12 auto" id="{{ block.id }}-tab-{{ forloop.index }}" {{ block.shopify_attributes }}>
+
+            <div class="product-loop{% if is_carousel %} featured__collection-carousel flickity__section js-carousel {% else %} grid__wrapper full {{ wrapper_span }}{% endif %}"
+            {% if is_carousel %}
+              data-flickity-config='{{ slideshow_config }}'
+            {% endif %}>
+              {% if collection == blank %}
+                {% render 'onboard-product',
+                  prod_limit: prod_limit,
+                  is_carousel: is_carousel,
+                  prod_grid: span
+                %}
+              {% else %}
+                {% for product in collection.products limit: prod_limit %}
+                  <div id="product-listing-{{ product.id }}" class="featured__collection-product product-index{% unless is_carousel %} {{ span }}{% endunless %}" data-product-id="{{ product.id }}" data-alpha="{{ product.title }}" data-price="{{ product.price }}">
+                    {% liquid
+
+                      assign loading = 'lazy'
+                      assign fetch_priority = 'auto'
+
+                      if section.index == 1
+                        if forloop.parentloop.index == 1 and forloop.index <= block.settings.grid
+                          assign loading = 'eager'
+                          assign fetch_priority = 'high'
+                        endif
+                      endif
+
+                     %}
+                    {% render 'product-listing', product: product, collection: collection, loading: loading, fetchpriority: fetch_priority %}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            </div>
+
+            {% if section.settings.show_view_all %}
+              <div class="grid__wrapper rg0">
+                <div class="button--wrapper span-12 auto">
+                  <a href="{{ collection.url }}" class="view--all_button button">
+                    {{ 'collections.general.view_collection' | t }}
+                  </a>
+                </div><!-- /.section-title -->
+              </div>
+            {% endif %}
+
+             <style>
+              {% unless is_carousel %}
+                .tabbed__collection-{{ block.id }} .featured__collection-carousel {
+                  display: flex;
+                }
+              {% endunless %}
+              {% if is_carousel %}
+                .tabbed__collection-{{ block.id }} .featured__collection-carousel .featured__collection-product {
+                  width: calc((100% - {{ margin_offset }}px)/{{ grid }});
+                  margin-right: 20px;
+                }
+              {% endif %}
+              {% if full_width %}
+                .tabbed--collection_{{ section.id }} .featured__collection-carousel {
+                  padding: 0;
+                }
+              {% endif %}
+            </style>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+</section>
+
+{% schema %}
+{
+  "name": "Tabbed collections",
+  "max_blocks": 3,
+  "settings": [
+    {
+      "type":"paragraph",
+      "content":"Show multiple collections in a tabbed view. Automatically shows a carousel per collection when the number of products shown is greater than the selected product grid"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Tabbed collections"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full screen width"
+    },
+    {
+      "id": "show_view_all",
+      "type": "checkbox",
+      "label": "Show view all button",
+      "default":true
+    },
+    {
+      "type": "radio",
+      "id": "cell_align",
+      "label": "Carousel layout",
+      "default": "left",
+      "info":"Center the first product in the carousel or align to the left side",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "section_space",
+      "label": "Section spacing",
+      "default": "top_and_bottom",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "top_and_bottom",
+          "label": "Top and bottom"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ]
+    }
+  ],
+  "blocks": [{
+    "type": "featured_collection",
+    "name": "Collection",
+    "settings": [{
+        "label": "Collection",
+        "id": "collection",
+        "type": "collection"
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "label": "Product grid",
+        "default": 4
+      },
+      {
+        "type": "range",
+        "id": "limit",
+        "min": 2,
+        "max": 20,
+        "step": 1,
+        "label": "Products shown",
+        "default": 12
+      }
+    ]
+  }],
+  "presets": [{
+    "name": "Tabbed collections",
+    "settings": {},
+    "blocks": [
+      {
+        "type": "featured_collection"
+      },
+      {
+        "type": "featured_collection"
+      },
+      {
+        "type": "featured_collection"
+      }
+    ]
+  }],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}

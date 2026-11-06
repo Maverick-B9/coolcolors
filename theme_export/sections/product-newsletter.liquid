@@ -1,0 +1,48 @@
+<div class="ccn">
+  <div class="ccn__box" {{ section.shopify_attributes }}>
+    <h2>{{ section.settings.heading }}</h2>
+    {%- form 'customer', class: 'ccn__form' -%}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      {%- if form.posted_successfully? -%}
+        <p class="ccn__ok">{{ 'general.newsletter_form.confirmation' | t }}</p>
+      {%- else -%}
+        <div class="ccn__row">
+          <input type="email" name="contact[email]" required autocomplete="email" autocorrect="off" autocapitalize="off" placeholder="{{ section.settings.placeholder | escape }}" aria-label="{{ section.settings.placeholder | escape }}" value="{% if customer %}{{ customer.email }}{% endif %}">
+          <button type="submit">{{ section.settings.button_text }}</button>
+        </div>
+      {%- endif -%}
+    {%- endform -%}
+  </div>
+</div>
+
+<style>
+  .ccn { max-width:1440px; margin:0 auto; padding:0 24px; font-family:'Inter',system-ui,sans-serif; color:#0D1117; }
+  .ccn *, .ccn *::before, .ccn *::after { box-sizing:border-box; font-family:'Inter',system-ui,sans-serif; }
+  .ccn__box { max-width:1392px; margin:46px auto 0; background:#fff; border-radius:24px; padding:30px; display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap; border:1px solid #E3E7EB; }
+  .ccn__box h2 { margin:0; font-size:24px; max-width:460px; letter-spacing:-.02em; font-weight:700; text-transform:none; line-height:normal; color:#0D1117; }
+  :where(.ccn) button { width:auto; height:auto; min-width:0; min-height:0; margin:0; padding:0; border:0; border-radius:0; background:none; box-shadow:none; text-transform:none; letter-spacing:normal; font-size:13.3333px; font-weight:400; line-height:normal; color:#000; display:inline-block; }
+  :where(.ccn) input { width:auto; height:auto; margin:0; box-shadow:none; letter-spacing:normal; text-transform:none; }
+  .ccn__form { margin:0; }
+  .ccn__row { display:flex; gap:10px; }
+  .ccn__row input { height:48px; border:1px solid #E3E7EB; border-radius:100px; padding:0 20px; font:14px 'Inter',system-ui,sans-serif; min-width:240px; background:#fff; color:#000; margin:0; }
+  .ccn__row button { flex:0 0 auto; min-width:max-content; white-space:nowrap; height:48px; border:0; border-radius:100px; background:#0D1117; color:#fff; padding:0 28px; font:600 14px 'Inter',system-ui,sans-serif; cursor:pointer; margin:0; }
+  .ccn__ok { margin:0; font-size:14px; font-weight:600; }
+  @media (max-width:900px){
+    .ccn { padding:0 16px; }
+    .ccn__box { margin:34px 16px 0; padding:22px; }
+    .ccn__form, .ccn__row { width:100%; }
+    .ccn__row input { flex:1; min-width:0; }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Product newsletter",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Join for new arrivals, styling notes, and early access." },
+    { "type": "text", "id": "placeholder", "label": "Email placeholder", "default": "Enter your email" },
+    { "type": "text", "id": "button_text", "label": "Button text", "default": "Subscribe" }
+  ],
+  "presets": [ { "name": "Product newsletter" } ]
+}
+{% endschema %}
