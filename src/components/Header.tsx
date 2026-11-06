@@ -6,11 +6,18 @@ import { useCart } from '../cart';
 const Chev = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M6 9l6 6 6-6" /></svg>;
 
 function NavEntry({ n }: { n: NavItem }) {
-  if (!n.children) return <Link to={`/collections/${n.handle}`}>{n.label}</Link>;
+  const target = n.handle.startsWith('/') ? n.handle : `/collections/${n.handle}`;
+  if (!n.children) return <Link to={target}>{n.label}</Link>;
   return (
     <div className="cc-dd">
-      <Link to={`/collections/${n.handle}`}>{n.label}<Chev /></Link>
-      <div className="cc-dd__m">{n.children.map(c => <Link key={c.handle} to={`/collections/${c.handle}`}>{c.label}</Link>)}</div>
+      <Link to={target}>{n.label}<Chev /></Link>
+      <div className="cc-dd__m">
+        {n.children.map(c => (
+          <Link key={c.handle} to={c.handle.startsWith('/') ? c.handle : `/collections/${c.handle}`}>
+            {c.label}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -26,7 +33,16 @@ export default function Header() {
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
-  const more: NavItem = { label: 'More', handle: '', children: NAV.slice(MORE_FROM).map(n => ({ label: n.label, handle: n.handle })) };
+  const more: NavItem = {
+    label: 'More',
+    handle: '',
+    children: [
+      ...NAV.slice(MORE_FROM).map(n => ({ label: n.label, handle: `/collections/${n.handle}` })),
+      { label: 'Our Story', handle: '/pages/our-story' },
+      { label: 'Lookbook', handle: '/pages/lookbook' },
+      { label: 'Stores', handle: '/pages/store-location' },
+    ],
+  };
   return (
     <div id="hg" className={overlay ? 'home' : ''}>
       <div className={`cch${!overlay || scrolled || open ? ' solid' : ''}${story ? ' lt' : ''}`}>
@@ -35,7 +51,7 @@ export default function Header() {
           <Link className="cch__logo" to="/"><span className="cch__mark" /><span className="cch__brand"><strong>COOL COLORS</strong><small>CASUALS</small></span></Link>
           <nav className={`cch__nav${open ? ' open' : ''}`}>
             {NAV.slice(0, MORE_FROM).map(n => <NavEntry key={n.handle} n={n} />)}
-            <div className="cc-dd"><a href="#more" onClick={e => e.preventDefault()}>More<Chev /></a><div className="cc-dd__m">{more.children!.map(c => <Link key={c.handle} to={`/collections/${c.handle}`}>{c.label}</Link>)}</div></div>
+            <div className="cc-dd"><a href="#more" onClick={e => e.preventDefault()}>More<Chev /></a><div className="cc-dd__m">{more.children!.map(c => <Link key={c.handle} to={c.handle.startsWith('/') ? c.handle : `/collections/${c.handle}`}>{c.label}</Link>)}</div></div>
           </nav>
           <div className="cch__icons">
             <Link className="ibtn" to="/search" aria-label="Search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg></Link>
