@@ -48,7 +48,13 @@ export default function Header() {
       <div className={`cch${!overlay || scrolled || open ? ' solid' : ''}${story ? ' lt' : ''}`}>
         <div className="cch__bar">
           <button className="cch__burger" aria-label="Menu" onClick={() => setOpen(o => !o)}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
-          <Link className="cch__logo" to="/"><span className="cch__mark" /><span className="cch__brand"><strong>COOL COLORS</strong><small>CASUALS</small></span></Link>
+          <Link className="cch__logo" to="/" aria-label="COOL COLORS">
+            <img
+              src={story && !scrolled && !open ? "/images/brand_logo_dark_background.svg" : "/images/brand_logo_header.svg"}
+              alt="COOL COLORS CASUALS"
+              style={{ height: '32px', width: 'auto', display: 'block' }}
+            />
+          </Link>
           <nav className={`cch__nav${open ? ' open' : ''}`}>
             {NAV.slice(0, MORE_FROM).map(n => <NavEntry key={n.handle} n={n} />)}
             <div className="cc-dd"><a href="#more" onClick={e => e.preventDefault()}>More<Chev /></a><div className="cc-dd__m">{more.children!.map(c => <Link key={c.handle} to={c.handle.startsWith('/') ? c.handle : `/collections/${c.handle}`}>{c.label}</Link>)}</div></div>

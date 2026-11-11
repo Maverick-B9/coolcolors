@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import BottomBar from './components/BottomBar';
 import Home from './pages/Home';
 import Collection from './pages/Collection';
 import ProductPage from './pages/Product';
@@ -45,6 +46,7 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
+      <BottomBar />
     </>
   );
 }

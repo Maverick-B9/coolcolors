@@ -21,7 +21,7 @@ export interface Product {
   isNew?: boolean;
 }
 export interface NavItem { label: string; handle: string; children?: { label: string; handle: string }[] }
-export interface Store { kind: 'store' | 'office' | 'manufacturing'; name: string; address: string; lat: number; lng: number }
+export interface Store { kind: 'store' | 'office'; name: string; address: string; lat: number; lng: number }
 
 export const F = 'https://coolcolors.in/cdn/shop/files/';
 export const IMG = (n: string) => `/images/${n}.jpg`;
@@ -117,7 +117,7 @@ export const STORES: Store[] = [
   { kind: 'store', name: 'Cool Colors Chandapura, Bengaluru', address: 'Ground Floor, Jayaram Reddy Building, No.365, Chandapura-Anekal Rd, Anekal, Karnataka 560081', lat: 12.799, lng: 77.705 },
   { kind: 'office', name: 'Bafna Clothing Company Pvt. Ltd.', address: '7, 2nd Cross Rd, K.S. Garden, Sudhama Nagar, Bengaluru, Karnataka 560027', lat: 12.9525, lng: 77.5895 },
 ];
-export const KIND_LABEL = { store: 'Stores', office: 'Office', manufacturing: 'Manufacturing Units' } as const;
+export const KIND_LABEL = { store: 'Stores', office: 'Office' } as const;
 
 const links = (a: string[][]) => a.map(([label, to]) => ({ label, to }));
 export const FOOTER = [

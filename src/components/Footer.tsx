@@ -11,13 +11,15 @@ export default function Footer() {
           <div className="cc-footer__top">
             {/* Brand Logo & Description */}
             <div className="cc-footer__brand">
-              <div className="cc-footer__logo">
-                <span className="cc-footer__mark">CC</span>
-                <span>
-                  <strong>COOL COLORS</strong>
-                  <small>Premium Indian menswear</small>
-                </span>
-              </div>
+              <Link to="/" className="cc-footer__logo" aria-label="COOL COLORS">
+                <img
+                  src="/images/brand_logo_dark_background.svg"
+                  alt="COOL COLORS CASUALS"
+                  width="210"
+                  height="48"
+                  style={{ maxWidth: '210px', height: 'auto', display: 'block' }}
+                />
+              </Link>
               <p>Modern silhouettes, premium fabrics, and a calm editorial aesthetic for the modern man.</p>
             </div>
 
