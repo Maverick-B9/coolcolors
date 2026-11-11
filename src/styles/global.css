@@ -111,7 +111,7 @@
 }
 .lmnews{background:#000;padding:0 32px 64px;display:flex;justify-content:space-between;align-items:center;gap:28px;flex-wrap:wrap;color:#fff}.lmnews>*{}.lmnews{max-width:none}.lmnews h2{margin:0 0 4px;font-size:22px}.lmnews p{margin:0;color:#8a8a8a;font-size:14px;max-width:420px}.lmnews form{display:flex;gap:10px;flex:1 1 340px;max-width:460px}.lmnews input{flex:1;padding:14px;border:1px solid #2c2c2c;background:#1c1c1c;color:#fff;border-radius:10px}.lmnews button{background:var(--signal);color:#fff;border:0;padding:14px 26px;font-weight:600;border-radius:10px}
 footer{background:var(--ink);color:var(--chalk);padding:48px 40px 24px}.fg{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:32px;max-width:1440px;margin:auto}footer h4{font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:0 0 12px}footer ul{padding:0;margin:0}footer li{list-style:none;font-size:13px;margin-bottom:8px;color:#aab3bd}footer li a:hover{color:#fff}footer p{font-size:13px;color:#aab3bd;line-height:1.6}.wa{display:inline-block;background:#25D366;color:#000;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600}.cp{text-align:center;font-size:12px;color:#7d8793;margin-top:32px}
-@media(max-width:900px){header{padding:0 16px;gap:12px}.mb{display:block}.cch__nav, header nav{display:none;position:absolute;top:68px;left:0;right:0;background:#fff;flex-direction:column;gap:0;padding:8px 16px;border-bottom:1px solid var(--line);max-height:70vh;overflow:auto}.cch__nav.open, header nav.open{display:flex}.ni{padding:12px 0}.dd{display:block;position:static;border:0;box-shadow:none;padding:4px 0 0 12px}.dd a{padding:6px 0}.logo{flex:1}.pw{padding:24px 16px}.grid,.reels{grid-template-columns:repeat(2,1fr)}.ed,.fg,.pdp,.lm__wrap{grid-template-columns:1fr}.ed>div{padding:28px 16px}.ed.rev img{order:0}.cta{left:16px;bottom:16px}.sbc__top{grid-template-columns:1fr 1fr;grid-template-rows:240px 190px 190px;height:auto}.sbc__top .sbc__tile:nth-child(4){grid-column:1/3;grid-row:3}.sbc__bottom{height:200px}.sbc__label{font-size:11px}.lm{padding:32px 20px}.lmnews{padding:0 20px 40px}}
+@media(max-width:900px){input,select,textarea{font-size:16px!important}header{padding:0 16px;gap:12px}.mb{display:block}.cch__nav, header nav{display:none;position:absolute;top:68px;left:0;right:0;background:#fff;flex-direction:column;gap:0;padding:8px 16px;border-bottom:1px solid var(--line);max-height:70vh;overflow:auto}.cch__nav.open, header nav.open{display:flex}.ni{padding:12px 0}.dd{display:block;position:static;border:0;box-shadow:none;padding:4px 0 0 12px}.dd a{padding:6px 0}.logo{flex:1}.pw{padding:24px 16px}.grid,.reels{grid-template-columns:repeat(2,1fr)}.ed,.fg,.pdp,.lm__wrap{grid-template-columns:1fr}.ed>div{padding:28px 16px}.ed.rev img{order:0}.cta{left:16px;bottom:16px}.sbc__top{grid-template-columns:1fr 1fr;grid-template-rows:240px 190px 190px;height:auto}.sbc__top .sbc__tile:nth-child(4){grid-column:1/3;grid-row:3}.sbc__bottom{height:200px}.sbc__label{font-size:11px}.lm{padding:32px 20px}.lmnews{padding:0 20px 40px}}
 :root{--h:90px}
 #hg{position:sticky;top:0;z-index:200}#hg.home{margin-bottom:calc(var(--h)*-1)}
 .cch{height:var(--h);background:rgba(255,255,255,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);color:var(--ink);transition:background .3s,border-color .3s}
@@ -248,4 +248,14 @@ footer{background:var(--ink);color:var(--chalk);padding:48px 40px 24px}.fg{displ
 @media (max-width:900px){
   body{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))!important}
   .cc-wa{bottom:calc(86px + env(safe-area-inset-bottom,0px))!important;right:16px!important;width:48px!important;height:48px!important}
+}
+/* Never show WhatsApp toggle on collection pages */
+body.is-collection-page .cc-wa,
+body:has(.pf-root) .cc-wa,
+.pf-root ~ .cc-wa,
+.pf-root ~ * .cc-wa {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }

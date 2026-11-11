@@ -1,8 +1,10 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { WHATSAPP } from '../data';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const { pathname } = useLocation();
+  const isCollection = pathname.startsWith('/collections');
 
   return (
     <>
@@ -88,13 +90,15 @@ export default function Footer() {
         </div>
       </footer>
 
-      {/* Floating WhatsApp Action Button */}
-      <a className="cc-wa" href={WHATSAPP} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.700-5.400A8.400 8.400 0 1 1 21 11.500z" />
-          <path d="M9 9.500c.5 2 2.500 4 5 5l1.500-1.500-2-1-1 .8c-.8-.4-1.600-1.200-2-2l.8-1-1-2z" fill="#fff" stroke="none" />
-        </svg>
-      </a>
+      {/* Floating WhatsApp Action Button - excluded on collection pages */}
+      {!isCollection && (
+        <a className="cc-wa" href={WHATSAPP} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.700-5.400A8.400 8.400 0 1 1 21 11.500z" />
+            <path d="M9 9.500c.5 2 2.500 4 5 5l1.500-1.500-2-1-1 .8c-.8-.4-1.600-1.200-2-2l.8-1-1-2z" fill="#fff" stroke="none" />
+          </svg>
+        </a>
+      )}
     </>
   );
 }

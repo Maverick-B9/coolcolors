@@ -38,6 +38,14 @@ export default function Collection() {
     setPriceMax('');
   }, [handle]);
 
+  // Mark collection page on body (e.g. hides WhatsApp toggle on collection pages)
+  useEffect(() => {
+    document.body.classList.add('is-collection-page');
+    return () => {
+      document.body.classList.remove('is-collection-page');
+    };
+  }, []);
+
   // Prevent background scroll when drawer is open
   useEffect(() => {
     if (drawerOpen) {

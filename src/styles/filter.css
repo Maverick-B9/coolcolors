@@ -781,16 +781,23 @@ html.pf-scroll-lock body {
   .pf-root {
     padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)) !important;
   }
-
-  .cc-wa {
-    bottom: calc(142px + env(safe-area-inset-bottom, 0px)) !important;
-  }
 }
 
 @media (min-width: 900px) {
   .pf-mobile-bar {
     display: none !important;
   }
+}
+
+/* Never show WhatsApp toggle on collection pages */
+body.is-collection-page .cc-wa,
+body:has(.pf-root) .cc-wa,
+.pf-root ~ .cc-wa,
+.pf-root ~ * .cc-wa {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 /* Hide floating bars and WA when filter drawer is open */
