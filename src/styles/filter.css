@@ -172,21 +172,29 @@ html.pf-scroll-lock body {
   text-decoration: underline;
 }
 
-/* -------------------- Mobile fixed bottom bar -------------------- */
+/* -------------------- Mobile fixed bottom bar (Filters | Sort) -------------------- */
 
 .pf-mobile-bar {
   position: fixed;
-  left: 16px;
-  right: 16px;
-  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-  z-index: 9000;
-  display: flex;
-  align-items: stretch;
-  background: #fff;
-  border: 1px solid rgba(13, 17, 23, 0.1);
-  border-radius: 100px;
-  box-shadow: 0 12px 28px rgba(13, 17, 23, 0.2);
-  overflow: hidden;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important;
+  transform: translateX(-50%) !important;
+  width: min(calc(100% - 32px), 360px) !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-around !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(13, 17, 23, 0.08) !important;
+  border-radius: 100px !important;
+  box-shadow: 0 8px 26px rgba(13, 17, 23, 0.12), 0 2px 6px rgba(13, 17, 23, 0.04) !important;
+  overflow: hidden !important;
+  z-index: 9000 !important;
+  animation: ccBbIn 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
 }
 
 .pf-mobile-bar__btn {
@@ -195,22 +203,34 @@ html.pf-scroll-lock body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 12px;
+  height: 48px;
   min-height: 48px;
-  font: inherit;
+  padding: 0 14px;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 14px;
-  font-weight: 600;
-  color: var(--pf-text);
+  font-weight: 500;
+  color: #0D1117;
   background: none;
   border: none;
   cursor: pointer;
   position: relative;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.pf-mobile-bar__btn:active {
+  background: rgba(13, 17, 23, 0.05);
 }
 
 .pf-mobile-bar__divider {
   width: 1px;
-  margin: 10px 0;
-  background: var(--pf-border);
+  height: 22px;
+  background: rgba(13, 17, 23, 0.1);
+  flex: 0 0 1px;
+}
+
+.pf-mobile-bar__sort {
+  position: relative;
 }
 
 .pf-mobile-bar__select {
@@ -221,6 +241,17 @@ html.pf-scroll-lock body {
   opacity: 0;
   border: none;
   cursor: pointer;
+  -webkit-appearance: none;
+  z-index: 2;
+}
+
+.pf-mobile-bar__badge {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #D92231;
+  display: inline-block;
+  margin-left: 2px;
 }
 
 /* -------------------- Backdrop -------------------- */
@@ -726,19 +757,51 @@ html.pf-scroll-lock body {
 /* -------------------- Toolbar / mobile bar handoff -------------------- */
 
 @media (max-width: 899px) {
+  .pf-header {
+    display: none !important;
+  }
+
+  .pf-toolbar {
+    padding: 14px 0 10px !important;
+    margin-bottom: 8px !important;
+    border-bottom: 1px solid rgba(13, 17, 23, 0.08) !important;
+  }
+
   .pf-toolbar__trigger,
   .pf-toolbar__sort {
-    display: none;
+    display: none !important;
+  }
+
+  .pf-toolbar__count {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #0D1117 !important;
   }
 
   .pf-root {
-    padding-bottom: 120px;
+    padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .cc-wa {
+    bottom: calc(142px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
 
 @media (min-width: 900px) {
   .pf-mobile-bar {
-    display: none;
+    display: none !important;
   }
+}
+
+/* Hide floating bars and WA when filter drawer is open */
+html.pf-scroll-lock .pf-mobile-bar,
+body.pf-scroll-lock .pf-mobile-bar,
+html.pf-scroll-lock .cc-bottombar,
+body.pf-scroll-lock .cc-bottombar,
+html.pf-scroll-lock .cc-wa,
+body.pf-scroll-lock .cc-wa {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
 }
 

@@ -42,10 +42,15 @@ export default function Collection() {
   useEffect(() => {
     if (drawerOpen) {
       document.documentElement.classList.add('pf-scroll-lock');
+      document.body.classList.add('pf-scroll-lock');
     } else {
       document.documentElement.classList.remove('pf-scroll-lock');
+      document.body.classList.remove('pf-scroll-lock');
     }
-    return () => document.documentElement.classList.remove('pf-scroll-lock');
+    return () => {
+      document.documentElement.classList.remove('pf-scroll-lock');
+      document.body.classList.remove('pf-scroll-lock');
+    };
   }, [drawerOpen]);
 
   // Toggle helper
@@ -260,14 +265,14 @@ export default function Collection() {
       )}
 
       {/* Mobile Bottom Fixed Bar */}
-      <div className="pf-mobile-bar">
+      <div className="pf-mobile-bar" role="navigation" aria-label="Filter and Sort">
         <button
           type="button"
           className="pf-mobile-bar__btn"
           onClick={() => setDrawerOpen(true)}
           aria-expanded={drawerOpen}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <line x1="4" y1="6" x2="20" y2="6"></line>
             <line x1="4" y1="12" x2="20" y2="12"></line>
             <line x1="4" y1="18" x2="20" y2="18"></line>
@@ -276,13 +281,14 @@ export default function Collection() {
             <circle cx="11" cy="18" r="2" fill="currentColor"></circle>
           </svg>
           <span>Filters</span>
+          {hasActiveFilters && <span className="pf-mobile-bar__badge" aria-hidden="true" />}
         </button>
 
         <span className="pf-mobile-bar__divider" aria-hidden="true"></span>
 
         <label className="pf-mobile-bar__btn pf-mobile-bar__sort">
           <span>Sort</span>
-          <svg width="12" height="12" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+          <svg width="11" height="7" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M1 1l4 4 4-4"></path>
           </svg>
           <select
