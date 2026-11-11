@@ -577,23 +577,30 @@ function ReelModal({
     const slides = track.querySelectorAll('.sm-slide') as NodeListOf<HTMLElement>;
     const s = slides[idx];
     if (!s) return;
-    const left = s.offsetLeft - (track.clientWidth - s.offsetWidth) / 2;
+    isScrollingRef.current = true;
+    if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
+    scrollTimerRef.current = setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 550);
+
+    const trackRect = track.getBoundingClientRect();
+    const slideRect = s.getBoundingClientRect();
+    const currentOffset = slideRect.left - trackRect.left;
+    const targetOffset = (track.clientWidth - s.offsetWidth) / 2;
+    const delta = currentOffset - targetOffset;
+    const targetLeft = track.scrollLeft + delta;
+
     if (smooth && track.scrollTo) {
-      isScrollingRef.current = true;
-      if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
-      scrollTimerRef.current = setTimeout(() => {
-        isScrollingRef.current = false;
-      }, 450);
-      track.scrollTo({ left, behavior: 'smooth' });
+      track.scrollTo({ left: targetLeft, behavior: 'smooth' });
     } else {
-      track.scrollLeft = left;
+      track.scrollLeft = targetLeft;
     }
   }, []);
 
   const step = useCallback((dir: number) => {
     setCurrentIndex((prev) => {
       const next = (prev + dir + WATCH_ITEMS.length) % WATCH_ITEMS.length;
-      goTo(next, true);
+      setTimeout(() => goTo(next, true), 20);
       return next;
     });
   }, [goTo]);
@@ -602,8 +609,10 @@ function ReelModal({
   useEffect(() => {
     goTo(initialIndex, false);
     document.body.style.overflow = 'hidden';
+    document.body.classList.add('watch-modal-open');
     return () => {
       document.body.style.overflow = '';
+      document.body.classList.remove('watch-modal-open');
       if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
     };
   }, [initialIndex, goTo]);
@@ -774,7 +783,10 @@ function ReelModal({
         className="social-modal-nav prev"
         aria-label="Previous reel"
         data-social-prev
-        onClick={() => step(-1)}
+        onClick={(e) => {
+          e.stopPropagation();
+          step(-1);
+        }}
       >
         &#8249;
       </button>
@@ -783,7 +795,10 @@ function ReelModal({
         className="social-modal-nav next"
         aria-label="Next reel"
         data-social-next
-        onClick={() => step(1)}
+        onClick={(e) => {
+          e.stopPropagation();
+          step(1);
+        }}
       >
         &#8250;
       </button>

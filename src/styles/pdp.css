@@ -958,11 +958,12 @@
 
 /* -------------------- Product Newsletter (.ccn) -------------------- */
 .ccn {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 24px;
+  width: 100%;
+  background: #000;
+  color: #fff;
+  padding: 44px 32px;
   font-family: 'Inter', system-ui, sans-serif;
-  color: #0D1117;
+  margin-top: 40px;
 }
 
 .ccn *,
@@ -973,54 +974,69 @@
 }
 
 .ccn__box {
-  max-width: 1392px;
-  margin: 46px auto 0;
-  background: #fff;
-  border-radius: 24px;
-  padding: 30px;
+  max-width: 1300px;
+  margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: 28px;
   flex-wrap: wrap;
-  border: 1px solid #E3E7EB;
 }
 
-.ccn__box h2 {
-  margin: 0;
+.ccn__text {
+  flex: 1 1 300px;
+}
+
+.ccn__text h2 {
+  margin: 0 0 6px;
   font-size: 24px;
-  max-width: 460px;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   font-weight: 700;
   text-transform: none;
-  line-height: normal;
-  color: #0D1117;
+  line-height: 1.2;
+  color: #fff;
+}
+
+.ccn__text p {
+  margin: 0;
+  font-size: 14px;
+  color: #8a8a8a;
+  line-height: 1.5;
+  max-width: 440px;
 }
 
 .ccn__form {
+  flex: 1 1 340px;
+  max-width: 460px;
   margin: 0;
 }
 
 .ccn__row {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .ccn__row input {
+  flex: 1 1 0;
   height: 48px;
-  border: 1px solid #E3E7EB;
-  border-radius: 100px;
-  padding: 0 20px;
+  border: 1px solid #2c2c2c;
+  border-radius: 8px;
+  padding: 0 16px;
   font: 14px 'Inter', system-ui, sans-serif;
-  min-width: 240px;
-  background: #fff;
-  color: #000;
+  min-width: 0;
+  background: #1c1c1c;
+  color: #fff;
   margin: 0;
   outline: none;
+  transition: border-color 0.2s;
+}
+
+.ccn__row input::placeholder {
+  color: #7d8793;
 }
 
 .ccn__row input:focus {
-  border-color: #0D1117;
+  border-color: #555;
 }
 
 .ccn__row button {
@@ -1029,34 +1045,36 @@
   white-space: nowrap;
   height: 48px;
   border: 0;
-  border-radius: 100px;
-  background: #0D1117;
+  border-radius: 8px;
+  background: #D92231;
   color: #fff;
   padding: 0 28px;
   font: 600 14px 'Inter', system-ui, sans-serif;
   cursor: pointer;
   margin: 0;
-  transition: opacity 0.2s;
+  transition: background 0.2s;
 }
 
 .ccn__row button:hover {
-  opacity: 0.88;
+  background: #b81c29;
 }
 
 .ccn__ok {
   margin: 0;
   font-size: 14px;
   font-weight: 600;
-  color: #16A34A;
+  color: #2ecc71;
 }
 
 @media (max-width: 900px) {
   .ccn {
-    padding: 0 16px;
+    padding: 32px 20px 40px;
+    margin-top: 24px;
   }
   .ccn__box {
-    margin: 34px 16px 0;
-    padding: 22px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
   }
   .ccn__form,
   .ccn__row {

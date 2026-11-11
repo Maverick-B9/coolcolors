@@ -458,7 +458,10 @@ export default function ProductPage() {
       {/* ============ PRODUCT NEWSLETTER SECTION ============ */}
       <section className="ccn">
         <div className="ccn__box">
-          <h2>Join for new arrivals, styling notes, and early access.</h2>
+          <div className="ccn__text">
+            <h2>Stay in touch</h2>
+            <p>Join for new arrivals, styling notes, and early access.</p>
+          </div>
           <form
             className="ccn__form"
             onSubmit={e => {

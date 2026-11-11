@@ -122,13 +122,54 @@
   .sm-hint{ flex:none; padding:8px 0 12px; text-align:center; font-size:11px; color:#9a9aa0; transition:opacity .4s; pointer-events:none; }
   .sm-hint.hide{ opacity:0; }
 
-  /* desktop arrows */
-  .social-modal-nav{ display:none; position:absolute; top:50%; margin-top:-22px; width:44px; height:44px; border-radius:50%; background:#fff; color:#191919; border:none; font-size:24px; line-height:1; cursor:pointer; align-items:center; justify-content:center; z-index:1010; box-shadow:0 4px 12px rgba(0,0,0,.3); padding:0; }
-  .social-modal-nav.prev{ left:max(16px, calc(50% - 484px)); }
-  .social-modal-nav.next{ right:max(16px, calc(50% - 484px)); }
-  @media (hover:hover) and (min-width:769px){
-    .social-modal-nav{ display:flex; }
-    .sm-hint{ visibility:hidden; }
+  /* Reel navigation arrows */
+  .social-modal-nav{
+    display: flex !important;
+    position: absolute;
+    top: 50%;
+    margin-top: -24px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #fff;
+    color: #191919;
+    border: none;
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    z-index: 1010;
+    box-shadow: 0 4px 18px rgba(0,0,0,.45);
+    padding: 0;
+    transition: transform .15s ease, background .15s ease;
+    user-select: none;
+  }
+  .social-modal-nav:hover{
+    background: #f0f0f0;
+    transform: scale(1.08);
+  }
+  .social-modal-nav:active{
+    transform: scale(.93);
+  }
+  .social-modal-nav.prev{ left: max(16px, calc(50% - 484px)); }
+  .social-modal-nav.next{ right: max(16px, calc(50% - 484px)); }
+  @media (max-width: 640px){
+    .social-modal-nav{ width: 38px; height: 38px; font-size: 22px; margin-top: -19px; }
+    .social-modal-nav.prev{ left: 8px; }
+    .social-modal-nav.next{ right: 8px; }
+    .sm-hint{ display: none; }
+  }
+
+  /* Hide floating widgets when Watch and Buy reel modal is active */
+  body.watch-modal-open .cc-wa,
+  body.watch-modal-open .cc-bottombar,
+  body:has(.social-modal.open) .cc-wa,
+  body:has(.social-modal.open) .cc-bottombar {
+    display: none !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
   }
 
   /* share sheet */

@@ -6,7 +6,7 @@ export default function BottomBar() {
   const { count } = useCart();
 
   return (
-    <nav className="cc-bottombar" aria-label="Quick actions">
+    <div className="cc-bottombar" role="navigation" aria-label="Quick actions">
       <Link to="/search" className={`cc-bb${pathname === '/search' ? ' is-active' : ''}`}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <circle cx="11" cy="11" r="7" />
@@ -31,6 +31,6 @@ export default function BottomBar() {
         </span>
         <span>Cart</span>
       </Link>
-    </nav>
+    </div>
   );
 }
